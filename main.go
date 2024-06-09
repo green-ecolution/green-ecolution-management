@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
 
@@ -21,11 +21,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
-	})
+	app := fiber.New()
 
-	fmt.Printf("Starting server on port %d\n", cfg.Port)
+  app.Get("/", func(c *fiber.Ctx) error {
+    return c.JSON(cfg)
+  })
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), nil))
+	log.Fatal(app.Listen(fmt.Sprintf(":%d", cfg.Port)))
 }
