@@ -1,0 +1,14 @@
+README.md
+LICENSE
+CODE_OF_CONDUCT.md
+
+air.toml
+
+.env
+.env.example
+
+tmp/
+docs/
+.git/
+.github/
+.gitignore
