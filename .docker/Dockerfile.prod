@@ -1,0 +1,29 @@
+FROM golang:1.22-alpine as preparer_go
+
+WORKDIR /app/build
+
+COPY ./go.mod ./go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go generate
+
+FROM preparer_go as builder
+ARG APPVERSION="v0.0.0"
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.version=$APPVERSION" -o /app/build/backend
+
+FROM alpine:3.18 as runner
+
+ENV PORT=3000
+EXPOSE 3000
+
+RUN adduser -D gorunner
+
+USER gorunner
+WORKDIR /app
+
+COPY --chown=gorunner:gorunner --from=builder /app/build/backend /app/backend
+
+ENTRYPOINT [ "/app/backend" ]
