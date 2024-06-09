@@ -1,0 +1,47 @@
+package service
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
+)
+
+var (
+	ErrIpNotFound            = errors.New("local ip not found")
+	ErrIFacesNotFound        = errors.New("cant get interfaces")
+	ErrIFacesAddressNotFound = errors.New("cant get interfaces address")
+	ErrHostnameNotFound      = errors.New("cant get hostname")
+)
+
+type Error struct {
+	Message string
+	Code    ErrorCode
+}
+
+func NewError(code ErrorCode, msg string) Error {
+	return Error{Code: code, Message: msg}
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("%d: %s", e.Code, e.Message)
+}
+
+type ErrorCode int
+
+const (
+	BadRequest    ErrorCode = 400
+	Unauthorized  ErrorCode = 401
+	Forbidden     ErrorCode = 403
+	NotFound      ErrorCode = 404
+	InternalError ErrorCode = 500
+)
+
+type InfoService interface {
+	GetAppInfo(context.Context) (*info.App, error)
+}
+
+type Service struct {
+	InfoService InfoService
+}

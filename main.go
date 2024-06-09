@@ -1,40 +1,37 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/caarlos0/env/v11"
-	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
+	"github.com/SmartCityFlensburg/green-space-management/config"
+	"github.com/SmartCityFlensburg/green-space-management/internal/server/http"
+	"github.com/SmartCityFlensburg/green-space-management/internal/service/domain"
+	"github.com/SmartCityFlensburg/green-space-management/internal/storage/local"
 )
-
-type Config struct {
-	Port        int  `env:"PORT" envDefault:"8000"`
-	Development bool `env:"DEVELOPMENT" envDefault:"false"`
-}
 
 var version = "develop"
 
 func main() {
-	godotenv.Load()
-
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	cfg, err := config.GetAppConfig()
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	app := fiber.New()
+	repositories, err := local.NewRepository(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(cfg)
-	})
+  services := domain.NewService(cfg, repositories)
+  httpServer := http.NewServer(cfg, services)
+
 
 	fmt.Printf("Version: %s\n", version)
-
 	if cfg.Development {
 		fmt.Println("Running in dev mode")
 	}
 
-	log.Fatal(app.Listen(fmt.Sprintf(":%d", cfg.Port)))
+	log.Fatal(httpServer.Run(context.Background()))
 }
