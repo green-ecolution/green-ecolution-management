@@ -15,10 +15,9 @@ var (
 )
 
 type InfoRepository interface {
-  GetAppInfo(context.Context) (*info.App, error)
+	GetAppInfo(context.Context) (*info.App, error)
 }
 
-
 type Repository struct {
-  Info InfoRepository
+	Info InfoRepository
 }

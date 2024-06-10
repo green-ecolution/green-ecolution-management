@@ -23,7 +23,7 @@ func NewServer(cfg *config.Config, services *service.Service) *Server {
 
 func (s *Server) Run(ctx context.Context) error {
 	app := fiber.New()
-  app.Mount("/", s.router())
+	app.Mount("/", s.router())
 
 	go func() {
 		<-ctx.Done()

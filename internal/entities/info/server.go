@@ -8,7 +8,7 @@ import (
 
 type Server struct {
 	OS        string
-  Arch      string
+	Arch      string
 	Hostname  string
 	Url       *url.URL
 	IP        net.IP

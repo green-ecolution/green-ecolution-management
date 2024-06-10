@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-  Url         *url.URL `env:"APP_URL,expand" envDefault:"localhost:$PORT"`
+	Url         *url.URL `env:"APP_URL,expand" envDefault:"localhost:$PORT"`
 	Port        int      `env:"PORT" envDefault:"8000"`
 	Development bool     `env:"DEVELOPMENT" envDefault:"false"`
 }
