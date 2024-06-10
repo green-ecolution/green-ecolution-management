@@ -31,7 +31,7 @@ type ServerResponse struct {
 	IP        string `json:"ip"`
 	Port      int    `json:"port"`
 	Interface string `json:"interface"`
-  UpTime    string `json:"uptime"`
+	UpTime    string `json:"uptime"`
 }
 
 func GetAppInfo(svc service.InfoService) fiber.Handler {
@@ -83,7 +83,7 @@ func mapToDto(entity *info.App) *GetAppInfoResponse {
 			IP:        entity.Server.IP.String(),
 			Port:      entity.Server.Port,
 			Interface: entity.Server.Interface,
-      UpTime:    entity.Server.Uptime.String(),
+			UpTime:    entity.Server.Uptime.String(),
 		},
 	}
 }

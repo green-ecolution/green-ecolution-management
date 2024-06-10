@@ -72,7 +72,7 @@ func (r *InfoRepository) GetAppInfo(ctx context.Context) (*info.App, error) {
 
 	return &info.App{
 		Version:   version,
-    GoVersion: r.getGoVersion(),
+		GoVersion: r.getGoVersion(),
 		BuildTime: r.buildTime,
 		Git: info.Git{
 			Branch:     gitBranch,
@@ -81,7 +81,7 @@ func (r *InfoRepository) GetAppInfo(ctx context.Context) (*info.App, error) {
 		},
 		Server: info.Server{
 			OS:        r.getOS(),
-      Arch:      r.getArch(),
+			Arch:      r.getArch(),
 			Hostname:  hostname,
 			Url:       r.getAppUrl(),
 			IP:        r.localIP,
@@ -113,11 +113,11 @@ func (r *InfoRepository) getUptime() time.Duration {
 }
 
 func (r *InfoRepository) getGoVersion() string {
-  return runtime.Version()
+	return runtime.Version()
 }
 
 func (r *InfoRepository) getArch() string {
-  return runtime.GOARCH
+	return runtime.GOARCH
 }
 
 func getBuildTime() (time.Time, error) {

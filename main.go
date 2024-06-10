@@ -25,9 +25,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-  services := domain.NewService(cfg, repositories)
-  httpServer := http.NewServer(cfg, services)
-
+	services := domain.NewService(cfg, repositories)
+	httpServer := http.NewServer(cfg, services)
 
 	fmt.Printf("Version: %s\n", version)
 	if cfg.Development {
