@@ -12,3 +12,5 @@ docs/
 .git/
 .github/
 .gitignore
+
+**/_mock

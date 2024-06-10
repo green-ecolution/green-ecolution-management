@@ -1,0 +1,12 @@
+with-expecter: true
+packages: 
+  github.com/SmartCityFlensburg/green-space-management/internal/service:
+    config: 
+      dir: ./internal/service/_mock
+    interfaces:
+      InfoService:
+  github.com/SmartCityFlensburg/green-space-management/internal/storage:
+    config: 
+      dir: ./internal/storage/_mock
+    interfaces:
+      InfoRepository:
