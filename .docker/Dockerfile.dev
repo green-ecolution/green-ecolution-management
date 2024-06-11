@@ -1,0 +1,53 @@
+#############################################
+# Preparer go
+#############################################
+FROM golang:1.22-alpine as preparer_go
+
+WORKDIR /app/build
+
+COPY ./go.mod ./go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go generate
+
+
+#############################################
+# Builder go
+#############################################
+FROM preparer_go as builder
+
+ARG APP_VERSION="v0.0.0-dev"
+ARG APP_GIT_COMMIT="unknown"
+ARG APP_GIT_BRANCH="develop"
+ARG APP_GIT_REPOSITORY="https://github.com/SmartCityFlensburg/green-space-management"
+ARG APP_BUILD_TIME="unknown"
+
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags " \
+  -X main.version=$APP_VERSION \
+  -X github.com/SmartCityFlensburg/green-space-management/internal/storage/local/info.version=$APP_VERSION \
+  -X github.com/SmartCityFlensburg/green-space-management/internal/storage/local/info.gitCommit=$APP_GIT_COMMIT \
+  -X github.com/SmartCityFlensburg/green-space-management/internal/storage/local/info.gitBranch=$APP_GIT_BRANCH \
+  -X github.com/SmartCityFlensburg/green-space-management/internal/storage/local/info.gitRepository=$APP_GIT_REPOSITORY \
+  -X github.com/SmartCityFlensburg/green-space-management/internal/storage/local/info.buildTime=$APP_BUILD_TIME \
+  " -o /app/build/backend
+
+
+#############################################
+# Runner go
+#############################################
+FROM alpine:3.18 as runner
+
+ENV DEVELOPMENT=true
+ENV PORT=3000
+EXPOSE 3000
+
+RUN adduser -D gorunner
+
+USER gorunner
+WORKDIR /app
+
+COPY --chown=gorunner:gorunner --from=builder /app/build/backend /app/backend
+
+ENTRYPOINT [ "/app/backend" ]
