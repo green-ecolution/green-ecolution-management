@@ -8,6 +8,7 @@ import (
 
 	"github.com/SmartCityFlensburg/green-space-management/config"
 	"github.com/SmartCityFlensburg/green-space-management/internal/server/http"
+	"github.com/SmartCityFlensburg/green-space-management/internal/server/mqtt"
 	"github.com/SmartCityFlensburg/green-space-management/internal/service/domain"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage/local"
 )
@@ -19,6 +20,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	go mqtt.RunSubscriber(cfg.MQTTBroker)
 
 	repositories, err := local.NewRepository(cfg)
 	if err != nil {
