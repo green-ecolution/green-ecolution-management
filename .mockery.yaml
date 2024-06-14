@@ -5,6 +5,7 @@ packages:
       dir: ./internal/service/_mock
     interfaces:
       InfoService:
+      MqttService:
   github.com/SmartCityFlensburg/green-space-management/internal/storage:
     config: 
       dir: ./internal/storage/_mock
