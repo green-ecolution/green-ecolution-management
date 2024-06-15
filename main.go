@@ -5,9 +5,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/SmartCityFlensburg/green-space-management/config"
 	"github.com/SmartCityFlensburg/green-space-management/internal/server/http"
+	"github.com/SmartCityFlensburg/green-space-management/internal/server/mqtt"
 	"github.com/SmartCityFlensburg/green-space-management/internal/service/domain"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage/local"
 )
@@ -20,6 +24,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Printf("Version: %s\n", version)
+	if cfg.Development {
+		fmt.Println("Running in dev mode")
+	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
 	repositories, err := local.NewRepository(cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -27,11 +39,20 @@ func main() {
 
 	services := domain.NewService(cfg, repositories)
 	httpServer := http.NewServer(cfg, services)
+	mqttServer := mqtt.NewMqtt(cfg, services)
 
-	fmt.Printf("Version: %s\n", version)
-	if cfg.Development {
-		fmt.Println("Running in dev mode")
-	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	log.Fatal(httpServer.Run(context.Background()))
+	go func() {
+		defer wg.Done()
+		mqttServer.RunSubscriber(ctx)
+	}()
+
+	go func() {
+		defer wg.Done()
+		httpServer.Run(ctx)
+	}()
+
+	wg.Wait()
 }
