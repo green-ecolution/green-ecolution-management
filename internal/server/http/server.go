@@ -27,6 +27,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	go func() {
 		<-ctx.Done()
+		fmt.Println("Shutting down HTTP Server")
 		app.Shutdown()
 	}()
 

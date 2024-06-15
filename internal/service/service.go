@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
+	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 var (
@@ -42,6 +43,12 @@ type InfoService interface {
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
+type MqttService interface {
+	HandleTemperature(client MQTT.Client, msg MQTT.Message)
+	HandleHumidity(client MQTT.Client, msg MQTT.Message)
+}
+
 type Service struct {
 	InfoService InfoService
+	MqttService MqttService
 }
