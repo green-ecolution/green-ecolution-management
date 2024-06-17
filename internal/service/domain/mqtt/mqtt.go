@@ -7,6 +7,7 @@ import (
 )
 
 type MqttService struct {
+	isConnected bool
 }
 
 func NewMqttService() *MqttService {
@@ -19,4 +20,12 @@ func (s *MqttService) HandleTemperature(client MQTT.Client, msg MQTT.Message) {
 
 func (s *MqttService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
 	fmt.Printf("Humidity: %s\n", msg.Payload())
+}
+
+func (s *MqttService) SetConnected(ready bool) {
+	s.isConnected = ready
+}
+
+func (s *MqttService) Ready() bool {
+	return s.isConnected
 }
