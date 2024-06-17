@@ -1,0 +1,35 @@
+name: "Build project on PR"
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Install dependencies
+        run: go mod download
+      - name: Build
+        run: go build -v ./...
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Install mockery
+        run: go install github.com/vektra/mockery/v2@v2.43.2
+      - name: Go generate
+        run: go generate ./...
+      - name: Test
+        run: go test -v ./...
