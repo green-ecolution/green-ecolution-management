@@ -8,8 +8,8 @@ import (
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 )
 
-func NewService(cfg *config.Config, repositories *storage.Repository) *service.Service {
-	return &service.Service{
+func NewService(cfg *config.Config, repositories *storage.Repository) *service.Services {
+	return &service.Services{
 		InfoService: info.NewInfoService(repositories.Info),
 		MqttService: mqtt.NewMqttService(),
 	}

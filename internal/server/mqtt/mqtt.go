@@ -12,10 +12,10 @@ import (
 
 type Mqtt struct {
 	cfg *config.Config
-	svc *service.Service
+	svc *service.Services
 }
 
-func NewMqtt(cfg *config.Config, services *service.Service) *Mqtt {
+func NewMqtt(cfg *config.Config, services *service.Services) *Mqtt {
 	return &Mqtt{
 		cfg: cfg,
 		svc: services,
@@ -27,6 +27,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 	opts := MQTT.NewClientOptions().AddBroker(m.cfg.MQTTBroker).SetClientID("smartphone")
 	opts.OnConnect = func(client MQTT.Client) {
 		fmt.Println("Connected to MQTT Broker")
+		m.svc.MqttService.SetConnected(true)
 	}
 	opts.OnConnectionLost = func(client MQTT.Client, err error) {
 		fmt.Printf("Connection lost: %v\n", err)
