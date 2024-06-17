@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
           go-version: stable
+
       - name: Install dependencies
         run: go mod download
+
       - name: Build
         run: go build -v ./...
 
@@ -27,9 +30,15 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: stable
+
       - name: Install mockery
         run: go install github.com/vektra/mockery/v2@v2.43.2
+
+      - name: Install dependencies
+        run: go mod download
+
       - name: Go generate
-        run: go generate ./...
+        run: go generate
+
       - name: Test
         run: go test -v ./...
