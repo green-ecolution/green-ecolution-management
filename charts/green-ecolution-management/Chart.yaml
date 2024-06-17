@@ -1,0 +1,7 @@
+apiVersion: v2
+name: green-ecolution-management
+description: Helm Chart to Green Ecolution Management
+
+type: application
+version: 0.0.1
+appVersion: "0.0.0"
