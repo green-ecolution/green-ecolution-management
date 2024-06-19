@@ -29,8 +29,10 @@ func (s *Server) Run(ctx context.Context) error {
 	go func() {
 		<-ctx.Done()
 		fmt.Println("Shutting down HTTP Server")
-		app.Shutdown()
+		if err := app.Shutdown(); err != nil {
+			fmt.Println("Error while shutting down HTTP Server:", err)
+		}
 	}()
 
-	return app.Listen(fmt.Sprintf("%s", s.cfg.Url))
+	return app.Listen(s.cfg.Url.String())
 }

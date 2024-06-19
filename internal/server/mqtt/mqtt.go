@@ -55,8 +55,6 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		}
 	}(token)
 
-	select {
-	case <-ctx.Done():
-		fmt.Println("Shutting down MQTT Subscriber")
-	}
+	<-ctx.Done()
+	fmt.Println("Shutting down MQTT Subscriber")
 }
