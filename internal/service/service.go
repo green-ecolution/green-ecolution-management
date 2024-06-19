@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -40,15 +42,38 @@ const (
 )
 
 type InfoService interface {
+  Service
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
 type MqttService interface {
+  Service
 	HandleTemperature(client MQTT.Client, msg MQTT.Message)
 	HandleHumidity(client MQTT.Client, msg MQTT.Message)
+	SetConnected(bool)
 }
 
-type Service struct {
+type Service interface {
+	Ready() bool
+}
+
+type Services struct {
 	InfoService InfoService
 	MqttService MqttService
+}
+
+func (s *Services) AllServicesReady() bool {
+	v := reflect.ValueOf(s).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		service := v.Field(i).Interface()
+		if srv, ok := service.(Service); ok {
+			if !srv.Ready() {
+				return false
+			}
+		} else {
+			log.Printf("Service %s does not implement the Service interface", v.Field(i).Type().Name())
+			return false
+		}
+	}
+	return true
 }
