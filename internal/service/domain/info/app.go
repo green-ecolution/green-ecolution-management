@@ -38,3 +38,7 @@ func (s *InfoService) GetAppInfo(ctx context.Context) (*info.App, error) {
 
 	return appInfo, nil
 }
+
+func (s *InfoService) Ready() bool {
+	return s.infoRepository != nil
+}

@@ -93,3 +93,29 @@ func TestGetAppInfo(t *testing.T) {
 		assert.Equal(t, &expectAppInfo, appInfo)
 	})
 }
+
+
+func TestReady(t *testing.T) {
+  t.Run("should return true if the service is ready", func(t *testing.T) {
+    // given
+    repo := storageMock.NewMockInfoRepository(t)
+    svc := NewInfoService(repo)
+
+    // when
+    ready := svc.Ready()
+
+    // then
+    assert.True(t, ready)
+  })
+  
+  t.Run("should return false if the service is not ready", func(t *testing.T) {
+    // given
+    svc := NewInfoService(nil)
+
+    // when
+    ready := svc.Ready()
+
+    // then
+    assert.False(t, ready)
+  })
+}
