@@ -23,8 +23,13 @@ func NewMqtt(cfg *config.Config, services *service.Services) *Mqtt {
 }
 
 func (m *Mqtt) RunSubscriber(ctx context.Context) {
-	fmt.Println("Brocker: " + m.cfg.MQTTBroker)
-	opts := MQTT.NewClientOptions().AddBroker(m.cfg.MQTTBroker).SetClientID("smartphone")
+	mqttConfig := m.cfg.MQTT
+	opts := MQTT.NewClientOptions()
+	opts.AddBroker(mqttConfig.Broker)
+	opts.SetClientID(mqttConfig.ClientID)
+	opts.SetUsername(mqttConfig.Username)
+	opts.SetPassword(mqttConfig.Password)
+
 	opts.OnConnect = func(client MQTT.Client) {
 		fmt.Println("Connected to MQTT Broker")
 		m.svc.MqttService.SetConnected(true)
@@ -39,15 +44,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		return
 	}
 
-	token := client.Subscribe("TEMPERATURE", 1, m.svc.MqttService.HandleTemperature)
-	go func(token MQTT.Token) {
-		_ = token.Wait()
-		if token.Error() != nil {
-			log.Println(token.Error())
-		}
-	}(token)
-
-	token = client.Subscribe("HUMIDITY", 1, m.svc.MqttService.HandleHumidity)
+	token := client.Subscribe("v3/heltec-test-scan@ttn/devices/eui-1265907861450231/up", 1, m.svc.MqttService.HandleHumidity)
 	go func(token MQTT.Token) {
 		_ = token.Wait()
 		if token.Error() != nil {

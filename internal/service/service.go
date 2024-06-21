@@ -42,13 +42,12 @@ const (
 )
 
 type InfoService interface {
-  Service
+	Service
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
 type MqttService interface {
-  Service
-	HandleTemperature(client MQTT.Client, msg MQTT.Message)
+	Service
 	HandleHumidity(client MQTT.Client, msg MQTT.Message)
 	SetConnected(bool)
 }
