@@ -44,7 +44,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		return
 	}
 
-	token := client.Subscribe("v3/heltec-test-scan@ttn/devices/eui-1265907861450231/up", 1, m.svc.MqttService.HandleHumidity)
+	token := client.Subscribe(mqttConfig.Topic, 1, m.svc.MqttService.HandleHumidity)
 	go func(token MQTT.Token) {
 		_ = token.Wait()
 		if token.Error() != nil {
