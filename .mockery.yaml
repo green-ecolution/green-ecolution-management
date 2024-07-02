@@ -5,10 +5,14 @@ packages:
       dir: ./internal/service/_mock
     interfaces:
       InfoService:
+      SensorService:
       MqttService:
+      TreeService:
       Service:
   github.com/SmartCityFlensburg/green-space-management/internal/storage:
     config: 
       dir: ./internal/storage/_mock
     interfaces:
       InfoRepository:
+      SensorRepository:
+      TreeRepository:

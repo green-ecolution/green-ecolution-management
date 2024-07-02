@@ -8,6 +8,8 @@ import (
 	"reflect"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
+	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
+	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -42,15 +44,31 @@ const (
 )
 
 type InfoService interface {
-  Service
+	Service
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
 type MqttService interface {
-  Service
-	HandleTemperature(client MQTT.Client, msg MQTT.Message)
-	HandleHumidity(client MQTT.Client, msg MQTT.Message)
+	Service
+	HandleMessage(client MQTT.Client, msg MQTT.Message)
 	SetConnected(bool)
+}
+
+type SensorService interface {
+	Service
+	GetHumidityByTree(context.Context, string) (int, error)
+	GetBatteryByTree(context.Context, string) (float64, error)
+	GetMqttDataByTreeID(context.Context, string) ([]sensor.MqttData, error)
+	GetMqttDataByTreeIDLast(context.Context, string) (*sensor.MqttData, error)
+}
+
+type TreeService interface {
+	Service
+	GetTreeByID(ctx context.Context, id string) (*tree.Tree, error)
+	GetAllTrees(context.Context) ([]tree.Tree, error)
+	InsertTree(ctx context.Context, data tree.Tree) error
+	GetSensorDataByTreeID(ctx context.Context, treeID string) ([]sensor.MqttData, error)
+	GetTreePrediction(ctx context.Context, treeID string) (*tree.SensorPrediction, error)
 }
 
 type Service interface {
@@ -58,8 +76,10 @@ type Service interface {
 }
 
 type Services struct {
-	InfoService InfoService
-	MqttService MqttService
+	InfoService   InfoService
+	MqttService   MqttService
+	SensorService SensorService
+	TreeService   TreeService
 }
 
 func (s *Services) AllServicesReady() bool {
