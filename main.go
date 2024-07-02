@@ -51,9 +51,9 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-    if err := httpServer.Run(ctx); err != nil {
-      log.Fatal(err)
-    }
+		if err := httpServer.Run(ctx); err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	wg.Wait()
