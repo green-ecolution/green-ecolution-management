@@ -12,3 +12,4 @@ packages:
       dir: ./internal/storage/_mock
     interfaces:
       InfoRepository:
+      MqttRepository:
