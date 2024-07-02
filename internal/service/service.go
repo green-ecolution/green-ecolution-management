@@ -48,7 +48,6 @@ type InfoService interface {
 
 type MqttService interface {
 	Service
-	HandleTemperature(client MQTT.Client, msg MQTT.Message)
 	HandleHumidity(client MQTT.Client, msg MQTT.Message)
 	SetConnected(bool)
 }

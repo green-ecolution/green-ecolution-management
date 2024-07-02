@@ -24,13 +24,13 @@ type InfoRepository interface {
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
-type MqttMongoRepository interface {
+type MqttRepository interface {
 	Upsert(ctx context.Context, data sensor.Data) error
 	Get(ctx context.Context, id string) (*sensor.Data, error)
 	GetFirst(ctx context.Context) (*sensor.Data, error)
 }
 
 type Repository struct {
-	Info      InfoRepository
-	MqttMongo MqttMongoRepository
+	Info InfoRepository
+	Mqtt MqttRepository
 }

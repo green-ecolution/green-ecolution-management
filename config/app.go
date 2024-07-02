@@ -11,11 +11,10 @@ import (
 type DatabaseConfig struct {
 	Host       string        `env:"HOST" envDefault:"localhost"`
 	Port       int           `env:"PORT" envDefault:"27017"`
-	User       string        `env:"USER"`
-	Password   string        `env:"PASSWORD"`
-	Name       string        `env:"NAME"`
-	Timeout    time.Duration `env:"TIMEOUT" envDefault:"30"`
-	Database   string        `env:"DATABASE" envDefault:"green-space-management"`
+  User       string        `env:"USER" envDefault:"root"`
+  Password   string        `env:"PASSWORD" envDefault:"example"`
+	Name       string        `env:"NAME" envDefault:"green-space-management"`
+	Timeout    time.Duration `env:"TIMEOUT" envDefault:"10s"`
 	Collection string        `env:"COLLECTION" envDefault:"sensors"`
 }
 

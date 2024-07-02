@@ -11,6 +11,6 @@ import (
 func NewService(cfg *config.Config, repositories *storage.Repository) *service.Services {
 	return &service.Services{
 		InfoService: info.NewInfoService(repositories.Info),
-		MqttService: mqtt.NewMqttService(),
+		MqttService: mqtt.NewMqttService(repositories.Mqtt),
 	}
 }

@@ -2,10 +2,8 @@ package mqtt
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/SmartCityFlensburg/green-space-management/config"
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,25 +14,6 @@ import (
 type MqttMongoRepository struct {
 	client     *mongo.Client
 	collection *mongo.Collection
-}
-
-func NewMongoClient(ctx context.Context, cfg config.DatabaseConfig) (*mongo.Client, error) {
-	mongoUri := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
-
-	clientOptions := options.Client().ApplyURI(mongoUri)
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		return nil, storage.ErrMongoCannotCreateClient
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, cfg.Timeout)
-	defer cancel()
-	if err := client.Ping(ctx, nil); err != nil {
-		return nil, storage.ErrMongoCannotPingClient
-	}
-
-	log.Println("Connected to MongoDB!")
-	return client, nil
 }
 
 func NewMqttMongoRepository(client *mongo.Client, collection *mongo.Collection) *MqttMongoRepository {
