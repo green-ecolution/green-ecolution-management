@@ -11,8 +11,8 @@ import (
 type DatabaseConfig struct {
 	Host       string        `env:"HOST" envDefault:"localhost"`
 	Port       int           `env:"PORT" envDefault:"27017"`
-  User       string        `env:"USER" envDefault:"root"`
-  Password   string        `env:"PASSWORD" envDefault:"example"`
+	User       string        `env:"USER" envDefault:"root"`
+	Password   string        `env:"PASSWORD" envDefault:"example"`
 	Name       string        `env:"NAME" envDefault:"green-space-management"`
 	Timeout    time.Duration `env:"TIMEOUT" envDefault:"10s"`
 	Collection string        `env:"COLLECTION" envDefault:"sensors"`
@@ -35,9 +35,9 @@ type Config struct {
 }
 
 func GetAppConfig() (*Config, error) {
-  if err := godotenv.Load(); err != nil {
-    return nil, err
-  }
+	if err := godotenv.Load(); err != nil {
+		return nil, err
+	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {

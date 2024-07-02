@@ -39,15 +39,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-  dbRepo, err := mongodb.NewRepository(cfg)
-  if err != nil {
-    log.Fatal(err)
-  }
+	dbRepo, err := mongodb.NewRepository(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  repositories := &storage.Repository{
-    Info: localRepo.Info,
-    Mqtt: dbRepo.Mqtt,
-  }
+	repositories := &storage.Repository{
+		Info: localRepo.Info,
+		Mqtt: dbRepo.Mqtt,
+	}
 
 	services := domain.NewService(cfg, repositories)
 	httpServer := http.NewServer(cfg, services)
