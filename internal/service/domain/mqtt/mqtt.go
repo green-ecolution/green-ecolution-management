@@ -20,11 +20,13 @@ func NewMqttService() *MqttService {
 
 func (s *MqttService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
 	data := msg.Payload()
-	fmt.Printf("Humidity: %f\n", data)
+	fmt.Printf("Humidity: %b\n", data)
+
 	jsonStr := string(data)
 	fmt.Println("JSON String:", jsonStr)
+
 	var sensorData sensor.Data
-	err := json.Unmarshal([]byte(jsonStr), &sensorData)
+	err := json.Unmarshal([]byte(jsonStr), &s.sensorData)
 	if err != nil {
 		log.Fatalf("Failed to unmarshal JSON: %v", err)
 	}

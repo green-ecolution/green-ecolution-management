@@ -43,7 +43,7 @@ func GetFirst(client *mongo.Client) (sensor.Data, error) {
 	collection := client.Database(Database).Collection(SensorCollection)
 	var data sensor.Data
 	filter := bson.M{}
-	opts := options.FindOne().SetSort(bson.D{{"_id", 1}})
+	opts := options.FindOne().SetSort(bson.D{{Key: "_id", Value: 1}})
 	err := collection.FindOne(context.TODO(), filter, opts).Decode(&data)
 	if err != nil {
 		return data, err
