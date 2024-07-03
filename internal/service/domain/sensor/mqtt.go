@@ -1,4 +1,4 @@
-package mqtt
+package sensor
 
 import (
 	"context"
@@ -10,16 +10,16 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-type MqttService struct {
-	mqttRepo    storage.MqttRepository
+type SensorService struct {
+	sensorRepo    storage.SensorRepository
 	isConnected bool
 }
 
-func NewMqttService(mqttRepository storage.MqttRepository) *MqttService {
-	return &MqttService{mqttRepo: mqttRepository}
+func NewSensorService(sensorRepository storage.SensorRepository) *SensorService {
+	return &SensorService{sensorRepo: sensorRepository}
 }
 
-func (s *MqttService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
+func (s *SensorService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
 	jsonStr := string(msg.Payload())
 	log.Printf("Received message: %s\n", jsonStr)
 
@@ -30,16 +30,16 @@ func (s *MqttService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
 	}
 	log.Printf("Sensor data: %v\n", sensorData)
 
-  if err := s.mqttRepo.Upsert(context.TODO(), sensorData); err != nil {
+  if err := s.sensorRepo.Upsert(context.TODO(), sensorData); err != nil {
     log.Printf("Error upserting sensor data: %v\n", err)
     return
   }
 }
 
-func (s *MqttService) SetConnected(ready bool) {
+func (s *SensorService) SetConnected(ready bool) {
 	s.isConnected = ready
 }
 
-func (s *MqttService) Ready() bool {
+func (s *SensorService) Ready() bool {
 	return s.isConnected
 }

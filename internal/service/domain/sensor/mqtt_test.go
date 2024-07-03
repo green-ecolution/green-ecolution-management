@@ -1,4 +1,4 @@
-package mqtt
+package sensor
 
 import (
 	"testing"
@@ -7,10 +7,10 @@ import (
 	storageMock "github.com/SmartCityFlensburg/green-space-management/internal/storage/_mock"
 )
 
-func TestNewMqttService(t *testing.T) {
-  repo := storageMock.NewMockMqttRepository(t)
+func TestNewSensorService(t *testing.T) {
+  repo := storageMock.NewMockSensorRepository(t)
 	t.Run("should create a new service", func(t *testing.T) {
-		svc := NewMqttService(repo)
+		svc := NewSensorService(repo)
 		assert.NotNil(t, svc)
 	})
 }

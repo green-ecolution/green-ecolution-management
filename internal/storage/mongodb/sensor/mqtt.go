@@ -1,4 +1,4 @@
-package mqtt
+package sensor
 
 import (
 	"context"
@@ -11,16 +11,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MqttMongoRepository struct {
+type SensorRepository struct {
 	client     *mongo.Client
 	collection *mongo.Collection
 }
 
-func NewMqttMongoRepository(client *mongo.Client, collection *mongo.Collection) *MqttMongoRepository {
-	return &MqttMongoRepository{client: client, collection: collection}
+func NewSensorRepository(client *mongo.Client, collection *mongo.Collection) *SensorRepository {
+	return &SensorRepository{client: client, collection: collection}
 }
 
-func (r *MqttMongoRepository) Upsert(ctx context.Context, data sensor.Data) error {
+func (r *SensorRepository) Upsert(ctx context.Context, data sensor.Data) error {
 	filter := bson.M{"end_device_ids.device_id": data.EndDeviceIDs.DeviceID}
 	update := bson.M{"$set": data}
 	opts := options.Update().SetUpsert(true)
@@ -38,7 +38,7 @@ func (r *MqttMongoRepository) Upsert(ctx context.Context, data sensor.Data) erro
 	return nil
 }
 
-func (r *MqttMongoRepository) Get(ctx context.Context, id string) (*sensor.Data, error) {
+func (r *SensorRepository) Get(ctx context.Context, id string) (*sensor.Data, error) {
 	filter := bson.M{"end_device_ids.device_id": id}
 	var data sensor.Data
 	err := r.collection.FindOne(ctx, filter).Decode(&data)
@@ -49,7 +49,7 @@ func (r *MqttMongoRepository) Get(ctx context.Context, id string) (*sensor.Data,
 	return &data, nil
 }
 
-func (r *MqttMongoRepository) GetFirst(ctx context.Context) (*sensor.Data, error) {
+func (r *SensorRepository) GetFirst(ctx context.Context) (*sensor.Data, error) {
 	var data sensor.Data
 	if err := r.collection.FindOne(ctx, bson.D{}).Decode(&data); err != nil {
 		return nil, storage.ErrMongoDataNotFound

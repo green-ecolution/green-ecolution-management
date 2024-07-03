@@ -46,7 +46,7 @@ func main() {
 
 	repositories := &storage.Repository{
 		Info: localRepo.Info,
-		Mqtt: dbRepo.Mqtt,
+		Sensor: dbRepo.Sensor,
 	}
 
 	services := domain.NewService(cfg, repositories)
