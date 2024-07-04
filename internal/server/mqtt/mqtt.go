@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/SmartCityFlensburg/green-space-management/config"
@@ -23,14 +22,18 @@ func NewMqtt(cfg *config.Config, services *service.Services) *Mqtt {
 }
 
 func (m *Mqtt) RunSubscriber(ctx context.Context) {
-	fmt.Println("Brocker: " + m.cfg.MQTTBroker)
-	opts := MQTT.NewClientOptions().AddBroker(m.cfg.MQTTBroker).SetClientID("smartphone")
+  opts := MQTT.NewClientOptions()
+  opts.AddBroker(m.cfg.MQTT.Broker)
+  opts.SetClientID(m.cfg.MQTT.ClientID)
+  opts.SetUsername(m.cfg.MQTT.Username)
+  opts.SetPassword(m.cfg.MQTT.Password)
+
 	opts.OnConnect = func(client MQTT.Client) {
-		fmt.Println("Connected to MQTT Broker")
-		m.svc.MqttService.SetConnected(true)
+		log.Println("Connected to MQTT Broker")
+		m.svc.SensorService.SetConnected(true)
 	}
 	opts.OnConnectionLost = func(client MQTT.Client, err error) {
-		fmt.Printf("Connection lost: %v\n", err)
+		log.Printf("Connection lost to MQTT Broker: %v\n", err)
 	}
 
 	client := MQTT.NewClient(opts)
@@ -39,15 +42,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		return
 	}
 
-	token := client.Subscribe("TEMPERATURE", 1, m.svc.MqttService.HandleTemperature)
-	go func(token MQTT.Token) {
-		_ = token.Wait()
-		if token.Error() != nil {
-			log.Println(token.Error())
-		}
-	}(token)
-
-	token = client.Subscribe("HUMIDITY", 1, m.svc.MqttService.HandleHumidity)
+  token := client.Subscribe(m.cfg.MQTT.Topic, 1, m.svc.SensorService.HandleHumidity)
 	go func(token MQTT.Token) {
 		_ = token.Wait()
 		if token.Error() != nil {
@@ -56,5 +51,5 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 	}(token)
 
 	<-ctx.Done()
-	fmt.Println("Shutting down MQTT Subscriber")
+	log.Println("Shutting down MQTT Subscriber")
 }

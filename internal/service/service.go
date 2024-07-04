@@ -42,13 +42,12 @@ const (
 )
 
 type InfoService interface {
-  Service
+	Service
 	GetAppInfo(context.Context) (*info.App, error)
 }
 
-type MqttService interface {
-  Service
-	HandleTemperature(client MQTT.Client, msg MQTT.Message)
+type SensorService interface {
+	Service
 	HandleHumidity(client MQTT.Client, msg MQTT.Message)
 	SetConnected(bool)
 }
@@ -59,7 +58,7 @@ type Service interface {
 
 type Services struct {
 	InfoService InfoService
-	MqttService MqttService
+	SensorService SensorService
 }
 
 func (s *Services) AllServicesReady() bool {
