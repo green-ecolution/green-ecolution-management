@@ -30,7 +30,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 
 	opts.OnConnect = func(client MQTT.Client) {
 		log.Println("Connected to MQTT Broker")
-		m.svc.SensorService.SetConnected(true)
+		m.svc.MqttService.SetConnected(true)
 	}
 	opts.OnConnectionLost = func(client MQTT.Client, err error) {
 		log.Printf("Connection lost to MQTT Broker: %v\n", err)
@@ -42,7 +42,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		return
 	}
 
-  token := client.Subscribe(m.cfg.MQTT.Topic, 1, m.svc.SensorService.HandleHumidity)
+  token := client.Subscribe(m.cfg.MQTT.Topic, 1, m.svc.MqttService.HandleMessage)
 	go func(token MQTT.Token) {
 		_ = token.Wait()
 		if token.Error() != nil {

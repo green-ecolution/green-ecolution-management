@@ -10,20 +10,20 @@ import (
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
-type SensorService struct {
+type MqttService struct {
 	sensorRepo    storage.SensorRepository
 	isConnected bool
 }
 
-func NewSensorService(sensorRepository storage.SensorRepository) *SensorService {
-	return &SensorService{sensorRepo: sensorRepository}
+func NewMqttService(sensorRepository storage.SensorRepository) *MqttService {
+	return &MqttService{sensorRepo: sensorRepository}
 }
 
-func (s *SensorService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
+func (s *MqttService) HandleMessage(client MQTT.Client, msg MQTT.Message) {
 	jsonStr := string(msg.Payload())
 	log.Printf("Received message: %s\n", jsonStr)
 
-	var sensorData sensor.Data
+	var sensorData sensor.MqttData
 	if err := json.Unmarshal([]byte(jsonStr), &sensorData); err != nil {
     log.Printf("Error unmarshalling sensor data: %v\n", err)
     return
@@ -36,10 +36,10 @@ func (s *SensorService) HandleHumidity(client MQTT.Client, msg MQTT.Message) {
   }
 }
 
-func (s *SensorService) SetConnected(ready bool) {
+func (s *MqttService) SetConnected(ready bool) {
 	s.isConnected = ready
 }
 
-func (s *SensorService) Ready() bool {
+func (s *MqttService) Ready() bool {
 	return s.isConnected
 }

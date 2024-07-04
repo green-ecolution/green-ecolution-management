@@ -8,6 +8,7 @@ import (
 	"github.com/SmartCityFlensburg/green-space-management/config"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage/mongodb/sensor"
+	"github.com/SmartCityFlensburg/green-space-management/internal/storage/mongodb/tree"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -42,10 +43,13 @@ func NewRepository(cfg *config.Config) (*storage.Repository, error) {
 		return nil, err
 	}
 
-	collection := mongoClient.Database(cfg.Database.Name).Collection(cfg.Database.Collection)
-	mongoMqttRepo := sensor.NewSensorRepository(mongoClient, collection)
+	sensorCollection := mongoClient.Database(cfg.Database.Name).Collection("sensors")
+	mongoSensorRepo := sensor.NewSensorRepository(mongoClient, sensorCollection)
+  treeCollection := mongoClient.Database(cfg.Database.Name).Collection("trees")
+  mongoTreeRepo := tree.NewTreeRepository(mongoClient, treeCollection)
 
 	return &storage.Repository{
-		Sensor: mongoMqttRepo,
+		Sensor: mongoSensorRepo,
+    Tree: mongoTreeRepo,
 	}, nil
 }

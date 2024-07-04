@@ -14,7 +14,7 @@ func TestAllServiceReady(t *testing.T) {
 		sensorSvc := serviceMock.NewMockSensorService(t)
 		svc := Services{
 			InfoService: infoSvc,
-			SensorService: sensorSvc,
+			MqttService: sensorSvc,
 		}
 
 		// when

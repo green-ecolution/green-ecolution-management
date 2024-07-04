@@ -15,7 +15,6 @@ type DatabaseConfig struct {
 	Password   string        `env:"PASSWORD" envDefault:"example"`
 	Name       string        `env:"NAME" envDefault:"green-space-management"`
 	Timeout    time.Duration `env:"TIMEOUT" envDefault:"10s"`
-	Collection string        `env:"COLLECTION" envDefault:"sensors"`
 }
 
 type MQTTConfig struct {
