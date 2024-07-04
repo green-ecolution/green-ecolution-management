@@ -1,9 +1,14 @@
 #############################################
 # Preparer go
 #############################################
-FROM golang:1.22-alpine as preparer_go
+FROM golang:1.22-alpine AS preparer_go
+
+ARG MOCKER_VERSION="v2.43.2"
 
 WORKDIR /app/build
+
+# install mockery
+RUN go install github.com/vektra/mockery/v2@${MOCKER_VERSION}
 
 COPY ./go.mod ./go.sum ./
 RUN go mod download
@@ -16,7 +21,7 @@ RUN go generate
 #############################################
 # Builder go
 #############################################
-FROM preparer_go as builder
+FROM preparer_go AS builder
 
 ARG APP_VERSION="v0.0.0-dev"
 ARG APP_GIT_COMMIT="unknown"
@@ -37,7 +42,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags " \
 #############################################
 # Runner go
 #############################################
-FROM alpine:3.18 as runner
+FROM alpine:3.18 AS runner
 
 ENV DEVELOPMENT=true
 ENV PORT=3000
