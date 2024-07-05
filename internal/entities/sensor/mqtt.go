@@ -110,15 +110,26 @@ type MqttVisibility struct {
 }
 
 type MqttData struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	TreeID         string             `json:"tree_id" bson:"tree_id"`
-	Name           string             `json:"name" bson:"name"`
-	Time           *time.Time         `json:"time" bson:"time"`
-	Identifiers    []MqttIdentifier   `json:"identifiers" bson:"identifiers"`
-	Data           MqttDataPayload    `json:"data" bson:"data"`
-	CorrelationIDs []string           `json:"correlation_ids" bson:"correlation_ids"`
-	Origin         string             `json:"origin" bson:"origin"`
-	Context        map[string]string  `json:"context" bson:"context"`
-	Visibility     MqttVisibility     `json:"visibility" bson:"visibility"`
-	UniqueID       string             `json:"unique_id" bson:"unique_id"`
+	Name           string            `json:"name" bson:"name"`
+	Time           *time.Time        `json:"time" bson:"time"`
+	Identifiers    []MqttIdentifier  `json:"identifiers" bson:"identifiers"`
+	Data           MqttDataPayload   `json:"data" bson:"data"`
+	CorrelationIDs []string          `json:"correlation_ids" bson:"correlation_ids"`
+	Origin         string            `json:"origin" bson:"origin"`
+	Context        map[string]string `json:"context" bson:"context"`
+	Visibility     MqttVisibility    `json:"visibility" bson:"visibility"`
+	UniqueID       string            `json:"unique_id" bson:"unique_id"`
+}
+
+type MqttDataEntity struct {
+	ID     primitive.ObjectID `json:"id" bson:"_id"`
+	TreeID string             `json:"tree_id" bson:"tree_id"`
+	Data   MqttPayload        `json:"data" bson:"data"`
+}
+
+type MqttPayload struct {
+	EndDeviceIDs   MqttIdentifierDeviceID `json:"end_device_ids" bson:"end_device_ids"`
+	CorrelationIDs []string               `json:"correlation_ids" bson:"correlation_ids"`
+	ReceivedAt     *time.Time             `json:"received_at" bson:"received_at"`
+	UplinkMessage  MqttUplinkMessage      `json:"uplink_message" bson:"uplink_message"`
 }

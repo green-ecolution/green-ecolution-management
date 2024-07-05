@@ -7,6 +7,7 @@ import (
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -20,22 +21,19 @@ func NewSensorRepository(client *mongo.Client, collection *mongo.Collection) *Se
 	return &SensorRepository{client: client, collection: collection}
 }
 
-func (r *SensorRepository) Upsert(ctx context.Context, data sensor.MqttData) error {
-	filter := bson.M{"end_device_ids.device_id": data.Data.EndDeviceIDs.DeviceID}
-	update := bson.M{"$set": data}
-	opts := options.Update().SetUpsert(true)
-	result, err := r.collection.UpdateOne(ctx, filter, update, opts)
+func (r *SensorRepository) Insert(ctx context.Context, data sensor.MqttDataEntity) (*sensor.MqttDataEntity, error) {
+  log.Println("Inserting data into MongoDB...")
+	if data.ID == primitive.NilObjectID {
+    log.Println("Creating new ObjectID...")
+		objID := primitive.NewObjectID()
+		data.ID = objID
+	}
+	_, err := r.collection.InsertOne(ctx, data)
 	if err != nil {
-		return storage.ErrMongoCannotUpsertData
+		return nil, storage.ErrMongoCannotUpsertData
 	}
 
-	if result.UpsertedCount > 0 {
-		log.Printf("Inserted a new document with ID %v\n", result.UpsertedID)
-	} else {
-		log.Println("Updated an existing document")
-	}
-
-	return nil
+	return &data, nil
 }
 
 func (r *SensorRepository) Get(ctx context.Context, id string) (*sensor.MqttData, error) {

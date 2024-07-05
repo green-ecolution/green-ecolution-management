@@ -11,7 +11,7 @@ import (
 )
 
 type MqttService struct {
-	sensorRepo    storage.SensorRepository
+	sensorRepo  storage.SensorRepository
 	isConnected bool
 }
 
@@ -23,17 +23,21 @@ func (s *MqttService) HandleMessage(client MQTT.Client, msg MQTT.Message) {
 	jsonStr := string(msg.Payload())
 	log.Printf("Received message: %s\n", jsonStr)
 
-	var sensorData sensor.MqttData
+	var sensorData sensor.MqttPayload
 	if err := json.Unmarshal([]byte(jsonStr), &sensorData); err != nil {
-    log.Printf("Error unmarshalling sensor data: %v\n", err)
-    return
+		log.Printf("Error unmarshalling sensor data: %v\n", err)
+		return
 	}
-	log.Printf("Sensor data: %v\n", sensorData)
 
-  if err := s.sensorRepo.Upsert(context.TODO(), sensorData); err != nil {
-    log.Printf("Error upserting sensor data: %v\n", err)
-    return
+  entity := sensor.MqttDataEntity{
+    Data: sensorData,
+    TreeID: "6686f54fd32cf640e8ae6eb1",
   }
+
+	if _, err := s.sensorRepo.Insert(context.Background(), entity); err != nil {
+		log.Printf("Error upserting sensor data: %v\n", err)
+		return
+	}
 }
 
 func (s *MqttService) SetConnected(ready bool) {
