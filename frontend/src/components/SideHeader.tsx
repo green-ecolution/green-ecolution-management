@@ -1,9 +1,9 @@
 import {
   Book,
   Calendar,
-  Home,
   MapPin,
   Settings,
+  Trees,
   Truck,
   User,
   Waypoints,
@@ -30,6 +30,11 @@ const SideHeader = ({ open }: SideHeaderProps) => {
       title: "Einsatzplanung",
       icon: <Waypoints className="w-5 h-5" />,
       to: "/waypoints",
+    },
+    {
+      title: "Bäume",
+      icon: <Trees className="w-5 h-5" />,
+      to: "/trees",
     },
     {
       title: "Team",

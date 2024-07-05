@@ -1,14 +1,21 @@
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
+import { useToggleSidePanel } from "../store/sidePanelStore";
 
 export interface HeaderProps {}
 
 const MapHeader = ({}: HeaderProps) => {
+  const toggleMenu = useToggleSidePanel();
+
+  const handleToggleMenu = () => {
+    toggleMenu();
+  }
+
   return (
     <div className="z-50 absolute top-4 left-4 w-[350px] h-12 bg-white rounded shadow-lg">
       <div className="flex justify-between items-center h-full mx-2">
         <div className="flex items-center">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => handleToggleMenu()}>
             <Menu className="w-6 h-6" />
           </Button>
         </div>
