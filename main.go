@@ -1,4 +1,6 @@
 //go:generate mockery
+//go:generate swag fmt
+//go:generate swag init --requiredByDefault
 package main
 
 import (
@@ -19,6 +21,17 @@ import (
 )
 
 var version = "develop"
+
+//	@title			Green Space Management API
+//	@version		develop
+//	@description	This is the API for the Green Space Management System. It provides endpoints to get information about trees and sensors.
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	Green Ecolution
+//	@contact.url	https://green-ecolution.de
+
+//	@license.name	GPL-3.0
+//	@license.url	https://raw.githubusercontent.com/SmartCityFlensburg/green-space-management/develop/LICENSE
 
 func main() {
 	cfg, err := config.GetAppConfig()

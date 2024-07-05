@@ -10,6 +10,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+type HTTPError struct {
+	Error  string `json:"error"`
+	Code   int    `json:"code"`
+	Path   string `json:"path"`
+	Method string `json:"method"`
+} //@Name HTTPError
+
 type Server struct {
 	cfg      *config.Config
 	services *service.Services
@@ -44,11 +51,11 @@ func errorHandler(c *fiber.Ctx, err error) error {
 	c.Status(fiber.StatusInternalServerError)
 	var e *fiber.Error
 	if errors.As(err, &e) {
-		return c.JSON(fiber.Map{
-			"error":  e.Message,
-			"code":   e.Code,
-			"path":   c.Path(),
-			"method": c.Method(),
+		return c.JSON(HTTPError{
+			e.Message,
+			e.Code,
+			c.Path(),
+			c.Method(),
 		})
 	}
 	return nil

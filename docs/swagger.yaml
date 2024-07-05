@@ -1,0 +1,637 @@
+definitions:
+  GetAppInfoResponse:
+    properties:
+      buildTime:
+        type: string
+      git:
+        $ref: '#/definitions/GitResponse'
+      goVersion:
+        type: string
+      server:
+        $ref: '#/definitions/ServerResponse'
+      version:
+        type: string
+    required:
+    - buildTime
+    - git
+    - goVersion
+    - server
+    - version
+    type: object
+  GitResponse:
+    properties:
+      branch:
+        type: string
+      commit:
+        type: string
+      repository:
+        type: string
+    required:
+    - branch
+    - commit
+    - repository
+    type: object
+  HTTPError:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+    required:
+    - code
+    - error
+    - method
+    - path
+    type: object
+  ServerResponse:
+    properties:
+      arch:
+        type: string
+      hostname:
+        type: string
+      interface:
+        type: string
+      ip:
+        type: string
+      os:
+        type: string
+      port:
+        type: integer
+      uptime:
+        type: string
+      url:
+        type: string
+    required:
+    - arch
+    - hostname
+    - interface
+    - ip
+    - os
+    - port
+    - uptime
+    - url
+    type: object
+  TreeSensorDataResponse:
+    properties:
+      sensor_data:
+        items:
+          $ref: '#/definitions/sensor.MqttData'
+        type: array
+      tree:
+        $ref: '#/definitions/tree.Tree'
+    required:
+    - sensor_data
+    - tree
+    type: object
+  TreeSensorPredictionResponse:
+    properties:
+      sensor_data:
+        items:
+          $ref: '#/definitions/sensor.MqttData'
+        type: array
+      sensor_prediction:
+        $ref: '#/definitions/tree.SensorPrediction'
+      tree:
+        $ref: '#/definitions/tree.Tree'
+    required:
+    - sensor_data
+    - sensor_prediction
+    - tree
+    type: object
+  sensor.MqttData:
+    properties:
+      context:
+        additionalProperties:
+          type: string
+        type: object
+      correlation_ids:
+        items:
+          type: string
+        type: array
+      data:
+        $ref: '#/definitions/sensor.MqttDataPayload'
+      identifiers:
+        items:
+          $ref: '#/definitions/sensor.MqttIdentifier'
+        type: array
+      name:
+        type: string
+      origin:
+        type: string
+      time:
+        type: string
+      unique_id:
+        type: string
+      visibility:
+        $ref: '#/definitions/sensor.MqttVisibility'
+    required:
+    - context
+    - correlation_ids
+    - data
+    - identifiers
+    - name
+    - origin
+    - time
+    - unique_id
+    - visibility
+    type: object
+  sensor.MqttDataPayload:
+    properties:
+      correlation_ids:
+        items:
+          type: string
+        type: array
+      end_device_ids:
+        $ref: '#/definitions/sensor.MqttIdentifierDeviceID'
+      received_at:
+        type: string
+      type:
+        type: string
+      uplink_message:
+        $ref: '#/definitions/sensor.MqttUplinkMessage'
+    required:
+    - correlation_ids
+    - end_device_ids
+    - received_at
+    - type
+    - uplink_message
+    type: object
+  sensor.MqttDecodedPayload:
+    properties:
+      battery:
+        type: number
+      humidity:
+        type: integer
+      raw:
+        type: integer
+    required:
+    - battery
+    - humidity
+    - raw
+    type: object
+  sensor.MqttIdentifier:
+    properties:
+      device_ids:
+        $ref: '#/definitions/sensor.MqttIdentifierDeviceID'
+    required:
+    - device_ids
+    type: object
+  sensor.MqttIdentifierDeviceID:
+    properties:
+      application_ids:
+        properties:
+          application_id:
+            type: string
+        required:
+        - application_id
+        type: object
+      dev_addr:
+        type: string
+      dev_eui:
+        type: string
+      device_id:
+        type: string
+      join_eui:
+        type: string
+    required:
+    - application_ids
+    - dev_addr
+    - dev_eui
+    - device_id
+    - join_eui
+    type: object
+  sensor.MqttNetworkIDs:
+    properties:
+      cluster_address:
+        type: string
+      cluster_id:
+        type: string
+      net_id:
+        type: string
+      ns_id:
+        type: string
+      tenant_address:
+        type: string
+      tenant_id:
+        type: string
+    required:
+    - cluster_address
+    - cluster_id
+    - net_id
+    - ns_id
+    - tenant_address
+    - tenant_id
+    type: object
+  sensor.MqttRxMetadata:
+    properties:
+      channel_rssi:
+        type: integer
+      gateway_ids:
+        properties:
+          gateway_id:
+            type: string
+        required:
+        - gateway_id
+        type: object
+      location:
+        properties:
+          altitude:
+            type: number
+          latitude:
+            type: number
+          longitude:
+            type: number
+        required:
+        - altitude
+        - latitude
+        - longitude
+        type: object
+      packet_broker:
+        properties:
+          forwarder_cluster_id:
+            type: string
+          forwarder_gateway_eui:
+            type: string
+          forwarder_gateway_id:
+            type: string
+          forwarder_net_id:
+            type: string
+          forwarder_tenant_id:
+            type: string
+          home_network_cluster_id:
+            type: string
+          home_network_net_id:
+            type: string
+          home_network_tenant_id:
+            type: string
+          message_id:
+            type: string
+        required:
+        - forwarder_cluster_id
+        - forwarder_gateway_eui
+        - forwarder_gateway_id
+        - forwarder_net_id
+        - forwarder_tenant_id
+        - home_network_cluster_id
+        - home_network_net_id
+        - home_network_tenant_id
+        - message_id
+        type: object
+      received_at:
+        type: string
+      rssi:
+        type: integer
+      snr:
+        type: number
+      time:
+        type: string
+      uplink_token:
+        type: string
+    required:
+    - channel_rssi
+    - gateway_ids
+    - location
+    - packet_broker
+    - received_at
+    - rssi
+    - snr
+    - time
+    - uplink_token
+    type: object
+  sensor.MqttUplinkMessage:
+    properties:
+      confirmed:
+        type: boolean
+      consumed_airtime:
+        description: time.Duration
+        type: string
+      decoded_payload:
+        $ref: '#/definitions/sensor.MqttDecodedPayload'
+      f_port:
+        type: integer
+      fcnt:
+        type: integer
+      frm_payload:
+        type: string
+      network_ids:
+        $ref: '#/definitions/sensor.MqttNetworkIDs'
+      received_at:
+        type: string
+      rx_metadata:
+        items:
+          $ref: '#/definitions/sensor.MqttRxMetadata'
+        type: array
+      session_key_id:
+        type: string
+      settings:
+        $ref: '#/definitions/sensor.MqttUplinkSettings'
+      version_ids:
+        $ref: '#/definitions/sensor.MqttVersionIDs'
+    required:
+    - confirmed
+    - consumed_airtime
+    - decoded_payload
+    - f_port
+    - fcnt
+    - frm_payload
+    - network_ids
+    - received_at
+    - rx_metadata
+    - session_key_id
+    - settings
+    - version_ids
+    type: object
+  sensor.MqttUplinkSettings:
+    properties:
+      data_rate:
+        properties:
+          lora:
+            properties:
+              bandwidth:
+                type: integer
+              coding_rate:
+                type: string
+              spreading_factor:
+                type: integer
+            required:
+            - bandwidth
+            - coding_rate
+            - spreading_factor
+            type: object
+        required:
+        - lora
+        type: object
+      frequency:
+        type: string
+    required:
+    - data_rate
+    - frequency
+    type: object
+  sensor.MqttVersionIDs:
+    properties:
+      band_id:
+        type: string
+      brand_id:
+        type: string
+      firmware_version:
+        type: string
+      hardware_version:
+        type: string
+      model_id:
+        type: string
+    required:
+    - band_id
+    - brand_id
+    - firmware_version
+    - hardware_version
+    - model_id
+    type: object
+  sensor.MqttVisibility:
+    properties:
+      rights:
+        items:
+          type: string
+        type: array
+    required:
+    - rights
+    type: object
+  tree.Location:
+    properties:
+      additional_info:
+        type: string
+      address:
+        type: string
+      lat:
+        type: number
+      lon:
+        type: number
+    required:
+    - additional_info
+    - address
+    - lat
+    - lon
+    type: object
+  tree.PredictedHealth:
+    enum:
+    - good
+    - moderate
+    - bad
+    type: string
+    x-enum-varnames:
+    - HealthGood
+    - HealthModerate
+    - HealthBad
+  tree.SensorPrediction:
+    properties:
+      humidity:
+        type: integer
+      predicted_health:
+        $ref: '#/definitions/tree.PredictedHealth'
+      sensor_id:
+        type: string
+      tree:
+        $ref: '#/definitions/tree.Tree'
+    required:
+    - humidity
+    - predicted_health
+    - sensor_id
+    - tree
+    type: object
+  tree.Tree:
+    properties:
+      age:
+        type: integer
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/tree.Location'
+      species:
+        type: string
+      tree_num:
+        type: integer
+    required:
+    - age
+    - id
+    - location
+    - species
+    - tree_num
+    type: object
+info:
+  contact:
+    name: Green Ecolution
+    url: https://green-ecolution.de
+  description: This is the API for the Green Space Management System. It provides
+    endpoints to get information about trees and sensors.
+  license:
+    name: GPL-3.0
+    url: https://raw.githubusercontent.com/SmartCityFlensburg/green-space-management/develop/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: Green Space Management API
+  version: develop
+paths:
+  /info:
+    get:
+      description: Get info about the app and the server
+      operationId: get-app-info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GetAppInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HTTPError'
+      summary: Get info about the app
+      tags:
+      - Info
+  /tree:
+    get:
+      description: Get all trees
+      operationId: get-all-trees
+      parameters:
+      - description: Get raw sensor data for each tree
+        in: query
+        name: sensor_data
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/TreeSensorDataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HTTPError'
+      summary: Get all trees
+      tags:
+      - Trees
+  /tree/{treeID}:
+    get:
+      description: Get tree by ID
+      operationId: get-tree-by-id
+      parameters:
+      - description: Tree ID
+        in: path
+        name: treeID
+        required: true
+        type: string
+      - description: Get raw sensor data for each tree
+        in: query
+        name: sensor_data
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/TreeSensorDataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HTTPError'
+      summary: Get tree by ID
+      tags:
+      - Trees
+  /tree/{treeID}/prediction:
+    get:
+      description: Get tree prediction by tree ID
+      operationId: get-tree-prediction-by-id
+      parameters:
+      - description: Tree ID
+        in: path
+        name: treeID
+        required: true
+        type: string
+      - description: Get raw sensor data for each tree
+        in: query
+        name: sensor_data
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/TreeSensorPredictionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HTTPError'
+      summary: Get tree prediction by tree ID
+      tags:
+      - Trees
+swagger: "2.0"

@@ -13,13 +13,13 @@ type GetAppInfoResponse struct {
 	GoVersion string         `json:"goVersion"`
 	Git       GitResponse    `json:"git"`
 	Server    ServerResponse `json:"server"`
-}
+} //@Name GetAppInfoResponse
 
 type GitResponse struct {
 	Branch     string `json:"branch"`
 	Commit     string `json:"commit"`
 	Repository string `json:"repository"`
-}
+} //@Name GitResponse
 
 type ServerResponse struct {
 	OS        string `json:"os"`
@@ -30,8 +30,20 @@ type ServerResponse struct {
 	Port      int    `json:"port"`
 	Interface string `json:"interface"`
 	UpTime    string `json:"uptime"`
-}
+} //@Name ServerResponse
 
+//	@Summary		Get info about the app
+//	@Description	Get info about the app and the server
+//	@Id				get-app-info
+//	@Tags			Info
+//	@Produce		json
+//	@Success		200	{object}	info.GetAppInfoResponse
+//	@Failure		400	{object}	HTTPError
+//	@Failure		401	{object}	HTTPError
+//	@Failure		403	{object}	HTTPError
+//	@Failure		404	{object}	HTTPError
+//	@Failure		500	{object}	HTTPError
+//	@Router			/info [get]
 func GetAppInfo(svc service.InfoService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		appInfo, err := svc.GetAppInfo(c.Context())
