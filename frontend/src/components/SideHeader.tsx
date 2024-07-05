@@ -1,8 +1,10 @@
 import {
   Book,
   Calendar,
+  LayoutDashboard,
   MapPin,
   Settings,
+  TreeDeciduous,
   Trees,
   Truck,
   User,
@@ -32,9 +34,14 @@ const SideHeader = ({ open }: SideHeaderProps) => {
       to: "/waypoints",
     },
     {
-      title: "Bäume",
-      icon: <Trees className="w-5 h-5" />,
+      title: "HX-Lab Tree",
+      icon: <TreeDeciduous className="w-5 h-5" />,
       to: "/trees",
+    },
+    {
+      title: "Demo Dashboard",
+      icon: <LayoutDashboard className="w-5 h-5" />,
+      to: "/demo-dashboard",
     },
     {
       title: "Team",
