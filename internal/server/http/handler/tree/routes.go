@@ -9,8 +9,8 @@ func RegisterRoutes(svc service.TreeService) *fiber.App {
 	app := fiber.New()
 
 	app.Get("/", GetAllTree(svc))
-  app.Get("/:id", GetTreeByID(svc))
-  app.Get("/:id/prediction", GetTreePredictions(svc))
+	app.Get("/:id", GetTreeByID(svc))
+	app.Get("/:id/prediction", GetTreePredictions(svc))
 
 	return app
 }

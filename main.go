@@ -45,9 +45,9 @@ func main() {
 	}
 
 	repositories := &storage.Repository{
-		Info: localRepo.Info,
+		Info:   localRepo.Info,
 		Sensor: dbRepo.Sensor,
-    Tree: dbRepo.Tree,
+		Tree:   dbRepo.Tree,
 	}
 
 	services := domain.NewService(cfg, repositories)

@@ -22,11 +22,11 @@ func NewMqtt(cfg *config.Config, services *service.Services) *Mqtt {
 }
 
 func (m *Mqtt) RunSubscriber(ctx context.Context) {
-  opts := MQTT.NewClientOptions()
-  opts.AddBroker(m.cfg.MQTT.Broker)
-  opts.SetClientID(m.cfg.MQTT.ClientID)
-  opts.SetUsername(m.cfg.MQTT.Username)
-  opts.SetPassword(m.cfg.MQTT.Password)
+	opts := MQTT.NewClientOptions()
+	opts.AddBroker(m.cfg.MQTT.Broker)
+	opts.SetClientID(m.cfg.MQTT.ClientID)
+	opts.SetUsername(m.cfg.MQTT.Username)
+	opts.SetPassword(m.cfg.MQTT.Password)
 
 	opts.OnConnect = func(client MQTT.Client) {
 		log.Println("Connected to MQTT Broker")
@@ -42,7 +42,7 @@ func (m *Mqtt) RunSubscriber(ctx context.Context) {
 		return
 	}
 
-  token := client.Subscribe(m.cfg.MQTT.Topic, 1, m.svc.MqttService.HandleMessage)
+	token := client.Subscribe(m.cfg.MQTT.Topic, 1, m.svc.MqttService.HandleMessage)
 	go func(token MQTT.Token) {
 		_ = token.Wait()
 		if token.Error() != nil {

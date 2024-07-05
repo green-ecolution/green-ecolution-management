@@ -2,6 +2,7 @@ package tree
 
 import (
 	"context"
+	"log"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
@@ -29,7 +30,7 @@ func GetAllTree(svc service.TreeService) fiber.Handler {
 			if c.QueryBool("sensor_data") {
 				data, err := GetSensorDataByTreeID(c.Context(), svc, tree.ID.Hex())
 				if err != nil {
-					sensorData = nil
+					log.Println(err)
 				}
 				sensorData = data
 			}
@@ -60,7 +61,7 @@ func GetTreeByID(svc service.TreeService) fiber.Handler {
 			response.SensorData = data
 		}
 
-    return c.JSON(response)
+		return c.JSON(response)
 	}
 }
 

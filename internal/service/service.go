@@ -37,10 +37,10 @@ type ErrorCode int
 
 const (
 	BadRequest    ErrorCode = 400
-	Unauthorized            = 401
-	Forbidden               = 403
-	NotFound                = 404
-	InternalError           = 500
+	Unauthorized  ErrorCode = 401
+	Forbidden     ErrorCode = 403
+	NotFound      ErrorCode = 404
+	InternalError ErrorCode = 500
 )
 
 type InfoService interface {
@@ -54,7 +54,7 @@ type MqttService interface {
 	SetConnected(bool)
 }
 
-type SenserService interface {
+type SensorService interface {
 	Service
 	GetHumidityByTree(context.Context, string) (int, error)
 	GetBatteryByTree(context.Context, string) (float64, error)
@@ -78,7 +78,7 @@ type Service interface {
 type Services struct {
 	InfoService   InfoService
 	MqttService   MqttService
-	SenserService SenserService
+	SensorService SensorService
 	TreeService   TreeService
 }
 

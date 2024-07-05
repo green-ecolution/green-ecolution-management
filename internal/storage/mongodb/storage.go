@@ -22,7 +22,7 @@ func NewMongoClient(ctx context.Context, cfg config.DatabaseConfig) (*mongo.Clie
 		return nil, storage.ErrMongoCannotCreateClient
 	}
 
-  log.Println("Trying to connect to MongoDB...")
+	log.Println("Trying to connect to MongoDB...")
 
 	ctx, cancel := context.WithTimeout(ctx, cfg.Timeout)
 	defer cancel()
@@ -45,11 +45,11 @@ func NewRepository(cfg *config.Config) (*storage.Repository, error) {
 
 	sensorCollection := mongoClient.Database(cfg.Database.Name).Collection("sensors")
 	mongoSensorRepo := sensor.NewSensorRepository(mongoClient, sensorCollection)
-  treeCollection := mongoClient.Database(cfg.Database.Name).Collection("trees")
-  mongoTreeRepo := tree.NewTreeRepository(mongoClient, treeCollection)
+	treeCollection := mongoClient.Database(cfg.Database.Name).Collection("trees")
+	mongoTreeRepo := tree.NewTreeRepository(mongoClient, treeCollection)
 
 	return &storage.Repository{
 		Sensor: mongoSensorRepo,
-    Tree: mongoTreeRepo,
+		Tree:   mongoTreeRepo,
 	}, nil
 }

@@ -29,10 +29,10 @@ func (s *MqttService) HandleMessage(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-  entity := sensor.MqttDataEntity{
-    Data: sensorData,
-    TreeID: "6686f54fd32cf640e8ae6eb1",
-  }
+	entity := sensor.MqttDataEntity{
+		Data:   sensorData,
+		TreeID: "6686f54fd32cf640e8ae6eb1",
+	}
 
 	if _, err := s.sensorRepo.Insert(context.Background(), entity); err != nil {
 		log.Printf("Error upserting sensor data: %v\n", err)

@@ -36,7 +36,7 @@ func GetAppInfo(svc service.InfoService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		appInfo, err := svc.GetAppInfo(c.Context())
 		if err != nil {
-      return handler.HandleError(err)
+			return handler.HandleError(err)
 		}
 
 		return c.JSON(mapToDto(appInfo))

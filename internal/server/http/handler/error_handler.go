@@ -27,5 +27,5 @@ func HandleError(err error) *fiber.Error {
 			log.Debugf("missing service error code %d", svcErr.Code)
 		}
 	}
-  return fiber.NewError(code, err.Error())
+	return fiber.NewError(code, err.Error())
 }

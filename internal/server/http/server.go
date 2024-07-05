@@ -41,15 +41,15 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func errorHandler(c *fiber.Ctx, err error) error {
-  c.Status(fiber.StatusInternalServerError)
-  var e *fiber.Error
-  if errors.As(err, &e) {
-    return c.JSON(fiber.Map{
-      "error": e.Message,
-      "code": e.Code,
-      "path": c.Path(),
-      "method": c.Method(),
-    })
-  }
-  return nil
+	c.Status(fiber.StatusInternalServerError)
+	var e *fiber.Error
+	if errors.As(err, &e) {
+		return c.JSON(fiber.Map{
+			"error":  e.Message,
+			"code":   e.Code,
+			"path":   c.Path(),
+			"method": c.Method(),
+		})
+	}
+	return nil
 }

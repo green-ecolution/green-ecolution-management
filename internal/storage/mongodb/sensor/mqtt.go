@@ -22,9 +22,9 @@ func NewSensorRepository(client *mongo.Client, collection *mongo.Collection) *Se
 }
 
 func (r *SensorRepository) Insert(ctx context.Context, data sensor.MqttDataEntity) (*sensor.MqttDataEntity, error) {
-  log.Println("Inserting data into MongoDB...")
+	log.Println("Inserting data into MongoDB...")
 	if data.ID == primitive.NilObjectID {
-    log.Println("Creating new ObjectID...")
+		log.Println("Creating new ObjectID...")
 		objID := primitive.NewObjectID()
 		data.ID = objID
 	}
