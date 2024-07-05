@@ -12,20 +12,15 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as VehiclesImport } from './routes/vehicles'
-import { Route as TreesImport } from './routes/trees'
 import { Route as IndexImport } from './routes/index'
 import { Route as WaypointsIndexImport } from './routes/waypoints/index'
+import { Route as TreesIndexImport } from './routes/trees/index'
 import { Route as WaypointsNewImport } from './routes/waypoints/new'
 
 // Create/Update Routes
 
 const VehiclesRoute = VehiclesImport.update({
   path: '/vehicles',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const TreesRoute = TreesImport.update({
-  path: '/trees',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -36,6 +31,11 @@ const IndexRoute = IndexImport.update({
 
 const WaypointsIndexRoute = WaypointsIndexImport.update({
   path: '/waypoints/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TreesIndexRoute = TreesIndexImport.update({
+  path: '/trees/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -55,13 +55,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/trees': {
-      id: '/trees'
-      path: '/trees'
-      fullPath: '/trees'
-      preLoaderRoute: typeof TreesImport
-      parentRoute: typeof rootRoute
-    }
     '/vehicles': {
       id: '/vehicles'
       path: '/vehicles'
@@ -74,6 +67,13 @@ declare module '@tanstack/react-router' {
       path: '/waypoints/new'
       fullPath: '/waypoints/new'
       preLoaderRoute: typeof WaypointsNewImport
+      parentRoute: typeof rootRoute
+    }
+    '/trees/': {
+      id: '/trees/'
+      path: '/trees'
+      fullPath: '/trees'
+      preLoaderRoute: typeof TreesIndexImport
       parentRoute: typeof rootRoute
     }
     '/waypoints/': {
@@ -90,9 +90,9 @@ declare module '@tanstack/react-router' {
 
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
-  TreesRoute,
   VehiclesRoute,
   WaypointsNewRoute,
+  TreesIndexRoute,
   WaypointsIndexRoute,
 })
 
@@ -105,23 +105,23 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/trees",
         "/vehicles",
         "/waypoints/new",
+        "/trees/",
         "/waypoints/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/trees": {
-      "filePath": "trees.tsx"
-    },
     "/vehicles": {
       "filePath": "vehicles.tsx"
     },
     "/waypoints/new": {
       "filePath": "waypoints/new.tsx"
+    },
+    "/trees/": {
+      "filePath": "trees/index.tsx"
     },
     "/waypoints/": {
       "filePath": "waypoints/index.tsx"
