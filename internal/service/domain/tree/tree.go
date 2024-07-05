@@ -25,11 +25,7 @@ func NewTreeService(treeRepo storage.TreeRepository, sensorRepo storage.SensorRe
 func (s *TreeService) GetTreeByID(ctx context.Context, id string) (*tree.Tree, error) {
 	tree, err := s.treeRepo.Get(ctx, id)
 	if err != nil {
-		if errors.Is(err, storage.ErrMongoDataNotFound) {
-			return nil, service.NewError(service.NotFound, err.Error())
-		}
-
-		return nil, service.NewError(service.InternalError, err.Error())
+    return nil, handleError(err)
 	}
 
 	return tree, nil
@@ -38,11 +34,7 @@ func (s *TreeService) GetTreeByID(ctx context.Context, id string) (*tree.Tree, e
 func (s *TreeService) GetAllTrees(ctx context.Context) ([]tree.Tree, error) {
 	trees, err := s.treeRepo.GetAll(ctx)
 	if err != nil {
-		if errors.Is(err, storage.ErrMongoDataNotFound) {
-			return nil, service.NewError(service.NotFound, err.Error())
-		}
-
-		return nil, service.NewError(service.InternalError, err.Error())
+    return nil, handleError(err)
 	}
 
 	return trees, nil
@@ -51,11 +43,7 @@ func (s *TreeService) GetAllTrees(ctx context.Context) ([]tree.Tree, error) {
 func (s *TreeService) InsertTree(ctx context.Context, data tree.Tree) error {
 	err := s.treeRepo.Insert(ctx, data)
 	if err != nil {
-		if errors.Is(err, storage.ErrMongoCannotUpsertData) {
-			return service.NewError(service.InternalError, err.Error())
-		}
-
-		return service.NewError(service.InternalError, err.Error())
+    return handleError(err)
 	}
 
 	return nil
@@ -72,19 +60,12 @@ func (s *TreeService) GetSensorDataByTreeID(ctx context.Context, treeID string) 
 func (s *TreeService) GetTreePrediction(ctx context.Context, id string) (*tree.SensorPrediction, error) {
 	treeData, err := s.treeRepo.Get(ctx, id)
 	if err != nil {
-		if errors.Is(err, storage.ErrMongoDataNotFound) {
-			return nil, service.NewError(service.NotFound, err.Error())
-		}
-		return nil, service.NewError(service.InternalError, err.Error())
+    return nil, handleError(err)
 	}
 
 	lastSensorData, err := s.sensorRepo.GetLastByTreeID(ctx, id)
 	if err != nil {
-		if errors.Is(err, storage.ErrMongoDataNotFound) {
-			return nil, service.NewError(service.NotFound, err.Error())
-		}
-
-		return nil, service.NewError(service.InternalError, err.Error())
+    return nil, handleError(err)
 	}
 
 	humidity := lastSensorData.Data.UplinkMessage.DecodedPayload.Humidity
@@ -105,4 +86,12 @@ func getHealth(humidity int) tree.PredictedHealth {
 	}
 
 	return tree.HealthGood
+}
+
+func handleError(err error) error {
+  if errors.Is(err, storage.ErrMongoDataNotFound) {
+    return service.NewError(service.NotFound, err.Error())
+  }
+
+  return service.NewError(service.InternalError, err.Error())
 }

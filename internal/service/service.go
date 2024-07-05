@@ -37,10 +37,10 @@ type ErrorCode int
 
 const (
 	BadRequest    ErrorCode = 400
-	Unauthorized  ErrorCode = 401
-	Forbidden     ErrorCode = 403
-	NotFound      ErrorCode = 404
-	InternalError ErrorCode = 500
+	Unauthorized            = 401
+	Forbidden               = 403
+	NotFound                = 404
+	InternalError           = 500
 )
 
 type InfoService interface {
@@ -56,19 +56,19 @@ type MqttService interface {
 
 type SenserService interface {
 	Service
-  GetHumidity(context.Context) (int, error)
-  GetBattery(context.Context) (float64, error)
-  GetMqttDataByTreeID(context.Context, string) ([]sensor.MqttData, error)
-  GetMqttDataByTreeIDLast(context.Context, string) (*sensor.MqttData, error)
+	GetHumidityByTree(context.Context, string) (int, error)
+	GetBatteryByTree(context.Context, string) (float64, error)
+	GetMqttDataByTreeID(context.Context, string) ([]sensor.MqttData, error)
+	GetMqttDataByTreeIDLast(context.Context, string) (*sensor.MqttData, error)
 }
 
 type TreeService interface {
-  Service
-  GetTreeByID(ctx context.Context, id string) (*tree.Tree, error)
-  GetAllTrees(context.Context) ([]tree.Tree, error)
-  InsertTree(ctx context.Context, data tree.Tree) error
-  GetSensorDataByTreeID(ctx context.Context, treeID string) ([]sensor.MqttData, error)
-  GetTreePrediction(ctx context.Context, treeID string) (*tree.SensorPrediction, error)
+	Service
+	GetTreeByID(ctx context.Context, id string) (*tree.Tree, error)
+	GetAllTrees(context.Context) ([]tree.Tree, error)
+	InsertTree(ctx context.Context, data tree.Tree) error
+	GetSensorDataByTreeID(ctx context.Context, treeID string) ([]sensor.MqttData, error)
+	GetTreePrediction(ctx context.Context, treeID string) (*tree.SensorPrediction, error)
 }
 
 type Service interface {
@@ -76,10 +76,10 @@ type Service interface {
 }
 
 type Services struct {
-	InfoService InfoService
-	MqttService MqttService
-  SenserService SenserService
-  TreeService TreeService
+	InfoService   InfoService
+	MqttService   MqttService
+	SenserService SenserService
+	TreeService   TreeService
 }
 
 func (s *Services) AllServicesReady() bool {
