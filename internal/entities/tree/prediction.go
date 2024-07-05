@@ -9,8 +9,8 @@ const (
 )
 
 type SensorPrediction struct {
-	SensorID string          `json:"sensor_id"`
-	Tree     *Tree           `json:"tree"`
-	Health   PredictedHealth `json:"predicted_health"`
-	Humidity int             `json:"humidity"`
+	SensorID string
+	Tree     *Tree
+	Health   PredictedHealth
+	Humidity int
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
+	"github.com/SmartCityFlensburg/green-space-management/internal/storage/entities/sensor"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,10 +21,8 @@ func NewSensorRepository(client *mongo.Client, collection *mongo.Collection) *Se
 	return &SensorRepository{client: client, collection: collection}
 }
 
-func (r *SensorRepository) Insert(ctx context.Context, data sensor.MqttDataEntity) (*sensor.MqttDataEntity, error) {
-	log.Println("Inserting data into MongoDB...")
+func (r *SensorRepository) Insert(ctx context.Context, data sensor.MqttEntity) (*sensor.MqttEntity, error) {
 	if data.ID == primitive.NilObjectID {
-		log.Println("Creating new ObjectID...")
 		objID := primitive.NewObjectID()
 		data.ID = objID
 	}
@@ -36,9 +34,9 @@ func (r *SensorRepository) Insert(ctx context.Context, data sensor.MqttDataEntit
 	return &data, nil
 }
 
-func (r *SensorRepository) Get(ctx context.Context, id string) (*sensor.MqttData, error) {
+func (r *SensorRepository) Get(ctx context.Context, id string) (*sensor.MqttEntity, error) {
 	filter := bson.M{"end_device_ids.device_id": id}
-	var data sensor.MqttData
+	var data sensor.MqttEntity
 	err := r.collection.FindOne(ctx, filter).Decode(&data)
 	if err != nil {
 		return nil, storage.ErrMongoDataNotFound
@@ -47,8 +45,8 @@ func (r *SensorRepository) Get(ctx context.Context, id string) (*sensor.MqttData
 	return &data, nil
 }
 
-func (r *SensorRepository) GetFirst(ctx context.Context) (*sensor.MqttData, error) {
-	var data sensor.MqttData
+func (r *SensorRepository) GetFirst(ctx context.Context) (*sensor.MqttEntity, error) {
+	var data sensor.MqttEntity
 	if err := r.collection.FindOne(ctx, bson.D{}).Decode(&data); err != nil {
 		return nil, storage.ErrMongoDataNotFound
 	}
@@ -56,9 +54,9 @@ func (r *SensorRepository) GetFirst(ctx context.Context) (*sensor.MqttData, erro
 	return &data, nil
 }
 
-func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([]sensor.MqttData, error) {
+func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([]sensor.MqttEntity, error) {
 	filter := bson.M{"tree_id": treeID}
-	var data []sensor.MqttData
+	var data []sensor.MqttEntity
 	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
@@ -66,7 +64,7 @@ func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		var d sensor.MqttData
+		var d sensor.MqttEntity
 		if err := cursor.Decode(&d); err != nil {
 			log.Println(err)
 			return nil, storage.ErrMongoDataNotFound
@@ -77,10 +75,10 @@ func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([
 	return data, nil
 }
 
-func (r *SensorRepository) GetLastByTreeID(ctx context.Context, treeID string) (*sensor.MqttData, error) {
+func (r *SensorRepository) GetLastByTreeID(ctx context.Context, treeID string) (*sensor.MqttEntity, error) {
 	filter := bson.M{"tree_id": treeID}
 	opts := options.FindOne().SetSort(bson.D{{Key: "time", Value: -1}})
-	var data sensor.MqttData
+	var data sensor.MqttEntity
 	err := r.collection.FindOne(ctx, filter, opts).Decode(&data)
 	if err != nil {
 		return nil, storage.ErrMongoDataNotFound

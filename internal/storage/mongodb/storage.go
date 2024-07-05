@@ -45,6 +45,7 @@ func NewRepository(cfg *config.Config) (*storage.Repository, error) {
 
 	sensorCollection := mongoClient.Database(cfg.Database.Name).Collection("sensors")
 	mongoSensorRepo := sensor.NewSensorRepository(mongoClient, sensorCollection)
+
 	treeCollection := mongoClient.Database(cfg.Database.Name).Collection("trees")
 	mongoTreeRepo := tree.NewTreeRepository(mongoClient, treeCollection)
 

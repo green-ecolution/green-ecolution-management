@@ -3,8 +3,8 @@ package tree
 import (
 	"context"
 
-	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
+	"github.com/SmartCityFlensburg/green-space-management/internal/storage/entities/tree"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,7 +19,7 @@ func NewTreeRepository(client *mongo.Client, collection *mongo.Collection) *Tree
 	return &TreeRepository{client: client, collection: collection}
 }
 
-func (r *TreeRepository) Insert(ctx context.Context, data tree.Tree) error {
+func (r *TreeRepository) Insert(ctx context.Context, data tree.TreeEntity) error {
 	_, err := r.collection.InsertOne(ctx, data)
 	if err != nil {
 		return storage.ErrMongoCannotUpsertData
@@ -28,13 +28,13 @@ func (r *TreeRepository) Insert(ctx context.Context, data tree.Tree) error {
 	return nil
 }
 
-func (r *TreeRepository) Get(ctx context.Context, id string) (*tree.Tree, error) {
+func (r *TreeRepository) Get(ctx context.Context, id string) (*tree.TreeEntity, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
 
-	var data tree.Tree
+	var data tree.TreeEntity
 	err = r.collection.FindOne(ctx, bson.D{{Key: "_id", Value: objID}}).Decode(&data)
 	if err != nil {
 		return nil, storage.ErrMongoDataNotFound
@@ -43,8 +43,8 @@ func (r *TreeRepository) Get(ctx context.Context, id string) (*tree.Tree, error)
 	return &data, nil
 }
 
-func (r *TreeRepository) GetAll(ctx context.Context) ([]tree.Tree, error) {
-	var data []tree.Tree
+func (r *TreeRepository) GetAll(ctx context.Context) ([]tree.TreeEntity, error) {
+	var data []tree.TreeEntity
 	cursor, err := r.collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, storage.ErrMongoDataNotFound

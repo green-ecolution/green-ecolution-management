@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/SmartCityFlensburg/green-space-management/config"
-	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
+	"github.com/SmartCityFlensburg/green-space-management/internal/storage/entities/info"
 )
 
 var version = "development"
@@ -64,22 +64,22 @@ func NewInfoRepository(cfg *config.Config) (*InfoRepository, error) {
 	}, nil
 }
 
-func (r *InfoRepository) GetAppInfo(ctx context.Context) (*info.App, error) {
+func (r *InfoRepository) GetAppInfo(ctx context.Context) (*info.AppEntity, error) {
 	hostname, err := r.getHostname()
 	if err != nil {
 		return nil, storage.ErrHostnameNotFound
 	}
 
-	return &info.App{
+	return &info.AppEntity{
 		Version:   version,
 		GoVersion: r.getGoVersion(),
 		BuildTime: r.buildTime,
-		Git: info.Git{
+		Git: info.GitEntity{
 			Branch:     gitBranch,
 			Commit:     gitCommit,
 			Repository: r.gitRepository,
 		},
-		Server: info.Server{
+		Server: info.ServerEntity{
 			OS:        r.getOS(),
 			Arch:      r.getArch(),
 			Hostname:  hostname,

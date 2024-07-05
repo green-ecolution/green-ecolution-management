@@ -5,23 +5,13 @@ import (
 	"log"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
-	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
+	internal "github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
 	"github.com/SmartCityFlensburg/green-space-management/internal/server/http/handler"
 	"github.com/SmartCityFlensburg/green-space-management/internal/service"
+	"github.com/SmartCityFlensburg/green-space-management/internal/service/entities/tree"
 	"github.com/SmartCityFlensburg/green-space-management/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
-
-type TreeSensorPredictionResponse struct {
-	Tree             *tree.Tree             `json:"tree,omitempty"`
-	SensorPrediction *tree.SensorPrediction `json:"sensor_prediction,omitempty"`
-	SensorData       []sensor.MqttData      `json:"sensor_data,omitempty"`
-} //@Name TreeSensorPredictionResponse
-
-type TreeSensorDataResponse struct {
-	Tree       *tree.Tree        `json:"tree,omitempty"`
-	SensorData []sensor.MqttData `json:"sensor_data,omitempty"`
-} //@Name TreeSensorDataResponse
 
 //	@Summary		Get all trees
 //	@Description	Get all trees
@@ -43,16 +33,16 @@ func GetAllTree(svc service.TreeService) fiber.Handler {
 			return handler.HandleError(err)
 		}
 
-		reponse := utils.Map(treeData, func(tree tree.Tree) TreeSensorDataResponse {
+		reponse := utils.Map(treeData, func(tree internal.Tree) tree.TreeSensorDataResponse {
 			var sensorData []sensor.MqttData
 			if c.QueryBool("sensor_data") {
-				data, err := getSensorDataByTreeID(c.Context(), svc, tree.ID.Hex())
+				data, err := getSensorDataByTreeID(c.Context(), svc, tree.ID)
 				if err != nil {
 					log.Println(err)
 				}
 				sensorData = data
 			}
-			return TreeSensorDataResponse{
+			return tree.TreeSensorDataResponse{
 				Tree:       &tree,
 				SensorData: sensorData,
 			}
