@@ -3,6 +3,7 @@ package tree
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
@@ -25,7 +26,7 @@ func NewTreeService(treeRepo storage.TreeRepository, sensorRepo storage.SensorRe
 func (s *TreeService) GetTreeByID(ctx context.Context, id string) (*tree.Tree, error) {
 	tree, err := s.treeRepo.Get(ctx, id)
 	if err != nil {
-    return nil, handleError(err)
+		return nil, handleError(err)
 	}
 
 	return tree, nil
@@ -34,7 +35,7 @@ func (s *TreeService) GetTreeByID(ctx context.Context, id string) (*tree.Tree, e
 func (s *TreeService) GetAllTrees(ctx context.Context) ([]tree.Tree, error) {
 	trees, err := s.treeRepo.GetAll(ctx)
 	if err != nil {
-    return nil, handleError(err)
+		return nil, handleError(err)
 	}
 
 	return trees, nil
@@ -43,7 +44,7 @@ func (s *TreeService) GetAllTrees(ctx context.Context) ([]tree.Tree, error) {
 func (s *TreeService) InsertTree(ctx context.Context, data tree.Tree) error {
 	err := s.treeRepo.Insert(ctx, data)
 	if err != nil {
-    return handleError(err)
+		return handleError(err)
 	}
 
 	return nil
@@ -58,14 +59,29 @@ func (s *TreeService) GetSensorDataByTreeID(ctx context.Context, treeID string) 
 }
 
 func (s *TreeService) GetTreePrediction(ctx context.Context, id string) (*tree.SensorPrediction, error) {
-	treeData, err := s.treeRepo.Get(ctx, id)
-	if err != nil {
-    return nil, handleError(err)
-	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 
-	lastSensorData, err := s.sensorRepo.GetLastByTreeID(ctx, id)
+	var treeData *tree.Tree
+	var treeDataError error
+	var lastSensorData *sensor.MqttData
+	var lastSensorDataError error
+
+	go func() {
+		defer wg.Done()
+		treeData, treeDataError = s.treeRepo.Get(ctx, id)
+	}()
+
+	go func() {
+		defer wg.Done()
+		lastSensorData, lastSensorDataError = s.sensorRepo.GetLastByTreeID(ctx, id)
+	}()
+
+	wg.Wait()
+
+	err := errors.Join(treeDataError, lastSensorDataError)
 	if err != nil {
-    return nil, handleError(err)
+		return nil, handleError(err)
 	}
 
 	humidity := lastSensorData.Data.UplinkMessage.DecodedPayload.Humidity
@@ -89,9 +105,9 @@ func getHealth(humidity int) tree.PredictedHealth {
 }
 
 func handleError(err error) error {
-  if errors.Is(err, storage.ErrMongoDataNotFound) {
-    return service.NewError(service.NotFound, err.Error())
-  }
+	if errors.Is(err, storage.ErrMongoDataNotFound) {
+		return service.NewError(service.NotFound, err.Error())
+	}
 
-  return service.NewError(service.InternalError, err.Error())
+	return service.NewError(service.InternalError, err.Error())
 }
