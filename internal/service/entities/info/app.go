@@ -1,18 +1,18 @@
 package info
 
-type GetAppInfoResponse struct {
+type AppInfoResponse struct {
 	Version   string         `json:"version"`
 	BuildTime string         `json:"buildTime"`
 	GoVersion string         `json:"goVersion"`
 	Git       GitResponse    `json:"git"`
 	Server    ServerResponse `json:"server"`
-} //@Name GetAppInfoResponse
+} //@Name AppInfo
 
 type GitResponse struct {
 	Branch     string `json:"branch"`
 	Commit     string `json:"commit"`
 	Repository string `json:"repository"`
-} //@Name GitResponse
+} //@Name GitInfo
 
 type ServerResponse struct {
 	OS        string `json:"os"`
@@ -22,5 +22,5 @@ type ServerResponse struct {
 	IP        string `json:"ip"`
 	Port      int    `json:"port"`
 	Interface string `json:"interface"`
-	UpTime    string `json:"uptime"`
-} //@Name ServerResponse
+	Uptime    string `json:"uptime"`
+} //@Name ServerInfo

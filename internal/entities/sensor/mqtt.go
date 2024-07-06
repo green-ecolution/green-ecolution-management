@@ -137,3 +137,11 @@ type MqttPayload struct {
 	ReceivedAt     *time.Time
 	UplinkMessage  MqttUplinkMessage
 }
+
+func (m *MqttPayload) GetHumidity() int {
+  return m.UplinkMessage.DecodedPayload.Humidity
+}
+
+func (m *MqttPayload) GetBattery() float64 {
+  return m.UplinkMessage.DecodedPayload.Battery
+}

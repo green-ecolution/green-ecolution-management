@@ -145,3 +145,16 @@ type MqttEntity struct {
 	TreeID string             `bson:"tree_id"`
 	Data   MqttPayloadEntity  `bson:"data"`
 }
+
+func (m *MqttEntity) GetID() string {
+  return m.ID.Hex()
+}
+
+func (m *MqttEntity) SetID(id string) error {
+  objID, err := primitive.ObjectIDFromHex(id)
+  if err != nil {
+    return err
+  }
+  m.ID = objID
+  return nil
+}

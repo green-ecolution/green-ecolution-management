@@ -8,8 +8,9 @@ import (
 	"reflect"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
-	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/tree"
+	infoResponse "github.com/SmartCityFlensburg/green-space-management/internal/service/entities/info"
+	treeResponse "github.com/SmartCityFlensburg/green-space-management/internal/service/entities/tree"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -46,6 +47,7 @@ const (
 type InfoService interface {
 	Service
 	GetAppInfo(context.Context) (*info.App, error)
+	GetAppInfoResponse(context.Context) (*infoResponse.AppInfoResponse, error)
 }
 
 type MqttService interface {
@@ -54,21 +56,13 @@ type MqttService interface {
 	SetConnected(bool)
 }
 
-type SensorService interface {
-	Service
-	GetHumidityByTree(context.Context, string) (int, error)
-	GetBatteryByTree(context.Context, string) (float64, error)
-	GetMqttDataByTreeID(context.Context, string) ([]sensor.MqttData, error)
-	GetMqttDataByTreeIDLast(context.Context, string) (*sensor.MqttData, error)
-}
-
 type TreeService interface {
 	Service
-	GetTreeByID(ctx context.Context, id string) (*tree.Tree, error)
-	GetAllTrees(context.Context) ([]tree.Tree, error)
 	InsertTree(ctx context.Context, data tree.Tree) error
-	GetSensorDataByTreeID(ctx context.Context, treeID string) ([]sensor.MqttData, error)
-	GetTreePrediction(ctx context.Context, treeID string) (*tree.SensorPrediction, error)
+
+  GetAllTreesResponse(ctx context.Context, withSensorData bool) ([]treeResponse.TreeSensorDataResponse, error)
+  GetTreeByIDResponse(ctx context.Context, id string, withSensorData bool) (*treeResponse.TreeSensorDataResponse, error)
+  GetTreePredictionResponse(ctx context.Context, treeID string, withSensorData bool) (*treeResponse.TreeSensorPredictionResponse, error)
 }
 
 type Service interface {
@@ -78,7 +72,6 @@ type Service interface {
 type Services struct {
 	InfoService   InfoService
 	MqttService   MqttService
-	SensorService SensorService
 	TreeService   TreeService
 }
 

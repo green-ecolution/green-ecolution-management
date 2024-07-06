@@ -54,9 +54,9 @@ func (r *SensorRepository) GetFirst(ctx context.Context) (*sensor.MqttEntity, er
 	return &data, nil
 }
 
-func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([]sensor.MqttEntity, error) {
+func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([]*sensor.MqttEntity, error) {
 	filter := bson.M{"tree_id": treeID}
-	var data []sensor.MqttEntity
+	var data []*sensor.MqttEntity
 	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
 		log.Println(err)
@@ -64,7 +64,7 @@ func (r *SensorRepository) GetAllByTreeID(ctx context.Context, treeID string) ([
 	}
 	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
-		var d sensor.MqttEntity
+		var d *sensor.MqttEntity
 		if err := cursor.Decode(&d); err != nil {
 			log.Println(err)
 			return nil, storage.ErrMongoDataNotFound

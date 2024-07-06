@@ -1,6 +1,7 @@
 //go:generate mockery
 //go:generate swag fmt
 //go:generate swag init --requiredByDefault
+//go:generate go run github.com/jmattheis/goverter/cmd/goverter gen github.com/SmartCityFlensburg/green-space-management/internal/mapper
 package main
 
 import (

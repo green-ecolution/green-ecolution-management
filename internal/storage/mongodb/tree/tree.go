@@ -19,7 +19,7 @@ func NewTreeRepository(client *mongo.Client, collection *mongo.Collection) *Tree
 	return &TreeRepository{client: client, collection: collection}
 }
 
-func (r *TreeRepository) Insert(ctx context.Context, data tree.TreeEntity) error {
+func (r *TreeRepository) Insert(ctx context.Context, data *tree.TreeEntity) error {
 	_, err := r.collection.InsertOne(ctx, data)
 	if err != nil {
 		return storage.ErrMongoCannotUpsertData
@@ -43,8 +43,8 @@ func (r *TreeRepository) Get(ctx context.Context, id string) (*tree.TreeEntity, 
 	return &data, nil
 }
 
-func (r *TreeRepository) GetAll(ctx context.Context) ([]tree.TreeEntity, error) {
-	var data []tree.TreeEntity
+func (r *TreeRepository) GetAll(ctx context.Context) ([]*tree.TreeEntity, error) {
+	var data []*tree.TreeEntity
 	cursor, err := r.collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, storage.ErrMongoDataNotFound
@@ -53,5 +53,5 @@ func (r *TreeRepository) GetAll(ctx context.Context) ([]tree.TreeEntity, error) 
 		return nil, storage.ErrMongoDataNotFound
 	}
 
-	return data, nil
+  return data, nil
 }

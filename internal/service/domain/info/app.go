@@ -5,17 +5,22 @@ import (
 	"errors"
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/info"
+	infoResponse "github.com/SmartCityFlensburg/green-space-management/internal/service/entities/info"
+	"github.com/SmartCityFlensburg/green-space-management/internal/mapper"
+	"github.com/SmartCityFlensburg/green-space-management/internal/mapper/generated"
 	"github.com/SmartCityFlensburg/green-space-management/internal/service"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 )
 
 type InfoService struct {
 	infoRepository storage.InfoRepository
+  mapper mapper.InfoMapper
 }
 
 func NewInfoService(infoRepository storage.InfoRepository) *InfoService {
 	return &InfoService{
 		infoRepository: infoRepository,
+    mapper: &generated.InfoMapperImpl{},
 	}
 }
 
@@ -36,7 +41,16 @@ func (s *InfoService) GetAppInfo(ctx context.Context) (*info.App, error) {
 		}
 	}
 
-	return appInfo, nil
+	return s.mapper.FromEntity(appInfo), nil
+}
+
+func (s *InfoService) GetAppInfoResponse(ctx context.Context) (*infoResponse.AppInfoResponse, error) {
+  appInfo, err := s.GetAppInfo(ctx)
+  if err != nil {
+    return nil, err
+  }
+
+  return s.mapper.ToResponse(appInfo), nil
 }
 
 func (s *InfoService) Ready() bool {

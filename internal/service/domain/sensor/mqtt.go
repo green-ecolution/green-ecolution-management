@@ -7,7 +7,9 @@ import (
 
 	"github.com/SmartCityFlensburg/green-space-management/internal/entities/sensor"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
+	entityRepo "github.com/SmartCityFlensburg/green-space-management/internal/storage/entities/sensor"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	"github.com/jinzhu/copier"
 )
 
 type MqttService struct {
@@ -29,10 +31,14 @@ func (s *MqttService) HandleMessage(client MQTT.Client, msg MQTT.Message) {
 		return
 	}
 
-	entity := sensor.MqttDataEntity{
-		Data:   sensorData,
-		TreeID: "6686f54fd32cf640e8ae6eb1",
-	}
+  var entity entityRepo.MqttEntity
+  err := copier.Copy(&entity, sensorData)
+  if err != nil {
+    log.Printf("Error copying sensor data to internal entity: %v\n", err)
+    return
+  }
+
+  entity.TreeID = "6686f54fd32cf640e8ae6eb1"
 
 	if _, err := s.sensorRepo.Insert(context.Background(), entity); err != nil {
 		log.Printf("Error upserting sensor data: %v\n", err)

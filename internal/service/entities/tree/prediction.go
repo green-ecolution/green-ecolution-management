@@ -1,6 +1,6 @@
 package tree
 
-type PredictedHealthResponse = string
+type PredictedHealthResponse = string //@Name PredictedHealth
 
 const (
 	HealthGood     PredictedHealthResponse = "good"
