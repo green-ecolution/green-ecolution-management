@@ -1,4 +1,4 @@
-name: "Build project on PR"
+name: "Build and test project on PR"
 
 on:
   pull_request:
@@ -6,26 +6,11 @@ on:
       - develop
 
 jobs:
-  build:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
-
-      - name: Install dependencies
-        run: go mod download
-
-      - name: Build
-        run: go build -v ./...
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
@@ -42,6 +27,9 @@ jobs:
 
       - name: Go generate
         run: go generate
+
+      - name: Build
+        run: go build -v ./...
 
       - name: Test
         run: go test -v ./...
