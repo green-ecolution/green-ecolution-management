@@ -1,0 +1,114 @@
+name: Build and Push Docker Image Staging
+"on":
+  workflow_dispatch:
+  push:
+    branches:
+      - release/*
+      - hotfix/*
+
+jobs:
+  build_and_deploy_stage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Extract version from branch name (for release branches)
+        if: startsWith(steps.extract_branch.outputs.branch, 'release/')
+        run: |
+          BRANCH_NAME="${{ steps.extract_branch.outputs.branch }}"
+          VERSION=${BRANCH_NAME#release/}
+
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Extract version from branch name (for hotfix branches)
+        if: startsWith(steps.extract_branch.outputs.branch, 'hotfix/')
+        run: |
+          BRANCH_NAME="${{ steps.extract_branch.outputs.branch }}"
+          VERSION=${BRANCH_NAME#hotfix/}
+
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Extract version from input (for manual workflow dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set lower case owner name
+        run: |
+          echo "REPO_LC=${REPO,,}" >>${GITHUB_ENV}
+        env:
+          REPO: "${{ github.repository }}"
+
+      - name: Set commit sha
+        run: |
+          echo "COMMIT_SHA=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
+
+      - name: get build time
+        run: |
+          echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >>${GITHUB_ENV}
+
+      - name: Build and push Version
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            APP_VERSION="${{env.RELEASE_VERSION}}-stage"
+            APP_GIT_COMMIT=${{env.COMMIT_SHA}}
+            APP_GIT_BRANCH=${{steps.extract_branch.outputs.branch}}
+            APP_BUILD_TIME=${{env.BUILD_TIME}}
+          file: ./.docker/Dockerfile.stage
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ env.REPO_LC }}-stage:${{ env.RELEASE_VERSION }}-preview, ghcr.io/${{ env.REPO_LC }}-stage:latest, ghcr.io/${{ env.REPO_LC }}-stage:${{ env.COMMIT_SHA }}
+
+      - name: Build and push Version
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            APP_VERSION="${{env.COMMIT_SHA}}-stage"
+            APP_GIT_COMMIT=${{env.COMMIT_SHA}}
+            APP_GIT_BRANCH=${{steps.extract_branch.outputs.branch}}
+            APP_BUILD_TIME=${{env.BUILD_TIME}}
+          file: ./.docker/Dockerfile.stage
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ env.REPO_LC }}-stage:latest, ghcr.io/${{ env.REPO_LC }}-stage:${{ env.COMMIT_SHA }}
+
+      - name: Delete tag
+        uses: dev-drprasad/delete-tag-and-release@v1.1
+        with:
+          tag_name: stage-deployment  
+          delete_release: false
+          github_token: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Create tag
+        run: git tag -fa 'stage-deployment' -m "Update tag to commit ${{ env.COMMIT_SHA }}"
+
+      - name: Push tag
+        run: git push origin stage-deployment
