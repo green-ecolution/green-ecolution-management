@@ -11,6 +11,7 @@ import (
 	"github.com/SmartCityFlensburg/green-space-management/internal/service"
 	"github.com/SmartCityFlensburg/green-space-management/internal/storage"
 	storageMock "github.com/SmartCityFlensburg/green-space-management/internal/storage/_mock"
+	infoRepo "github.com/SmartCityFlensburg/green-space-management/internal/storage/entities/info"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,10 +57,11 @@ func TestGetAppInfo(t *testing.T) {
 		// given
 		repo := storageMock.NewMockInfoRepository(t)
 		svc := NewInfoService(repo)
-		expectAppInfo := info.App{
+    buildTime := time.Now()
+		expectedAppInfo := info.App{
 			Version:   "1.0.0",
 			GoVersion: "1.16",
-			BuildTime: time.Now(),
+      BuildTime: buildTime,
 			Git: info.Git{
 				Commit: "123456",
 				Branch: "main",
@@ -84,13 +86,41 @@ func TestGetAppInfo(t *testing.T) {
 			},
 		}
 
+	  appInfoEntity := infoRepo.AppEntity{
+			Version:   "1.0.0",
+			GoVersion: "1.16",
+      BuildTime: buildTime,
+			Git: infoRepo.GitEntity{
+				Commit: "123456",
+				Branch: "main",
+				Repository: &url.URL{
+					Scheme: "https",
+					Host:   "github.com",
+					Path:   "/SmartCityFlensburg/green-space-management",
+				},
+			},
+			Server: infoRepo.ServerEntity{
+				OS:       "linux",
+				Arch:     "amd64",
+				Hostname: "localhost",
+				Url: &url.URL{
+					Scheme: "http",
+					Host:   "localhost:8080",
+				},
+				IP:        net.IPv4(127, 0, 0, 1),
+				Port:      8080,
+				Interface: "eth0",
+				Uptime:    time.Hour,
+			},
+		}
+
 		// when
-		repo.EXPECT().GetAppInfo(context.Background()).Return(&expectAppInfo, nil)
+		repo.EXPECT().GetAppInfo(context.Background()).Return(&appInfoEntity, nil)
 		appInfo, err := svc.GetAppInfo(context.Background())
 
 		// then
 		assert.NoError(t, err)
-		assert.Equal(t, &expectAppInfo, appInfo)
+    assert.EqualValues(t, expectedAppInfo, *appInfo)
 	})
 }
 
