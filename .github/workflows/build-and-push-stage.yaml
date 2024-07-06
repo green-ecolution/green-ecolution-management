@@ -90,7 +90,7 @@ jobs:
             APP_VERSION="${{env.COMMIT_SHA}}-stage"
             APP_GIT_COMMIT=${{env.COMMIT_SHA}}
             APP_GIT_BRANCH=${{steps.extract_branch.outputs.branch}}
-            APP_BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            APP_BUILD_TIME=${{date -u +'%Y-%m-%dT%H:%M:%SZ'}}
           file: ./.docker/Dockerfile.stage
           platforms: linux/amd64,linux/arm64
           push: true
