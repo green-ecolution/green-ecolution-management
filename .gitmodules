@@ -1,6 +1,6 @@
 [submodule "green-ecolution-backend"]
 	path = green-ecolution-backend
-	url = git@github.com:SmartCityFlensburg/green-ecolution-backend.git
+	url = git@github.com:green-ecolution/green-ecolution-backend.git
 [submodule "green-ecolution-frontend"]
 	path = green-ecolution-frontend
-	url = git@github.com:SmartCityFlensburg/green-ecolution-frontend.git
+	url = git@github.com:green-ecolution/green-ecolution-frontend.git
