@@ -1,0 +1,13 @@
+# https://kubernetes.io/docs/concepts/configuration/configmap/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  APP_URL: "https://app.green-ecolution.com"
+  PORT: "3000"
+  DEVELOPMENT: "true"
+  MQTT_BROKER: "eu1.cloud.thethings.industries:1883"
+  MQTT_TOPIC: "v3/sgr-students@zde/devices/tree-sensor/up" 
+---
+
