@@ -4,6 +4,9 @@ resources:
   - deployment.yaml
   - service.yaml
   - pvc.yaml
+  - ./mongo-express/deployment.yaml
+  - ./mongo-express/service.yaml
+  - ./mongo-express/config.yaml
 
 generators:
   - ./secret-generator.yaml
