@@ -15,6 +15,12 @@ jobs:
           token: ${{ secrets.GREEN_ECOLUTION_PAT }}
           submodules: 'recursive'
 
+      - name: "Setup yq"
+        uses: dcarbone/install-yq-action@v1.1.1
+        with:
+          version: "v4.42.1"
+          force: true
+
       - name: Initialize mandatory git config
         run: |
           git config user.name "GitHub Actions"
@@ -25,11 +31,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
         run: git submodule update  --init --recursive --remote -f
 
+      - name: Get the latest commit hashes
+        run: |
+          COMMIT_SHA_BACKEND=$(cd green-ecolution-backend && git rev-parse --short HEAD)
+          COMMIT_SHA_FRONTEND=$(cd green-ecolution-frontend && git rev-parse --short HEAD)
+          echo "COMMIT_SHA_BACKEND=$COMMIT_SHA_BACKEND" >> $GITHUB_ENV
+          echo "COMMIT_SHA_FRONTEND=$COMMIT_SHA_FRONTEND" >> $GITHUB_ENV
+
+      - name: Dump frontend image tag
+        run: |
+          yq -i '.images[0].newTag=env(COMMIT_SHA_FRONTEND)' ./deploy/kustomize/dev/kustomization.yaml
+
+      - name: Dump backend image tag
+        run: |
+          yq -i '.images[1].newTag=env(COMMIT_SHA_BACKEND)' ./deploy/kustomize/dev/kustomization.yaml
+
       - name: Commit changes
         env:
           GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
         run: |
-          git add green-ecolution-frontend green-ecolution-backend 
-          git commit -m "chore: update submodules" && git push origin develop || echo "No changes to commit"
+          git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/dev/kustomization.yaml
+          git commit -m "chore: update submodules and dump image tag" && git push origin develop || echo "No changes to commit"
 
 
