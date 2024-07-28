@@ -4,17 +4,14 @@ resources:
   - ingress.yaml
   - ../base/backend
   - ../base/frontend
-
 images:
   - name: frontend-image
     newName: ghcr.io/green-ecolution/green-ecolution-frontend-dev
-    newTag: latest
+    newTag: af0d6cf
   - name: backend-image
     newName: ghcr.io/green-ecolution/green-ecolution-backend-dev
-    newTag: latest
-
+    newTag: 50a5288
 generators:
   - ./secret-generator.yaml
-
 patches:
   - path: config.yaml
