@@ -4,7 +4,7 @@ kind: ConfigMap
 metadata:
   name: backend-config
 data:
-  APP_URL: "https://app.green-ecolution.com"
+  APP_URL: "https://app.green-ecolution.de"
   PORT: "3000"
   DEVELOPMENT: "true"
   MQTT_BROKER: "eu1.cloud.thethings.industries:1883"
