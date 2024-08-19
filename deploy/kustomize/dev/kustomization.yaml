@@ -10,7 +10,7 @@ images:
     newTag: 23b9c6c
   - name: backend-image
     newName: ghcr.io/green-ecolution/green-ecolution-backend-dev
-    newTag: a235cac
+    newTag: 87100aa
 generators:
   - ./secret-generator.yaml
 patches:
