@@ -1,0 +1,6 @@
+FROM golang:1.23-alpine
+
+COPY ./green-ecolution-backend/internal/storage/postgres/migrations /migrations
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+ENTRYPOINT ["goose", "postgres", "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB", "up"]

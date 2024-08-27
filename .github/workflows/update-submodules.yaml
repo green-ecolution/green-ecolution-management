@@ -3,17 +3,53 @@ name: "Update submodules"
 on:
   repository_dispatch:
     types: [update-submodules]
+  workflow_dispatch:
 
 jobs:
-  update-submodules:
+  build-and-push-migrations:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+      packages: write
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GREEN_ECOLUTION_PAT }}
-          submodules: 'recursive'
+          submodules: "true"
+
+      - name: Update submodules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
+        run: git submodule update  --init --recursive --remote -f
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push postgres migrations
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          token: ${{ secrets.GREEN_ECOLUTION_PAT }}
+          file: ./.docker/migrations/Dockerfile.postgres
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/green-ecolution/migrations-postgres:latest
+
+  update-submodules:
+    needs: build-and-push-migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GREEN_ECOLUTION_PAT }}
+          submodules: "recursive"
 
       - name: "Setup yq"
         uses: dcarbone/install-yq-action@v1.1.1
@@ -52,5 +88,3 @@ jobs:
         run: |
           git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/dev/kustomization.yaml
           git commit -m "chore: update submodules and dump image tag" && git push origin develop || echo "No changes to commit"
-
-

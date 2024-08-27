@@ -11,7 +11,11 @@ images:
   - name: backend-image
     newName: ghcr.io/green-ecolution/green-ecolution-backend-dev
     newTag: d1fd31c
+  - name: init-migrations-image
+    newName: ghcr.io/green-ecolution/migrations-postgres
+    newTag: latest
 generators:
   - ./secret-generator.yaml
 patches:
   - path: config.yaml
+  - path: backend-deployment.yaml
