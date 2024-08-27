@@ -6,8 +6,9 @@ RUN curl -fsSL \
     sh
 
 COPY ./green-ecolution-backend/internal/storage/postgres/migrations /migrations
-COPY ./.docker/migrations/migration.sh /migrations/entrypoint.sh
+COPY ./green-ecolution-backend/internal/storage/postgres/seed /seed
+COPY ./.docker/migrations/migration.sh /entrypoint.sh
 
-RUN chmod +x /migrations/entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-CMD ["/migrations/entrypoint.sh"]
+CMD ["/entrypoint.sh"]
