@@ -1,6 +1,13 @@
-FROM golang:1.23-alpine
+FROM alpine:3.18
+
+RUN apk add --no-cache bash curl
+RUN curl -fsSL \
+    https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
+    sh
 
 COPY ./green-ecolution-backend/internal/storage/postgres/migrations /migrations
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+COPY ./.docker/migrations/migration.sh /migrations/entrypoint.sh
 
-ENTRYPOINT ["goose", "postgres", "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB", "up"]
+RUN chmod +x /migrations/entrypoint.sh
+
+CMD ["/migrations/entrypoint.sh"]
