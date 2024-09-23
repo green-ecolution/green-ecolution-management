@@ -7,10 +7,10 @@ resources:
 images:
   - name: frontend-image
     newName: ghcr.io/green-ecolution/green-ecolution-frontend-dev
-    newTag: "7114657"
+    newTag: "env(COMMIT_SHA_FRONTEND)"
   - name: backend-image
     newName: ghcr.io/green-ecolution/green-ecolution-backend-dev
-    newTag: "5f861b5"
+    newTag: "env(COMMIT_SHA_BACKEND)"
   - name: init-migrations-image
     newName: ghcr.io/green-ecolution/migrations-postgres
     newTag: latest
