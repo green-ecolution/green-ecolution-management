@@ -76,11 +76,11 @@ jobs:
 
       - name: Dump frontend image tag
         run: |
-          yq -i '.images[0].newTag=env(COMMIT_SHA_FRONTEND)' ./deploy/kustomize/dev/kustomization.yaml
+          yq -i '.images[0].newTag="env(COMMIT_SHA_FRONTEND)"' ./deploy/kustomize/dev/kustomization.yaml
 
       - name: Dump backend image tag
         run: |
-          yq -i '.images[1].newTag=env(COMMIT_SHA_BACKEND)' ./deploy/kustomize/dev/kustomization.yaml
+          yq -i '.images[1].newTag="env(COMMIT_SHA_BACKEND)"' ./deploy/kustomize/dev/kustomization.yaml
 
       - name: Commit changes
         env:
