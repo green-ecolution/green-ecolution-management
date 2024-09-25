@@ -51,11 +51,12 @@ jobs:
           token: ${{ secrets.GREEN_ECOLUTION_PAT }}
           submodules: "recursive"
 
-      - name: "Setup yq"
-        uses: dcarbone/install-yq-action@v1.1.1
+      - name: Setup kube tools
+        uses: yokawasa/action-setup-kube-tools@v0.11.1
         with:
-          version: "v4.42.1"
-          force: true
+          setup-tools: |
+            kustomize
+          kustomize: "5.4.3"
 
       - name: Initialize mandatory git config
         run: |
@@ -76,11 +77,13 @@ jobs:
 
       - name: Dump frontend image tag
         run: |
-          yq -i '.images[0].newTag="env(COMMIT_SHA_FRONTEND)"' ./deploy/kustomize/dev/kustomization.yaml
+          cd ./deploy/kustomize/dev 
+          kustomize edit set image frontend-image=ghcr.io/green-ecolution/green-ecolution-frontend-dev:$COMMIT_SHA_FRONTEND
 
       - name: Dump backend image tag
         run: |
-          yq -i '.images[1].newTag="env(COMMIT_SHA_BACKEND)"' ./deploy/kustomize/dev/kustomization.yaml
+          cd ./deploy/kustomize/dev
+          kustomize edit set image backend-image=ghcr.io/green-ecolution/green-ecolution-backend-dev:$COMMIT_SHA_BACKEND
 
       - name: Commit changes
         env:
