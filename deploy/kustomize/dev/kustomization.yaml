@@ -10,7 +10,7 @@ images:
   newTag: ae16258
 - name: frontend-image
   newName: ghcr.io/green-ecolution/green-ecolution-frontend-dev
-  newTag: 89f2f27
+  newTag: 9c47bc5
 - name: init-migrations-image
   newName: ghcr.io/green-ecolution/migrations-postgres
   newTag: latest
