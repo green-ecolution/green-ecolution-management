@@ -67,13 +67,13 @@ jobs:
         if : github.event.client_payload.from == 'frontend'
         run: |
           cd ./deploy/kustomize/stage
-          kustomize edit set image frontend-image=ghcr.io/green-ecolution/green-ecolution-frontend-stage:${{ github.event.client_payload.sha }}-stage
+          kustomize edit set image frontend-image=ghcr.io/green-ecolution/green-ecolution-frontend-stage:${{ github.event.client_payload.sha }}
 
       - name: Dump backend stage image tag
         if : github.event.client_payload.from == 'backend'
         run: |
           cd ./deploy/kustomize/stage
-          kustomize edit set image backend-image=ghcr.io/green-ecolution/green-ecolution-backend-stage:${{ github.event.client_payload.sha }}-stage
+          kustomize edit set image backend-image=ghcr.io/green-ecolution/green-ecolution-backend-stage:${{ github.event.client_payload.sha }}
 
       - name: Dump stage init migrations image tag
         run: |
@@ -85,4 +85,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
         run: |
           git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/stage/kustomization.yaml
-          git commit -m "chore: update submodules and dump stage image tag to version ${{ github.event.client_payload.version }}-stage" && git push origin develop || echo "No changes to commit"
+          git commit -m "chore: update submodules and dump stage image tag to version ${{ github.event.client_payload.version }}" && git push origin develop || echo "No changes to commit"
