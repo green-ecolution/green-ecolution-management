@@ -13,6 +13,10 @@ spec:
           image: init-migrations-image
           imagePullPolicy: Always
           env:
+            - name: MIGRATION_WITH_SEED
+              value: "true"
+            - name: MIGRATION_WITH_DB_RESET
+              value: "true"
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:

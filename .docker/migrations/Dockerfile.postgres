@@ -1,5 +1,8 @@
 FROM alpine:3.18
 
+ARG MIGRATION_WITH_SEED
+ARG MIGRATION_WITH_DB_RESET
+
 RUN apk add --no-cache bash curl
 RUN curl -fsSL \
     https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
