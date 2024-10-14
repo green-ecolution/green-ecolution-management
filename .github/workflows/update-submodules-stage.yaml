@@ -2,7 +2,7 @@ name: "Update submodules stage"
 
 on:
   repository_dispatch:
-    types: [update-submodules-stage]
+    types: [update-submodules-staging]
   workflow_dispatch:
 
 jobs:
