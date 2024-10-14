@@ -1,0 +1,25 @@
+# https://kubernetes.io/docs/concepts/configuration/configmap/
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  GE_SERVER_APP_URL: "https://app.stage.green-ecolution.de"
+  GE_SERVER_DEVELOPMENT: "true"
+
+  GE_SERVER_DATABASE_HOST: "postgresql.postgres.svc.cluster.local"
+  GE_SERVER_DATABASE_PORT: "5432"
+  GE_SERVER_DATABASE_TIMEOUT: "30s"
+  GE_SERVER_DATABASE_NAME: "green-ecolution-stage"
+
+  GE_MQTT_BROKER: "eu1.cloud.thethings.industries:1883"
+  GE_MQTT_TOPIC: "v3/sgr-students@zde/devices/tree-sensor/up" 
+
+  GE_AUTH_KEYCLOAK_BASEURL: "https://auth.green-ecolution.de"
+  GE_AUTH_KEYCLOAK_REALM: "green-ecolution-stage"
+  GE_AUTH_KEYCLOAK_CLIENT_ID: "green-ecolution-backend"
+  GE_AUTH_KEYCLOAK_FRONTEND_AUTH_URL: "https://auth.green-ecolution.de/realms/green-ecolution-stage/protocol/openid-connect/auth"
+  GE_AUTH_KEYCLOAK_FRONTEND_TOKEN_URL: "https://auth.green-ecolution.de/realms/green-ecolution-stage/protocol/openid-connect/token"
+  GE_AUTH_KEYCLOAK_FRONTEND_CLIENT_ID: "green-ecolution-frontend"
+
+  TZ: "Europe/Berlin"

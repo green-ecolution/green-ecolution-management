@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ingress.yaml
+- ../base/backend
+- ../base/frontend
+images:
+- name: backend-image
+  newName: ghcr.io/green-ecolution/green-ecolution-backend-stage
+  newTag: c10d43d
+- name: frontend-image
+  newName: ghcr.io/green-ecolution/green-ecolution-frontend-stage
+  newTag: c8b79b9
+- name: init-migrations-image
+  newName: ghcr.io/green-ecolution/migrations-postgres
+  newTag: latest
+generators:
+- ./secret-generator.yaml
+patches:
+- path: config.yaml
+- path: backend-deployment.yaml
