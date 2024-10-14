@@ -1,0 +1,91 @@
+name: "Update submodules stage"
+
+on:
+  repository_dispatch:
+    types: [update-submodules-stage]
+  workflow_dispatch:
+
+jobs:
+  build-and-push-migrations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GREEN_ECOLUTION_PAT }}
+          submodules: "true"
+
+      - name: Update submodules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
+        run: git submodule update  --init --recursive --remote -f
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push postgres migrations
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          token: ${{ secrets.GREEN_ECOLUTION_PAT }}
+          file: ./.docker/migrations/Dockerfile.postgres
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/green-ecolution/migrations-postgres:${{ github.event.client_payload.version }}-stage
+
+  update-submodules-stage:
+    needs: build-and-push-migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GREEN_ECOLUTION_PAT }}
+          submodules: "recursive"
+
+      - name: Setup kube tools
+        uses: yokawasa/action-setup-kube-tools@v0.11.1
+        with:
+          setup-tools: |
+            kustomize
+          kustomize: "5.4.3"
+
+      - name: Initialize mandatory git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+
+      - name: Update submodules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
+        run: git submodule update  --init --recursive --remote -f
+
+      - name: Dump frontend stage image tag
+        run: |
+          cd ./deploy/kustomize/stage
+          kustomize edit set image frontend-image=ghcr.io/green-ecolution/green-ecolution-frontend-stage:${{ github.event.client_payload.version }}-stage
+
+      - name: Dump backend stage image tag
+        run: |
+          cd ./deploy/kustomize/stage
+          kustomize edit set image backend-image=ghcr.io/green-ecolution/green-ecolution-backend-stage:${{ github.event.client_payload.version }}-stage
+
+      - name: Dump stage init migrations image tag
+        run: |
+          cd ./deploy/kustomize/dev
+          kustomize edit set image backend-image=ghcr.io/green-ecolution/migrations-postgres:${{ github.event.client_payload.version }}-stage
+
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
+        run: |
+          git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/stage/kustomization.yaml
+          git commit -m "chore: update submodules and dump stage image tag to version ${{ github.event.client_payload.version }}-stage" && git push origin develop || echo "No changes to commit"
