@@ -5,18 +5,12 @@ resources:
 - ../base/backend
 - ../base/frontend
 images:
-# - name: backend-image
-#   newName: ghcr.io/green-ecolution/green-ecolution-backend-prod
-#   newTag: v1.0.0
-# - name: frontend-image
-#   newName: ghcr.io/green-ecolution/green-ecolution-frontend-prod
-#   newTag: v1.0.0
 - name: backend-image
-  newName: ghcr.io/green-ecolution/green-ecolution-backend-stage
-  newTag: fbe1200
+  newName: ghcr.io/green-ecolution/green-ecolution-backend
+  newTag: v1.0.0
 - name: frontend-image
-  newName: ghcr.io/green-ecolution/green-ecolution-frontend-stage
-  newTag: e0bbb5f
+  newName: ghcr.io/green-ecolution/green-ecolution-frontend
+  newTag: v1.0.0
 - name: init-migrations-image
   newName: ghcr.io/green-ecolution/migrations-postgres
   newTag: latest
