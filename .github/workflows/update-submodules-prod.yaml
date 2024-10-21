@@ -1,4 +1,4 @@
-name: "Update submodules stage"
+name: "Update submodules Production"
 
 on:
   repository_dispatch:
@@ -36,7 +36,7 @@ jobs:
           push: true
           tags: ghcr.io/green-ecolution/migrations-postgres:${{ github.event.client_payload.version }}
 
-  update-submodules-stage:
+  update-submodules-prod:
     needs: build-and-push-migrations
     runs-on: ubuntu-latest
     steps:
@@ -84,5 +84,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GREEN_ECOLUTION_PAT }}
         run: |
-          git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/stage/kustomization.yaml
+          git add green-ecolution-frontend green-ecolution-backend deploy/kustomize/prod/kustomization.yaml
           git commit -m "chore: update submodules and dump prod image tag to version ${{ github.event.client_payload.version }}" && git push origin develop || echo "No changes to commit"
