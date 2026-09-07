@@ -84,9 +84,13 @@ function SelectField({
         </p>
       )}
       {error && (
+        // Announced immediately, like FormField: an error may appear from a
+        // rejected submit, far from where the user is looking.
         <p
           id={`${inputId}-error`}
           data-slot="select-field-error"
+          role="alert"
+          aria-live="assertive"
           className="text-sm text-destructive"
         >
           {error}

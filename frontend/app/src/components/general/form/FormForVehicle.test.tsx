@@ -6,6 +6,7 @@ import { VehicleForm } from '@/schema/vehicleSchema'
 import { FormProvider, useForm } from 'react-hook-form'
 import { vehicleDraftResolver } from '@green-ecolution/domain-wasm'
 import { ReactNode } from 'react'
+import { FORM_VALIDATION_MODE } from '@/hooks/form/useEntityForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@green-ecolution/ui'
 import { VehicleType, DrivingLicense, VehicleAvailability } from '@green-ecolution/backend-client'
@@ -24,7 +25,7 @@ function TestWrapper({
   const methods = useForm<VehicleForm>({
     defaultValues,
     resolver: vehicleDraftResolver<VehicleForm>((key) => key),
-    mode: 'onChange',
+    mode: FORM_VALIDATION_MODE,
   })
 
   return (
@@ -145,7 +146,11 @@ describe('FormForVehicle', () => {
     expect(screen.getByText(/ein fehler ist aufgetreten/i)).toBeInTheDocument()
   })
 
-  it('submit button is disabled when form is invalid', () => {
+  // Without this the user is stuck: no message tells them what is wrong, and the
+  // only control that would produce one is greyed out.
+  it('lets an incomplete form be submitted so its errors become visible', async () => {
+    const user = userEvent.setup()
+
     render(
       <TestWrapper defaultValues={defaultFormValues}>
         <FormForVehicle displayError={false} onSubmit={mockOnSubmit} />
@@ -153,10 +158,15 @@ describe('FormForVehicle', () => {
     )
 
     const submitButton = screen.getByRole('button', { name: /speichern/i })
-    expect(submitButton).toBeDisabled()
+    expect(submitButton).not.toBeDisabled()
+
+    await user.click(submitButton)
+
+    expect(await screen.findAllByRole('alert')).not.toHaveLength(0)
+    expect(mockOnSubmit).not.toHaveBeenCalled()
   })
 
-  it('submit button is enabled when form is valid', async () => {
+  it('submits a valid form', async () => {
     const user = userEvent.setup()
 
     const validValues: VehicleForm = {
@@ -179,14 +189,9 @@ describe('FormForVehicle', () => {
       </TestWrapper>,
     )
 
-    const numberPlateInput = screen.getByLabelText(/kennzeichen/i)
-    await user.click(numberPlateInput)
-    await user.tab()
+    await user.click(screen.getByRole('button', { name: /speichern/i }))
 
-    await waitFor(() => {
-      const submitButton = screen.getByRole('button', { name: /speichern/i })
-      expect(submitButton).not.toBeDisabled()
-    })
+    await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled())
   })
 
   it('allows entering number plate and model', async () => {

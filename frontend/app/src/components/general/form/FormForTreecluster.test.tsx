@@ -6,6 +6,7 @@ import { TreeclusterForm } from '@/schema/treeclusterSchema'
 import { FormProvider, useForm } from 'react-hook-form'
 import { clusterDraftResolver } from '@green-ecolution/domain-wasm'
 import { ReactNode } from 'react'
+import { FORM_VALIDATION_MODE } from '@/hooks/form/useEntityForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@green-ecolution/ui'
 import { SoilCondition, type OrganizationResponse } from '@green-ecolution/backend-client'
@@ -24,7 +25,7 @@ function TestWrapper({
   const methods = useForm<TreeclusterForm>({
     defaultValues,
     resolver: clusterDraftResolver<TreeclusterForm>((key) => key),
-    mode: 'onChange',
+    mode: FORM_VALIDATION_MODE,
   })
 
   return (
@@ -140,7 +141,11 @@ describe('FormForTreecluster', () => {
     expect(screen.getByText(/ein fehler ist aufgetreten/i)).toBeInTheDocument()
   })
 
-  it('submit button is disabled when form is invalid', () => {
+  // Without this the user is stuck: no message tells them what is wrong, and the
+  // only control that would produce one is greyed out.
+  it('lets an incomplete form be submitted so its errors become visible', async () => {
+    const user = userEvent.setup()
+
     render(
       <TestWrapper defaultValues={defaultFormValues}>
         <FormForTreecluster
@@ -152,10 +157,15 @@ describe('FormForTreecluster', () => {
     )
 
     const submitButton = screen.getByRole('button', { name: /speichern/i })
-    expect(submitButton).toBeDisabled()
+    expect(submitButton).not.toBeDisabled()
+
+    await user.click(submitButton)
+
+    expect(await screen.findAllByRole('alert')).not.toHaveLength(0)
+    expect(mockOnSubmit).not.toHaveBeenCalled()
   })
 
-  it('submit button is enabled when form is valid', async () => {
+  it('submits a valid form', async () => {
     const user = userEvent.setup()
 
     const validValues: TreeclusterForm = {
@@ -174,14 +184,9 @@ describe('FormForTreecluster', () => {
       </TestWrapper>,
     )
 
-    const nameInput = screen.getByLabelText(/name/i)
-    await user.click(nameInput)
-    await user.tab()
+    await user.click(screen.getByRole('button', { name: /speichern/i }))
 
-    await waitFor(() => {
-      const submitButton = screen.getByRole('button', { name: /speichern/i })
-      expect(submitButton).not.toBeDisabled()
-    })
+    await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled())
   })
 
   it('allows entering name and address', async () => {

@@ -6,6 +6,7 @@ import { WateringPlanForm } from '@/schema/wateringPlanSchema'
 import { FormProvider, useForm } from 'react-hook-form'
 import { wateringPlanDraftResolver } from '@green-ecolution/domain-wasm'
 import { ReactNode } from 'react'
+import { FORM_VALIDATION_MODE } from '@/hooks/form/useEntityForm'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@green-ecolution/ui'
 import type { Vehicle, User } from '@/api/backendApi'
@@ -40,7 +41,7 @@ function TestWrapper({
   const methods = useForm<WateringPlanForm>({
     defaultValues,
     resolver: wateringPlanDraftResolver<WateringPlanForm>((key) => key),
-    mode: 'onChange',
+    mode: FORM_VALIDATION_MODE,
   })
 
   return (
@@ -332,7 +333,11 @@ describe('FormForWateringPlan', () => {
     expect(screen.getByText(/ein fehler ist aufgetreten/i)).toBeInTheDocument()
   })
 
-  it('submit button is disabled when form is invalid', () => {
+  // Without this the user is stuck: no message tells them what is wrong, and the
+  // only control that would produce one is greyed out.
+  it('lets an incomplete form be submitted so its errors become visible', async () => {
+    const user = userEvent.setup()
+
     render(
       <TestWrapper defaultValues={defaultFormValues}>
         <FormForWateringPlan
@@ -347,29 +352,12 @@ describe('FormForWateringPlan', () => {
     )
 
     const submitButton = screen.getByRole('button', { name: /speichern/i })
-    expect(submitButton).toBeDisabled()
-  })
+    expect(submitButton).not.toBeDisabled()
 
-  it('form validation is handled by schema', () => {
-    // Form validity is controlled by react-hook-form with zodResolver
-    // The schema tests (wateringPlanSchema.test.ts) verify all validation rules
-    // This test confirms the form uses the correct validation configuration
-    render(
-      <TestWrapper defaultValues={defaultFormValues}>
-        <FormForWateringPlan
-          displayError={false}
-          transporters={mockTransporters}
-          trailers={mockTrailers}
-          users={mockUsers}
-          onAddCluster={mockOnAddCluster}
-          onSubmit={mockOnSubmit}
-        />
-      </TestWrapper>,
-    )
+    await user.click(submitButton)
 
-    // With invalid default values, submit should be disabled
-    const submitButton = screen.getByRole('button', { name: /speichern/i })
-    expect(submitButton).toBeDisabled()
+    expect(await screen.findAllByRole('alert')).not.toHaveLength(0)
+    expect(mockOnSubmit).not.toHaveBeenCalled()
   })
 
   it('allows selecting a transporter', async () => {

@@ -39,7 +39,7 @@ interface FormForTreeClusterProps {
 const FormForTreecluster = (props: FormForTreeClusterProps) => {
   const { t } = useTranslation(['treecluster', 'common'])
   const { handleSubmit, register, control } = useFormContext<TreeclusterForm>()
-  const { isValid, errors } = useFormState({ control })
+  const { errors } = useFormState({ control })
   const [soilDialogOpen, setSoilDialogOpen] = useState(false)
   const organizations = props.organizations ?? []
   const soilConditionOptions = useSoilConditionOptions()
@@ -53,6 +53,8 @@ const FormForTreecluster = (props: FormForTreeClusterProps) => {
           : 'flex flex-col gap-y-6 lg:grid lg:grid-cols-2 lg:gap-11'
       }
       onSubmit={handleSubmit(props.onSubmit)}
+      // The domain validator owns every message; native bubbles would compete with it.
+      noValidate
       onBlur={props.onBlur}
     >
       <div className={props.fullWidth ? 'flex shrink-0 flex-col gap-y-6' : 'flex flex-col gap-y-6'}>
@@ -171,10 +173,7 @@ const FormForTreecluster = (props: FormForTreeClusterProps) => {
 
       <FormError show={props.displayError} error={props.errorMessage} />
 
-      <FormSubmitButton
-        disabled={!isValid}
-        className={props.fullWidth ? 'mt-2 w-full shrink-0' : undefined}
-      />
+      <FormSubmitButton className={props.fullWidth ? 'mt-2 w-full shrink-0' : undefined} />
     </form>
   )
 }

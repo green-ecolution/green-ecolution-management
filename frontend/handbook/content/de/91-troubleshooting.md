@@ -114,6 +114,24 @@ für einen unbekannten Bewässerungszustand infrage kommen, listet
 [Bewässerungsstatus und wie er zustande kommt](./treecluster.md#bewasserungsstatus-und-wie-er-zustande-kommt)
 vollständig auf.
 
+## Ein Formular lässt sich nicht speichern
+
+Du klickst auf **Speichern**, aber der Datensatz wird nicht angelegt oder übernommen. Die
+Anwendung nimmt in diesem Fall jedes Formular entgegen und beantwortet es: Die Gründe
+stehen unmittelbar unter den betroffenen Feldern, rot hervorgehoben und mit dem konkreten
+Wertebereich, etwa dass ein Pflanzjahr zwischen 1900 und 2100 liegen muss. Scrolle das
+Formular durch, wenn nach dem Klick nichts zu passieren scheint; bei einem längeren
+Formular liegt das bemängelte Feld oft außerhalb des sichtbaren Bereichs.
+
+Ein Feld meldet sich, sobald du es verlässt, und aktualisiert seine Meldung, während du
+korrigierst. Felder, die du noch gar nicht angefasst hast, bleiben still, bis du zum
+ersten Mal speicherst.
+
+Bleibt der Speichern-Knopf selbst nicht anklickbar, liegt es nicht an einer fehlerhaften
+Eingabe, sondern an einer Bedingung, die das Formular an anderer Stelle erklärt: im
+Einsatzplan etwa an einer fehlenden Führerscheinklasse der ausgewählten Person, siehe
+[Einsatz anlegen](./watering-plans.md#einsatz-anlegen).
+
 ## Eine Route lässt sich nicht berechnen
 
 Nach dem Speichern eines Einsatzplans bleibt der Reiter **Route** aus, und die

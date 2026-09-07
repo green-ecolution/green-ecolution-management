@@ -1,7 +1,9 @@
 use domain::shared::coordinates::Coordinate;
 use domain::tree::{PlantingYear, Species, TreeNumber};
 use serde::Deserialize;
-use serde_wasm_bindgen::{from_value, to_value};
+use serde_wasm_bindgen::from_value;
+
+use crate::issue::to_js;
 use wasm_bindgen::prelude::*;
 
 use crate::coerce::{LooseF64, LooseU32, invalid_number_issue};
@@ -75,7 +77,7 @@ pub(crate) fn collect_tree_issues(input: &TreeDraftInput) -> Vec<ValidationIssue
 pub fn validate_tree_draft(input: JsValue) -> Result<JsValue, JsError> {
     let draft: TreeDraftInput = from_value(input).map_err(|e| JsError::new(&e.to_string()))?;
     let issues = collect_tree_issues(&draft);
-    to_value(&issues).map_err(|e| JsError::new(&e.to_string()))
+    to_js(&issues)
 }
 
 #[cfg(test)]
