@@ -36,3 +36,11 @@ Rollen zugeschnitten werden, steht in [Team und Rollen](./settings-team.md).
 Für dieses Handbuch gilt diese Einschränkung nicht. Es lässt sich unabhängig von
 Organisation, Rollen und sogar ohne Anmeldung öffnen, damit sich jede und jeder
 informieren kann, bevor eine Aufgabe überhaupt zugeteilt ist.
+
+## Hilfe aus der Anwendung heraus
+
+Dieses Handbuch ist aus jeder Seite der Anwendung nur einen Klick entfernt: In der
+Kopfzeile oben rechts liegt ein Fragezeichen-Symbol, das dich direkt in das Kapitel
+führt, das zur gerade geöffneten Seite gehört. Für Seiten ohne eigenes Kapitel landest
+du auf der Übersicht und wählst das passende Thema selbst aus. Mehr zur Kopfzeile und
+den übrigen Bedienelementen steht in [Erste Schritte](./getting-started.md).
