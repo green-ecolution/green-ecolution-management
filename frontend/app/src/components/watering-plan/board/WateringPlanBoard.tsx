@@ -133,7 +133,7 @@ const WateringPlanBoard = () => {
   const { data: plannedRes } = plannedQuery
   const { data: activeRes } = activeQuery
 
-  const { startPlan } = useWateringPlanBoardMutations()
+  const { startPlan, revertStart } = useWateringPlanBoardMutations()
   const canModify = useHasPermission(['watering_plan:update'])
   const canCreate = useHasPermission(['watering_plan:create'])
   const { t } = useTranslation('wateringPlan')
@@ -170,6 +170,9 @@ const WateringPlanBoard = () => {
         break
       case 'complete':
         setPlanToComplete(drag.plan)
+        break
+      case 'revertStart':
+        revertStart.mutate(drag.plan)
         break
       case null:
         break

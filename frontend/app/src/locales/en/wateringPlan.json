@@ -152,7 +152,8 @@
     "dropHint": {
       "start": "Start watering plan",
       "cancel": "Cancel watering plan",
-      "complete": "Complete watering plan"
+      "complete": "Complete watering plan",
+      "revertStart": "Undo start"
     },
     "mutation": {
       "startRevertedToast": "Start undone.",

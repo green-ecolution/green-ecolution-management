@@ -46,7 +46,10 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 })
 
 vi.mock('@/hooks/useWateringPlanBoardMutations', () => ({
-  useWateringPlanBoardMutations: () => ({ startPlan: { mutate: vi.fn() } }),
+  useWateringPlanBoardMutations: () => ({
+    startPlan: { mutate: vi.fn() },
+    revertStart: { mutate: vi.fn() },
+  }),
 }))
 
 // AssignUsersPopover is watering_plan:update only; render a marker we can assert on.

@@ -152,7 +152,8 @@
     "dropHint": {
       "start": "Einsatzplan starten",
       "cancel": "Einsatzplan abbrechen",
-      "complete": "Einsatzplan abschließen"
+      "complete": "Einsatzplan abschließen",
+      "revertStart": "Start zurücknehmen"
     },
     "mutation": {
       "startRevertedToast": "Start rückgängig gemacht.",
