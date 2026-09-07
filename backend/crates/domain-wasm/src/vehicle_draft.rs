@@ -4,7 +4,9 @@ use domain::vehicle::{
     DrivingLicense, NumberPlate, VehicleAvailability, VehicleDimension, VehicleModel, VehicleType,
 };
 use serde::Deserialize;
-use serde_wasm_bindgen::{from_value, to_value};
+use serde_wasm_bindgen::from_value;
+
+use crate::issue::to_js;
 use wasm_bindgen::prelude::*;
 
 use crate::coerce::{LooseF64, invalid_number_issue, validate_enum};
@@ -119,7 +121,7 @@ pub(crate) fn collect_vehicle_issues(input: &VehicleDraftInput) -> Vec<Validatio
 pub fn validate_vehicle_draft(input: JsValue) -> Result<JsValue, JsError> {
     let draft: VehicleDraftInput = from_value(input).map_err(|e| JsError::new(&e.to_string()))?;
     let issues = collect_vehicle_issues(&draft);
-    to_value(&issues).map_err(|e| JsError::new(&e.to_string()))
+    to_js(&issues)
 }
 
 #[cfg(test)]

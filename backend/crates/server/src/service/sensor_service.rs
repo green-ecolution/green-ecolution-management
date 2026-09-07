@@ -169,7 +169,7 @@ impl SensorService {
             return Err(ServiceError::AlreadyActivated);
         }
 
-        let mut events = tree.attach_sensor(id.clone());
+        let mut events = tree.attach_sensor(id.clone(), chrono::Utc::now())?;
         events.extend(sensor.activate(chrono::Utc::now())?);
 
         self.tree_writer.save(&tree).await?;
@@ -223,7 +223,7 @@ impl SensorService {
             events.extend(current.detach_sensor());
             self.tree_writer.save(&current).await?;
         }
-        events.extend(target.attach_sensor(id.clone()));
+        events.extend(target.attach_sensor(id.clone(), chrono::Utc::now())?);
         self.tree_writer.save(&target).await?;
         self.event_bus.publish_all(events).await;
 

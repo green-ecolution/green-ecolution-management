@@ -1,7 +1,9 @@
 use domain::cluster::SoilCondition;
 use domain::cluster::{ClusterAddress, ClusterName};
 use serde::Deserialize;
-use serde_wasm_bindgen::{from_value, to_value};
+use serde_wasm_bindgen::from_value;
+
+use crate::issue::to_js;
 use wasm_bindgen::prelude::*;
 
 use crate::coerce::validate_enum;
@@ -44,7 +46,7 @@ pub(crate) fn collect_cluster_issues(input: &ClusterDraftInput) -> Vec<Validatio
 pub fn validate_tree_cluster_draft(input: JsValue) -> Result<JsValue, JsError> {
     let draft: ClusterDraftInput = from_value(input).map_err(|e| JsError::new(&e.to_string()))?;
     let issues = collect_cluster_issues(&draft);
-    to_value(&issues).map_err(|e| JsError::new(&e.to_string()))
+    to_js(&issues)
 }
 
 #[cfg(test)]

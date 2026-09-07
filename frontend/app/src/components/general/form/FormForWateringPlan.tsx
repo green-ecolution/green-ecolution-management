@@ -37,7 +37,7 @@ const FormForWateringPlan = (props: FormForWateringPlanProps) => {
   const { t } = useTranslation(['wateringPlan', 'common'])
   const { register, handleSubmit, control, resetField, getValues } =
     useFormContext<WateringPlanForm>()
-  const { isValid, errors } = useFormState({ control })
+  const { errors } = useFormState({ control })
 
   const { data: startPoints, isPending } = useQuery(routingStartPointsQuery())
   const getDrivingLicenseDetails = useDrivingLicenseDetails()
@@ -88,6 +88,8 @@ const FormForWateringPlan = (props: FormForWateringPlanProps) => {
     <form
       className="flex flex-col gap-y-6 lg:grid lg:grid-cols-2 lg:gap-11"
       onSubmit={handleSubmit(props.onSubmit)}
+      // The domain validator owns every message; native bubbles would compete with it.
+      noValidate
       onBlur={props.onBlur}
     >
       <div className="flex flex-col gap-y-6">
@@ -203,10 +205,14 @@ const FormForWateringPlan = (props: FormForWateringPlanProps) => {
                 }))}
               />
               {errors.driverIds?.message && (
-                <p className="text-sm text-destructive">{errors.driverIds.message}</p>
+                <p role="alert" aria-live="assertive" className="text-sm text-destructive">
+                  {errors.driverIds.message}
+                </p>
               )}
               {!licenseCheck.valid && (
-                <p className="text-sm text-destructive">{licenseCheck.message}</p>
+                <p role="alert" aria-live="assertive" className="text-sm text-destructive">
+                  {licenseCheck.message}
+                </p>
               )}
             </div>
           )}
@@ -235,7 +241,7 @@ const FormForWateringPlan = (props: FormForWateringPlanProps) => {
 
       <FormError show={props.displayError} error={props.errorMessage} />
 
-      <FormSubmitButton disabled={!isValid || !licenseCheck.valid} />
+      <FormSubmitButton disabled={!licenseCheck.valid} />
     </form>
   )
 }

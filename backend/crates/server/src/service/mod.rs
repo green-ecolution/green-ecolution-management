@@ -121,6 +121,8 @@ pub enum ServiceError {
     ContactPersonNotAMember,
     #[error("tree is part of a cluster")]
     TreeInCluster,
+    #[error("tree is not planted yet and cannot carry a sensor")]
+    TreeNotYetPlanted,
     #[error("sensor is bound to a tree and must be transferred with it")]
     SensorBoundToTree,
     #[error("no organization given and the acting user has none")]
@@ -157,6 +159,7 @@ impl ServiceError {
             Self::NotActivated => "conflict.sensor_not_activated",
             Self::OrganizationNotEmpty => "conflict.organization_not_empty",
             Self::TreeInCluster => "conflict.tree_in_cluster",
+            Self::TreeNotYetPlanted => "tree.not_yet_planted",
             Self::SensorBoundToTree => "conflict.sensor_bound_to_tree",
             Self::CannotChangeOwnAccess => "conflict.cannot_change_own_access",
             Self::CannotRevokeOwnAdministration => "conflict.cannot_revoke_own_administration",
@@ -183,6 +186,18 @@ impl ServiceError {
             _ => return None,
         };
         Some(ValidationIssue::from(error))
+    }
+}
+
+/// Only `NotYetPlanted` actually travels this way: the calibration variants
+/// are consumed by the reading handler and never reach a service.
+impl From<domain::tree::TreeError> for ServiceError {
+    fn from(e: domain::tree::TreeError) -> Self {
+        match e {
+            domain::tree::TreeError::NotYetPlanted => Self::TreeNotYetPlanted,
+            domain::tree::TreeError::Validation(v) => Self::Validation(v),
+            other => Self::InvalidInput(other.to_string()),
+        }
     }
 }
 

@@ -1,6 +1,18 @@
 use domain::shared::error::{ValidationError, ValidationIssue as DomainIssue};
 use serde::Serialize;
 use serde_json::Value;
+use wasm_bindgen::{JsError, JsValue};
+
+/// Serialize towards JS as plain objects.
+///
+/// serde-wasm-bindgen's default turns a JSON map into a JS `Map`, and a `Map`
+/// silently answers no property lookup: i18next then finds none of the
+/// interpolation params and renders `{min}` verbatim.
+pub(crate) fn to_js<T: Serialize + ?Sized>(value: &T) -> Result<JsValue, JsError> {
+    value
+        .serialize(&serde_wasm_bindgen::Serializer::json_compatible())
+        .map_err(|e| JsError::new(&e.to_string()))
+}
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ValidationIssue {

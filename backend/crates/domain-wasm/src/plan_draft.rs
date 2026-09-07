@@ -2,7 +2,9 @@ use chrono::{DateTime, Utc};
 use domain::shared::error::ValidationError;
 use domain::watering_plan::WateringPlanStatus;
 use serde::Deserialize;
-use serde_wasm_bindgen::{from_value, to_value};
+use serde_wasm_bindgen::from_value;
+
+use crate::issue::to_js;
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
@@ -122,7 +124,7 @@ pub fn validate_watering_plan_draft(input: JsValue) -> Result<JsValue, JsError> 
     let draft: WateringPlanDraftInput =
         from_value(input).map_err(|e| JsError::new(&e.to_string()))?;
     let issues = collect_plan_issues(&draft);
-    to_value(&issues).map_err(|e| JsError::new(&e.to_string()))
+    to_js(&issues)
 }
 
 #[cfg(test)]

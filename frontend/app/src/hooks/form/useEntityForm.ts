@@ -11,6 +11,13 @@ import { FormType, MutationType } from '@/store/form/formDraftSlice'
 import { toApiError } from '@/lib/apiError'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Shared by every entity form, so tests can mirror the real wiring. `onTouched`
+ * keeps a field quiet while it is first filled in, then reports on leaving it and
+ * updates live while the user corrects it.
+ */
+export const FORM_VALIDATION_MODE = 'onTouched' as const
+
 export interface EntityFormConfig<TForm extends FieldValues, TCreate, TUpdate, TEntity> {
   formType: FormType
   resolver: Resolver<TForm>
@@ -58,6 +65,7 @@ export function useEntityForm<
   const form = useForm<TForm>({
     defaultValues: opts.initForm,
     resolver: config.resolver,
+    mode: FORM_VALIDATION_MODE,
   })
 
   const saveDraft = useCallback(() => {

@@ -38,7 +38,7 @@ use crate::{
 
 pub use error::TreeError;
 pub use marker::TreeMarker;
-pub use planting_year::PlantingYear;
+pub use planting_year::{MAX_PLANTING_YEAR, MIN_PLANTING_YEAR, PlantingYear};
 pub use repository::{TreeReader, TreeWriter};
 #[doc(hidden)]
 pub use snapshot::TreeSnapshot;
@@ -205,9 +205,16 @@ impl Tree {
         }]
     }
 
-    pub fn attach_sensor(&mut self, sensor: SensorId) -> Vec<DomainEvent> {
+    pub fn attach_sensor(
+        &mut self,
+        sensor: SensorId,
+        today: DateTime<Utc>,
+    ) -> Result<Vec<DomainEvent>, TreeError> {
+        if self.planting_year.is_future(today) {
+            return Err(TreeError::NotYetPlanted);
+        }
         if self.sensor_id.as_ref() == Some(&sensor) {
-            return vec![];
+            return Ok(vec![]);
         }
         let mut events = Vec::new();
         if let Some(old) = self.sensor_id.take() {
@@ -223,7 +230,7 @@ impl Tree {
             cluster_id: self.cluster_id,
             sensor_id: sensor,
         });
-        events
+        Ok(events)
     }
 
     /// Detaches the sensor and resets `watering_status` to
@@ -303,6 +310,9 @@ impl Tree {
         watermarks: &[Watermark],
         today: DateTime<Utc>,
     ) -> Result<WateringStatus, TreeError> {
+        if self.planting_year.is_future(today) {
+            return Err(TreeError::NotYetPlanted);
+        }
         let (w30, w60, w90) = watermark_calibration::sort_watermarks(watermarks)?;
         let lifetime = (today.year() as i64) - (self.planting_year.year() as i64);
         let tuning = watermark_calibration::PhaseTuning::for_year(lifetime)?;
@@ -341,6 +351,9 @@ impl Tree {
         soil: crate::cluster::SoilCondition,
         today: DateTime<Utc>,
     ) -> Result<WateringStatus, TreeError> {
+        if self.planting_year.is_future(today) {
+            return Err(TreeError::NotYetPlanted);
+        }
         let lifetime = (today.year() as i64) - (self.planting_year.year() as i64);
         volumetric_calibration::classify(readings, soil, lifetime)
     }
@@ -486,7 +499,7 @@ mod tests {
     fn detach_sensor_emits_detached_event_and_resets_status() {
         let mut t = fixed_tree();
         let sensor = SensorId::new("eui-deadbeef").unwrap();
-        let _ = t.attach_sensor(sensor.clone());
+        let _ = t.attach_sensor(sensor.clone(), jan_first(2026));
         let _ = t.record_watering_status(WateringStatus::Good);
         let events = t.detach_sensor();
         assert!(t.sensor_id().is_none());
@@ -508,8 +521,8 @@ mod tests {
         let mut t = fixed_tree();
         let s1 = SensorId::new("eui-aaaa").unwrap();
         let s2 = SensorId::new("eui-bbbb").unwrap();
-        let _ = t.attach_sensor(s1.clone());
-        let events = t.attach_sensor(s2.clone());
+        let _ = t.attach_sensor(s1.clone(), jan_first(2026));
+        let events = t.attach_sensor(s2.clone(), jan_first(2026)).unwrap();
         assert_eq!(t.sensor_id(), Some(&s2));
         assert_eq!(events.len(), 2);
         assert!(matches!(events[0], DomainEvent::TreeSensorDetached { .. }));
@@ -520,7 +533,7 @@ mod tests {
     fn attach_sensor_first_time_emits_only_attach() {
         let mut t = fixed_tree();
         let s = SensorId::new("eui-deadbeef").unwrap();
-        let events = t.attach_sensor(s.clone());
+        let events = t.attach_sensor(s.clone(), jan_first(2026)).unwrap();
         assert_eq!(t.sensor_id(), Some(&s));
         assert_eq!(events.len(), 1);
         assert!(matches!(events[0], DomainEvent::TreeSensorAttached { .. }));
@@ -530,8 +543,8 @@ mod tests {
     fn attach_sensor_same_id_is_noop() {
         let mut t = fixed_tree();
         let s = SensorId::new("eui-deadbeef").unwrap();
-        let _ = t.attach_sensor(s.clone());
-        let events = t.attach_sensor(s);
+        let _ = t.attach_sensor(s.clone(), jan_first(2026));
+        let events = t.attach_sensor(s, jan_first(2026)).unwrap();
         assert!(events.is_empty());
     }
 
@@ -562,7 +575,7 @@ mod tests {
     fn had_sensor_reflects_current_state() {
         let mut t = fixed_tree();
         assert!(!t.had_sensor());
-        let _ = t.attach_sensor(SensorId::new("eui-deadbeef").unwrap());
+        let _ = t.attach_sensor(SensorId::new("eui-deadbeef").unwrap(), jan_first(2026));
         assert!(t.had_sensor());
         let _ = t.detach_sensor();
         assert!(!t.had_sensor());
@@ -783,5 +796,61 @@ mod tests {
                 .unwrap(),
             WateringStatus::Bad
         );
+    }
+
+    // A tree that has not been planted yet cannot have soil around its roots.
+    // Watermarks used to report this as BeyondMonitoring, which reads as the
+    // opposite; volumetrics scored it as a very young tree and invented a status.
+    #[test]
+    fn watermark_status_rejects_a_tree_planted_in_the_future() {
+        let t = tree_planted_in(2030);
+        let readings = vec![wm(30, 5), wm(60, 5), wm(90, 5)];
+        assert_eq!(
+            t.calculate_watering_status_from_watermarks(&readings, jan_first(2026)),
+            Err(TreeError::NotYetPlanted)
+        );
+    }
+
+    #[test]
+    fn volumetric_status_rejects_a_tree_planted_in_the_future() {
+        use crate::cluster::SoilCondition;
+        let t = tree_planted_in(2030);
+        let readings = [crate::sensor::data::VolumetricReading {
+            depth_cm: 40,
+            moisture_percent: 25.0,
+        }];
+        assert_eq!(
+            t.calculate_watering_status_from_volumetric(
+                &readings,
+                SoilCondition::Uu,
+                jan_first(2026)
+            ),
+            Err(TreeError::NotYetPlanted)
+        );
+    }
+
+    #[test]
+    fn attach_sensor_rejects_a_tree_planted_in_the_future() {
+        let mut t = tree_planted_in(2030);
+        let s = SensorId::new("eui-deadbeef").unwrap();
+        assert!(matches!(
+            t.attach_sensor(s, jan_first(2026)),
+            Err(TreeError::NotYetPlanted)
+        ));
+        assert!(t.sensor_id().is_none());
+    }
+
+    #[test]
+    fn attach_sensor_allows_a_tree_planted_this_year() {
+        let mut t = tree_planted_in(2026);
+        let s = SensorId::new("eui-deadbeef").unwrap();
+        assert_ok!(t.attach_sensor(s, jan_first(2026)));
+    }
+
+    #[test]
+    fn detaching_stays_possible_on_a_tree_planted_in_the_future() {
+        let mut t = tree_planted_in(2030);
+        t.sensor_id = Some(SensorId::new("eui-deadbeef").unwrap());
+        assert!(!t.detach_sensor().is_empty());
     }
 }

@@ -165,7 +165,11 @@ impl IntoResponse for ServiceError {
             ServiceError::OrganizationMismatch(kind) => {
                 (StatusCode::UNPROCESSABLE_ENTITY, kind.to_string())
             }
-            ServiceError::MissingOrganization | ServiceError::ContactPersonNotAMember => {
+            // Not a conflict either: nothing about the stored tree is wrong,
+            // the request just pairs a sensor with a tree that is not there yet.
+            ServiceError::MissingOrganization
+            | ServiceError::ContactPersonNotAMember
+            | ServiceError::TreeNotYetPlanted => {
                 (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
             }
             // Status kept at 400 as before; the transition is now only

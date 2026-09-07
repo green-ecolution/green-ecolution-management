@@ -22,7 +22,7 @@ const asNumber = { setValueAs: parseDecimalInput } as const
 const FormForVehicle = (props: FormForVehicleProps) => {
   const { t } = useTranslation(['vehicle', 'common'])
   const { register, handleSubmit, control } = useFormContext<VehicleForm>()
-  const { isValid, errors } = useFormState({ control })
+  const { errors } = useFormState({ control })
   const vehicleTypeOptions = useVehicleTypeOptions()
   const vehicleAvailabilityOptions = useVehicleAvailabilityOptions()
   const drivingLicenseOptions = useDrivingLicenseOptions()
@@ -31,6 +31,8 @@ const FormForVehicle = (props: FormForVehicleProps) => {
     <form
       className="flex flex-col gap-y-6 lg:grid lg:grid-cols-2 lg:gap-y-6 lg:gap-x-11"
       onSubmit={handleSubmit(props.onSubmit)}
+      // The domain validator owns every message; native bubbles would compete with it.
+      noValidate
     >
       <FormField
         placeholder={t('form.numberPlatePlaceholder')}
@@ -143,7 +145,7 @@ const FormForVehicle = (props: FormForVehicleProps) => {
 
       <FormError show={props.displayError} error={props.errorMessage} />
 
-      <FormSubmitButton disabled={!isValid} />
+      <FormSubmitButton />
     </form>
   )
 }

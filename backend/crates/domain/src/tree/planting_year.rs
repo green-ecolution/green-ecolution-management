@@ -1,19 +1,27 @@
-use chrono::{Datelike, Utc};
+use chrono::{DateTime, Datelike, Utc};
 
 use crate::shared::error::ValidationError;
 
-/// Calendar year in which a tree was planted; must not be in the future.
+/// Oldest plausible planting year. Anything below is a typo (a bare `25` meant
+/// as 2025) rather than a record, and the OpenAPI schema already advertises it.
+pub const MIN_PLANTING_YEAR: u32 = 1900;
+
+/// Upper bound, matching the range the OpenAPI schema has always advertised.
+/// Future years are valid: plantings are scheduled before they happen.
+pub const MAX_PLANTING_YEAR: u32 = 2100;
+
+/// Calendar year in which a tree was planted or is scheduled to be planted;
+/// must lie between [`MIN_PLANTING_YEAR`] and [`MAX_PLANTING_YEAR`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PlantingYear(u32);
 
 impl PlantingYear {
     pub fn new(year: u32) -> Result<Self, ValidationError> {
-        let current_year = Utc::now().year() as u32;
-        if year > current_year {
+        if !(MIN_PLANTING_YEAR..=MAX_PLANTING_YEAR).contains(&year) {
             return Err(ValidationError::OutOfRange {
                 field: "tree.planting_year",
-                min: 0.0,
-                max: current_year as f64,
+                min: MIN_PLANTING_YEAR as f64,
+                max: MAX_PLANTING_YEAR as f64,
                 got: year as f64,
             });
         }
@@ -27,6 +35,12 @@ impl PlantingYear {
     pub fn year(&self) -> u32 {
         self.0
     }
+
+    /// Whether the planting still lies ahead. The single definition of "not
+    /// planted yet" — the status calculations and the sensor rule share it.
+    pub fn is_future(&self, today: DateTime<Utc>) -> bool {
+        (self.0 as i64) > (today.year() as i64)
+    }
 }
 
 impl std::fmt::Display for PlantingYear {
@@ -38,12 +52,25 @@ impl std::fmt::Display for PlantingYear {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::{Datelike, Utc};
     use claims::{assert_err, assert_ok};
 
+    // Plantings are scheduled ahead, so a year that has not arrived yet is a
+    // legitimate record rather than a mistake.
     #[test]
-    fn rejects_future_year() {
+    fn accepts_year_in_the_near_future() {
         let next_year = Utc::now().year() as u32 + 1;
-        assert_err!(PlantingYear::new(next_year));
+        assert_ok!(PlantingYear::new(next_year));
+    }
+
+    #[test]
+    fn accepts_upper_bound() {
+        assert_ok!(PlantingYear::new(MAX_PLANTING_YEAR));
+    }
+
+    #[test]
+    fn rejects_year_after_upper_bound() {
+        assert_err!(PlantingYear::new(MAX_PLANTING_YEAR + 1));
     }
 
     #[test]
@@ -55,5 +82,25 @@ mod tests {
     #[test]
     fn accepts_past_year() {
         assert_ok!(PlantingYear::new(2000));
+    }
+
+    #[test]
+    fn rejects_two_digit_year() {
+        assert_err!(PlantingYear::new(25));
+    }
+
+    #[test]
+    fn rejects_year_before_lower_bound() {
+        assert_err!(PlantingYear::new(MIN_PLANTING_YEAR - 1));
+    }
+
+    #[test]
+    fn accepts_lower_bound() {
+        assert_ok!(PlantingYear::new(MIN_PLANTING_YEAR));
+    }
+
+    #[test]
+    fn reconstitute_bypasses_lower_bound() {
+        assert_eq!(PlantingYear::reconstitute(25).year(), 25);
     }
 }

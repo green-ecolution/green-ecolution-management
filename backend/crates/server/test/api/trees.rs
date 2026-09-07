@@ -74,7 +74,7 @@ async fn create_tree_with_invalid_coordinates_returns_400() {
 }
 
 #[tokio::test]
-async fn create_tree_with_future_planting_year_returns_400() {
+async fn create_tree_with_out_of_range_planting_year_returns_400() {
     let app = spawn_app().await;
 
     let body = serde_json::json!({
@@ -713,6 +713,20 @@ async fn list_trees_filters_by_planting_year() {
     assert_eq!(body["pagination"]["total_records"], 1);
 }
 
+// Rows predating the lower bound exist (imports, the old unbounded API), and the
+// year slider offers them. Filtering is a lookup and must not validate like a write.
+#[tokio::test]
+async fn list_trees_filter_accepts_planting_year_below_lower_bound() {
+    let app = spawn_app().await;
+    create_tree_with(&app, "T-001", 2018, None).await;
+
+    let response = app.get("/api/v1/trees?planting_year=25").await;
+
+    assert_eq!(response.status().as_u16(), 200);
+    let body: serde_json::Value = response.json().await.unwrap();
+    assert!(body["data"].as_array().unwrap().is_empty());
+}
+
 #[tokio::test]
 async fn list_trees_filters_by_multiple_planting_years() {
     let app = spawn_app().await;
@@ -952,4 +966,97 @@ async fn update_tree_keeping_its_own_sensor_returns_200() {
         .await;
 
     assert_eq!(response.status().as_u16(), 200);
+}
+
+// -- Trees whose planting year has not arrived yet cannot carry a sensor --
+
+fn future_year() -> i32 {
+    chrono::Datelike::year(&chrono::Utc::now()) + 3
+}
+
+#[tokio::test]
+async fn create_tree_planted_in_the_future_with_sensor_returns_422() {
+    let app = spawn_app().await;
+    insert_sensor(&app, "eui-future-1").await;
+
+    let body = serde_json::json!({
+        "species": "Eiche",
+        "number": "T-FUT-1",
+        "planting_year": future_year(),
+        "latitude": 53.56,
+        "longitude": 9.98,
+        "description": "Testbaum",
+        "sensor_id": "eui-future-1"
+    });
+    let response = app.post_json("/api/v1/trees", &body).await;
+
+    assert_eq!(response.status().as_u16(), 422);
+    let body: serde_json::Value = response.json().await.unwrap();
+    assert_eq!(body["code"], "tree.not_yet_planted");
+}
+
+#[tokio::test]
+async fn create_tree_planted_in_the_future_without_sensor_succeeds() {
+    let app = spawn_app().await;
+
+    let body = serde_json::json!({
+        "species": "Eiche",
+        "number": "T-FUT-2",
+        "planting_year": future_year(),
+        "latitude": 53.56,
+        "longitude": 9.98,
+        "description": "Geplante Pflanzung"
+    });
+    let response = app.post_json("/api/v1/trees", &body).await;
+
+    assert_eq!(response.status().as_u16(), 201);
+}
+
+#[tokio::test]
+async fn moving_a_sensor_carrying_tree_into_the_future_returns_422() {
+    let app = spawn_app().await;
+    insert_sensor(&app, "eui-future-2").await;
+    let tree_id = insert_tree_with_sensor(&app, "T-FUT-3", "eui-future-2").await;
+
+    let update = serde_json::json!({
+        "species": "Eiche",
+        "number": "T-FUT-3",
+        "planting_year": future_year(),
+        "latitude": 53.55,
+        "longitude": 9.99,
+        "description": "Test",
+        "sensor_id": "eui-future-2"
+    });
+    let response = app
+        .put_json(&format!("/api/v1/trees/{}", tree_id), &update)
+        .await;
+
+    assert_eq!(response.status().as_u16(), 422);
+    let body: serde_json::Value = response.json().await.unwrap();
+    assert_eq!(body["code"], "tree.not_yet_planted");
+}
+
+// Dropping the sensor in the same edit is the way out of the rejection above.
+#[tokio::test]
+async fn moving_a_tree_into_the_future_while_dropping_its_sensor_succeeds() {
+    let app = spawn_app().await;
+    insert_sensor(&app, "eui-future-3").await;
+    let tree_id = insert_tree_with_sensor(&app, "T-FUT-4", "eui-future-3").await;
+
+    let update = serde_json::json!({
+        "species": "Eiche",
+        "number": "T-FUT-4",
+        "planting_year": future_year(),
+        "latitude": 53.55,
+        "longitude": 9.99,
+        "description": "Test",
+        "sensor_id": null
+    });
+    let response = app
+        .put_json(&format!("/api/v1/trees/{}", tree_id), &update)
+        .await;
+
+    assert_eq!(response.status().as_u16(), 200);
+    let body: serde_json::Value = response.json().await.unwrap();
+    assert!(body["sensor_id"].is_null());
 }
