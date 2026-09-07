@@ -52,7 +52,8 @@
     "settings": "Settings",
     "team": "Team & roles",
     "plugins": "Plugins",
-    "info": "System information"
+    "info": "System information",
+    "handbook": "Handbook"
   },
   "footer": {
     "tagline": "Smart green-space management - Green Ecolution {version}",

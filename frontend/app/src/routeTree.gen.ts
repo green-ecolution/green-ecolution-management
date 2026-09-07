@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtectedRouteImport } from './routes/_protected'
+import { Route as HelpRouteRouteImport } from './routes/help/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
@@ -93,6 +94,11 @@ const ProtectedRoute = ProtectedRouteImport.update({
   id: '/_protected',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRouteRoute = HelpRouteRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -167,14 +173,14 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpIndexRoute = HelpIndexRouteImport.update({
-  id: '/help/',
-  path: '/help/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => HelpRouteRoute,
 } as any)
 const HelpSlugRoute = HelpSlugRouteImport.update({
-  id: '/help/$slug',
-  path: '/help/$slug',
-  getParentRoute: () => rootRouteImport,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => HelpRouteRoute,
 } as any)
 const ProtectedDebugIndexRoute = ProtectedDebugIndexRouteImport.update({
   id: '/',
@@ -517,6 +523,7 @@ const ProtectedWateringPlansFormularWateringPlanIdStatusEditIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/help': typeof HelpRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/debug': typeof ProtectedDebugRouteRouteWithChildren
@@ -639,6 +646,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/help': typeof HelpRouteRouteWithChildren
   '/_protected': typeof ProtectedRouteWithChildren
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
@@ -717,6 +725,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/help'
     | '/login'
     | '/logout'
     | '/debug'
@@ -838,6 +847,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/help'
     | '/_protected'
     | '/login'
     | '/logout'
@@ -915,12 +925,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HelpRouteRoute: typeof HelpRouteRouteWithChildren
   ProtectedRoute: typeof ProtectedRouteWithChildren
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
-  HelpSlugRoute: typeof HelpSlugRoute
-  HelpIndexRoute: typeof HelpIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -937,6 +946,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ProtectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1039,17 +1055,17 @@ declare module '@tanstack/react-router' {
     }
     '/help/': {
       id: '/help/'
-      path: '/help'
+      path: '/'
       fullPath: '/help/'
       preLoaderRoute: typeof HelpIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HelpRouteRoute
     }
     '/help/$slug': {
       id: '/help/$slug'
-      path: '/help/$slug'
+      path: '/$slug'
       fullPath: '/help/$slug'
       preLoaderRoute: typeof HelpSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HelpRouteRoute
     }
     '/_protected/debug/': {
       id: '/_protected/debug/'
@@ -1445,6 +1461,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface HelpRouteRouteChildren {
+  HelpSlugRoute: typeof HelpSlugRoute
+  HelpIndexRoute: typeof HelpIndexRoute
+}
+
+const HelpRouteRouteChildren: HelpRouteRouteChildren = {
+  HelpSlugRoute: HelpSlugRoute,
+  HelpIndexRoute: HelpIndexRoute,
+}
+
+const HelpRouteRouteWithChildren = HelpRouteRoute._addFileChildren(
+  HelpRouteRouteChildren,
+)
 
 interface ProtectedDebugRouteRouteChildren {
   ProtectedDebugIndexRoute: typeof ProtectedDebugIndexRoute
@@ -1936,12 +1966,11 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HelpRouteRoute: HelpRouteRouteWithChildren,
   ProtectedRoute: ProtectedRouteWithChildren,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   AuthCallbackRoute: AuthCallbackRoute,
-  HelpSlugRoute: HelpSlugRoute,
-  HelpIndexRoute: HelpIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

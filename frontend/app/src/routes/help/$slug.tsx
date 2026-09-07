@@ -12,7 +12,7 @@ export const Route = createFileRoute('/help/$slug')({
   loader: async ({ params }) => {
     const meta = handbookIndex.chapters[params.slug]
     if (!meta) throw notFound()
-    return { meta, content: await loadChapter(params.slug) }
+    return { meta, content: await loadChapter(params.slug), crumb: { title: meta.title } }
   },
 })
 

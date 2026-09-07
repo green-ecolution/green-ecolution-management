@@ -52,7 +52,8 @@
     "settings": "Einstellungen",
     "team": "Team & Rollen",
     "plugins": "Plugins",
-    "info": "Systeminformationen"
+    "info": "Systeminformationen",
+    "handbook": "Handbuch"
   },
   "footer": {
     "tagline": "Smartes Grünflächenmanagement - Green Ecolution {version}",
