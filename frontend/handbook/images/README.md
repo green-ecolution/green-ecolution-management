@@ -24,6 +24,17 @@ and it stays available for a chapter that needs it later.
 capture conditions do not apply to them; what they need instead is in their table
 rows.
 
+`sensor-installation.png` is rendered from `sensor-installation.svg` in this directory,
+which is the editable source. Change the drawing there and render it again rather than
+touching the PNG:
+
+```
+rsvg-convert -w 1440 -h 900 sensor-installation.svg -o sensor-installation.png
+```
+
+Its colours are the handbook's own tokens from `../generated/typst/colors.typ`, so a new
+figure drawn for the handbook should take its colours from there too.
+
 ## Capture conditions
 
 Every capture in this directory is taken under these conditions, which is what makes
@@ -39,11 +50,15 @@ out next to the rest:
   desktop view therefore shows a layout the caption does not describe. The portrait
   format is reserved for views that genuinely belong on a hand-held device.
 - The portrait shots are 900 px wide: `sensor-wizard-qr.png` (a field device, the
-  activation is done at the tree) and the two mobile install shots
-  (`install-ios-safari.png`, `install-android.png`). Portrait is capped at 900×1100
-  because the PDF scales every figure to the full text width, so a phone's native
-  9:19.5 frame would render taller than the page. Crop a phone screenshot around the
-  menu or prompt to reach that size; don't squash the whole screen into it.
+  activation is done at the tree) and `install-android.png`. Portrait is capped at
+  900×1100 because the PDF scales every figure to the full text width, so a phone's
+  native 9:19.5 frame would render taller than the page. Crop a phone screenshot around
+  the menu or prompt to reach that size; don't squash the whole screen into it.
+- `install-ios-safari.png` is the one figure built from several phone screenshots: three
+  panels side by side, one per step, each cropped from a 1290 px wide capture and all
+  scaled by the same factor so the iOS interface reads at one size across the figure.
+  A numbered badge over each panel ties it to the numbered steps in the chapter. Panels
+  end where their content ends, so their heights differ; that is intended.
 - Light appearance (not dark mode).
 - German interface language.
 - Signed in as a user with full administration rights, so every button and panel the
@@ -68,7 +83,7 @@ out next to the rest:
 | `login.png`                  | 1440×900  | Erste Schritte (`getting-started`)                | The Green Ecolution sign-in screen, before entering credentials.                                                                                                                                                                                                                                                                                                                                                             |
 | `app-shell.png`              | 1440×900  | Erste Schritte (`getting-started`)                | Any page with the sidebar expanded (not collapsed to icons), the breadcrumb trail visible in the header, and the user avatar/menu visible at the bottom of the sidebar.                                                                                                                                                                                                                                                      |
 | `install-desktop-chrome.png` | 1440×900  | Erste Schritte (`getting-started`)                | Desktop Chrome or Edge with the install icon visible in the address bar and its "Green Ecolution installieren" confirmation popover open. Browser chrome IS part of this shot — the address bar is the subject — so capture the window, not just the viewport.                                                                                                                                                               |
-| `install-ios-safari.png`     | 900×1100  | Erste Schritte (`getting-started`)                | Safari on iPhone or iPad with the share sheet open and "Zum Home-Bildschirm" visible in the list. Scroll the sheet so the entry is in frame. German iOS interface language.                                                                                                                                                                                                                                                  |
+| `install-ios-safari.png`     | 1440×815  | Erste Schritte (`getting-started`)                | Three panels side by side, matching the three numbered steps in the chapter: Safari's menu with **Teilen**, the share sheet scrolled so **Zum Home-Bildschirm** is in the list, and the "Zum Home-Bildschirm" dialog with **Hinzufügen**. Shot on an iPhone in German iOS interface language.                                                                                                                                                                                                                                                  |
 | `install-android.png`        | 900×1100  | Erste Schritte (`getting-started`)                | Chrome on Android showing the in-app install prompt with the "Installieren" button — easiest to trigger on the sensor activation QR screen.                                                                                                                                                                                                                                                                                  |
 | `dashboard.png`              | 1440×900  | Das Dashboard (`dashboard`)                       | The personal dashboard with the greeting and all six tiles under "Schnellverweise" filled in and readable, for a user who can open every tile.                                                                                                                                                                                                                                                                               |
 | `map-overview.png`           | 1440×900  | Die Karte (`map`)                                 | The map zoomed to a level where several tree clusters are visible as coloured outlines with a mix of individual trees and grouped markers, no side panel or legend open.                                                                                                                                                                                                                                                     |

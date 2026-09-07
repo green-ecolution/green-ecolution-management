@@ -98,7 +98,7 @@ Safari bietet die Installation nicht von sich aus an, sondern nur über das Teil
 2. Wähle **Zum Home-Bildschirm**.
 3. Bestätige mit **Hinzufügen**.
 
-![Das Teilen-Menü in Safari mit dem Eintrag Zum Home-Bildschirm](../images/install-ios-safari.png)
+![Die drei Schritte in Safari: das Menü mit dem Eintrag Teilen, das Teilen-Menü mit Zum Home-Bildschirm und die abschließende Bestätigung mit Hinzufügen](../images/install-ios-safari.png)
 
 ### Auf Android
 
