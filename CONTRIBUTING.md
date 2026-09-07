@@ -172,7 +172,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/). This is imp
 |------|-------------|-------------------|
 | `feat` | New feature | Features |
 | `fix` | Bug fix | Bug Fixes |
-| `docs` | Documentation only | - |
+| `docs` | Documentation only | Documentation |
 | `style` | Code style (formatting, etc.) | - |
 | `refactor` | Code refactoring | - |
 | `perf` | Performance improvement | Performance |
