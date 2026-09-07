@@ -22,12 +22,13 @@ export function columnForStatus(status: WateringPlanStatus): BoardColumnId {
   }
 }
 
-export type DropAction = 'start' | 'cancel' | 'complete'
+export type DropAction = 'start' | 'cancel' | 'complete' | 'revertStart'
 
 export function dropActionFor(from: BoardColumnId, to: BoardColumnId): DropAction | null {
   if (from === 'planned' && to === 'active') return 'start'
   if (from === 'planned' && to === 'done') return 'cancel'
   if (from === 'active' && to === 'done') return 'complete'
+  if (from === 'active' && to === 'planned') return 'revertStart'
   return null
 }
 
@@ -42,5 +43,7 @@ export function dropHintFor(action: DropAction, t: TFunction<'wateringPlan'>): s
       return t('board.dropHint.cancel')
     case 'complete':
       return t('board.dropHint.complete')
+    case 'revertStart':
+      return t('board.dropHint.revertStart')
   }
 }

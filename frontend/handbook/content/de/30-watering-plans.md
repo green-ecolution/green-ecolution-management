@@ -116,8 +116,12 @@ Einen geplanten Einsatz startest du auf zwei Wegen: Entweder ziehst du seine Kar
 dem Board von der Spalte Geplant in die Spalte Unterwegs, oder du öffnest den
 Einsatzplan und klickst dort auf **Status aktualisieren**, wählst als neuen Status Aktiv
 und speicherst. Nach dem Ziehen bestätigt eine Meldung den Start und bietet für kurze
-Zeit **Rückgängig** an, um ihn zurückzunehmen; danach lässt sich ein gestarteter
-Einsatzplan über **Status aktualisieren** ebenso wieder auf Geplant zurücksetzen.
+Zeit **Rückgängig** an, um ihn zurückzunehmen.
+
+Ist diese Meldung verschwunden, lässt sich ein versehentlicher Start auch später noch
+korrigieren: Ziehe die Karte auf dem Board aus der Spalte Unterwegs zurück in die Spalte
+Geplant, die dabei den Hinweis **Start zurücknehmen** zeigt. Alternativ setzt du den
+Einsatzplan über **Status aktualisieren** wieder auf Geplant.
 
 ## Einsatz abbrechen oder als nicht angetreten melden
 

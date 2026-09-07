@@ -35,10 +35,10 @@ describe('dropActionFor', () => {
     expect(dropActionFor('planned', 'active')).toBe('start')
     expect(dropActionFor('planned', 'done')).toBe('cancel')
     expect(dropActionFor('active', 'done')).toBe('complete')
+    expect(dropActionFor('active', 'planned')).toBe('revertStart')
   })
 
   it('rejects everything else', () => {
-    expect(dropActionFor('active', 'planned')).toBeNull()
     expect(dropActionFor('done', 'active')).toBeNull()
     expect(dropActionFor('done', 'planned')).toBeNull()
     expect(dropActionFor('planned', 'planned')).toBeNull()
@@ -50,5 +50,6 @@ describe('dropHintFor', () => {
     expect(dropHintFor('start', t)).toBe('Einsatzplan starten')
     expect(dropHintFor('cancel', t)).toBe('Einsatzplan abbrechen')
     expect(dropHintFor('complete', t)).toBe('Einsatzplan abschließen')
+    expect(dropHintFor('revertStart', t)).toBe('Start zurücknehmen')
   })
 })
