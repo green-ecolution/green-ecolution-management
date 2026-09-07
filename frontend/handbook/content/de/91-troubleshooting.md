@@ -88,7 +88,7 @@ sondern nur vor Ort prüfen.
 
 Zeigt ein Gerät stattdessen dauerhaft **Vorbereitet**, ist es noch nicht aktiviert und
 deshalb noch keinem Baum zugeordnet; das ist kein Störungsfall, sondern der Ausgangszustand
-vor der Aktivierung, siehe [Sensor aktivieren](./sensors.md#sensor-aktivieren).
+vor der Aktivierung, siehe [Sensor aktivieren](./sensor-installation.md#sensor-aktivieren).
 
 ## Messwerte fehlen
 
@@ -104,7 +104,7 @@ demselben Grund wie im vorigen Abschnitt beschrieben. Zeigt die Detailseite dage
 Werte, aber daneben einen Hinweis zur **Datenqualität**, liegen durchaus Messwerte vor,
 die Anwendung hat in den letzten sieben Tagen jedoch wiederholt unplausible Werte
 erkannt; das betrifft die Verlässlichkeit der Daten, nicht die Verbindung, siehe
-[Messwerte und Signalqualität auf der Detailseite](./sensors.md#messwerte-und-signalqualitat-auf-der-detailseite).
+[Signal, Messwerte und Datenqualität](./sensor-readings.md#signal-messwerte-und-datenqualitat).
 
 Fehlt der Verlauf stattdessen im Bereich **Wasserversorgung** einer ganzen Gruppe, obwohl
 Sensoren verbaut sind, prüfe die Bodenart der Gruppe: Sensoren mit volumetrischer

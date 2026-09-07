@@ -47,7 +47,7 @@ describe('ChapterPager', () => {
   })
 
   it('names the part a step leads into', async () => {
-    renderPager('sensors')
+    renderPager('sensor-installation')
 
     expect(await screen.findByText('Verwaltung')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Profil/ })).toHaveAttribute(

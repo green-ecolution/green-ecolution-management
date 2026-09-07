@@ -46,7 +46,7 @@ describe('chapterNeighbours', () => {
   })
 
   it('marks a step that leaves the current part', () => {
-    expect(chapterNeighbours('sensors').next).toEqual({
+    expect(chapterNeighbours('sensor-installation').next).toEqual({
       slug: 'settings-profile',
       title: 'Profil',
       partTitle: 'Verwaltung',
