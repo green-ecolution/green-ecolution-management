@@ -2,9 +2,57 @@
 slug: treecluster
 title: Bewässerungsgruppen
 part: greenspaces
-summary: Eine Gruppe anlegen, ihr Bäume zuordnen, das Gruppendashboard lesen und verstehen, wie der Bewässerungsstatus zustande kommt.
+summary: Die Übersicht und ihre Gruppenkarten lesen, eine Gruppe anlegen, ihr Bäume zuordnen, das Gruppendashboard lesen und verstehen, wie der Bewässerungsstatus zustande kommt.
 routes: ['/treecluster', '/treecluster/$treeclusterId']
 ---
+
+## Die Übersicht lesen
+
+Der Bereich **Bewässerungsgruppen** listet alle Gruppen auf, auf die du zugreifen darfst,
+und nennt über der Liste ihre Gesamtzahl sowie die Zahl der darin zusammengefassten Bäume.
+Oben rechts wechselst du zwischen der Ansicht **Karten** und der Ansicht **Tabelle**. Die
+Suche greift auf den Namen der Gruppe, über **Filter** schränkst du die Liste zusätzlich
+nach Bewässerungszustand, Region und Bodenart ein, und sortieren lässt sie sich nach Name,
+Feuchte und Anzahl der Bäume. Die Chips darunter zeigen, wie sich alle Gruppen auf die
+Bewässerungszustände verteilen, und wirken zugleich als Filter: Ein Klick auf einen Chip
+zeigt nur noch die Gruppen dieses Zustands, ein zweiter nimmt ihn wieder heraus.
+
+![Die Übersicht der Bewässerungsgruppen in der Kartenansicht mit den Status-Chips](../images/treecluster-list.png)
+
+### Eine Gruppenkarte lesen
+
+Jede Karte fasst eine Gruppe so zusammen, dass sich ihr Zustand ohne den Umweg über das
+Dashboard einschätzen lässt.
+
+Im Kopf stehen ein farbiger Punkt und der Name der Gruppe, rechts daneben ihr
+Bewässerungszustand als Badge. Punkt und Badge zeigen dasselbe; welche Farbe zu welchem
+Zustand gehört, steht in der [Legende auf der Karte](./map.md#ebenen-und-legende). Darunter
+folgen die Adresse der Gruppe und, kleiner gesetzt, ihre Region.
+
+Der mittlere Block nennt drei Kennzahlen. **Bäume** ist die Zahl der Bäume in der Gruppe,
+**Sensor-Bäume** davon die Zahl derer, an denen ein Sensor hängt, und **Bodenart** die
+hinterlegte Bodenart nach KA5; ist für die Gruppe keine bestimmt, steht dort ein Strich.
+
+Die Punktreihe darunter macht dasselbe Verhältnis auf einen Blick sichtbar: ein Punkt je
+Baum, die grün gefüllten stehen für die Bäume mit Sensor. Welcher Punkt welchen Baum meint,
+sagt die Reihe nicht, sie zeigt allein das Verhältnis der beiden Zahlen zueinander. Ab 24
+Bäumen bricht sie ab und zählt die übrigen als **+n** dahinter; enthält die Gruppe noch
+keine Bäume, steht an dieser Stelle der Hinweis **Noch keine Bäume zugeordnet**. Bleibt die
+Reihe ganz grau, trägt kein Baum dieser Gruppe einen Sensor, und ihr Bewässerungszustand
+kann dann nicht aus Messwerten stammen: Er steht auf **Unbekannt** oder, nach einem
+abgeschlossenen Einsatzplan, für eine Weile auf **Soeben bewässert**.
+
+Am Fuß der Karte steht schließlich, wann die Gruppe zuletzt bewässert wurde, als **heute**,
+**gestern**, **vor n Tagen** oder **noch nicht bewässert**. Dieser Zeitpunkt stammt
+ausschließlich aus Einsatzplänen, die als **Beendet** markiert wurden. Über **Details** oder
+einen Klick auf die Karte gelangst du zum Dashboard der Gruppe.
+
+### Die Tabellenansicht
+
+Wer viele Gruppen untereinander vergleichen will, wechselt oben rechts auf **Tabelle**. Sie
+zeigt je Zeile den Bewässerungszustand, den Namen, den Standort und die Anzahl der Bäume und
+führt mit einem Klick ebenfalls zum Dashboard. Suche, Filter und Sortierung gelten in beiden
+Ansichten gleichermaßen.
 
 ## Gruppe anlegen
 
