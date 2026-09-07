@@ -44,6 +44,28 @@ die Koordinaten und den Zeitpunkt der letzten Aktualisierung zusammen.
 
 ![Die Detailseite eines Baums mit Bewässerungszustand und verknüpftem Sensor](../images/tree-detail.png)
 
+## Geplante Bäume
+
+Ein Pflanzjahr darf in der Zukunft liegen. Damit lässt sich eine Pflanzung erfassen,
+bevor der Baum tatsächlich im Boden steht. Solange dieses Jahr nicht erreicht ist,
+kennzeichnen die Stammdaten den Baum als **Noch nicht gepflanzt** und erklären darunter,
+was daraus folgt.
+
+Ein solcher Baum bleibt bewusst ohne Bewässerungszustand. Es gibt noch keine Wurzeln, um
+die herum sich Bodenfeuchte messen ließe, deshalb steht er auf **Unbekannt**, und zwar
+unabhängig davon, welche Messwerte eintreffen. Aus demselben Grund lässt sich ihm kein
+Sensor zuordnen: Das Feld für den Sensor ist im Formular gesperrt, solange das Pflanzjahr
+in der Zukunft liegt, und ein Speicherversuch über einen anderen Weg wird abgewiesen.
+
+Sobald das Pflanzjahr erreicht ist, verschwindet die Kennzeichnung von selbst, und der
+Baum verhält sich wie jeder andere. Willst du ihm schon vorher einen Sensor geben, korrigiere
+zuerst das Pflanzjahr.
+
+> [!NOTE]
+> Auch der umgekehrte Weg ist gesperrt: Trägt ein Baum bereits einen Sensor, lässt sich
+> sein Pflanzjahr nicht nachträglich in die Zukunft setzen. Entferne in diesem Fall im
+> selben Bearbeitungsschritt den Sensor, dann nimmt die Anwendung die Änderung an.
+
 ## Baum erfassen und bearbeiten
 
 Sowohl das Anlegen als auch das Bearbeiten eines Baums laufen über die Karte, weil ein

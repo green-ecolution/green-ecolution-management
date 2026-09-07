@@ -36,7 +36,9 @@
     "dataSourceLabel": "Data source",
     "manuallyCreated": "Manually created",
     "coordinatesLabel": "Coordinates",
-    "lastUpdateLabel": "Last update"
+    "lastUpdateLabel": "Last update",
+    "notPlantedYetBadge": "Not planted yet",
+    "notPlantedYetNote": "The tree is scheduled for {year}. Until then it reports no watering status and cannot carry a sensor."
   },
   "detail": {
     "title": "Tree: {number}",
@@ -103,6 +105,8 @@
     "createLeaveMessage": "Do you really want to leave this page? Your entries for creating the tree will be lost if you leave now.",
     "updateLeaveMessage": "Do you really want to leave this page? Your changes to the tree will be lost if you leave now.",
     "createSuccessMessage": "The tree was created successfully.",
-    "updateSuccessMessage": "The tree was updated successfully."
+    "updateSuccessMessage": "The tree was updated successfully.",
+    "plantingYearFutureHint": "This year is in the future. The tree counts as planned rather than planted.",
+    "sensorFutureDisabledHint": "No sensor can be linked while the planting year is in the future."
   }
 }

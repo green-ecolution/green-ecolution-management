@@ -1,4 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle, DetailedList } from '@green-ecolution/ui'
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  DetailedList,
+} from '@green-ecolution/ui'
+import { plantingYearIsFuture } from '@green-ecolution/domain-wasm'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import { useDateLocale } from '@/lib/i18n/useFormatters'
@@ -31,13 +41,25 @@ const TreeMasterDataCard = ({ tree }: TreeMasterDataCardProps) => {
     },
   ]
 
+  const notPlantedYet = plantingYearIsFuture(tree.plantingYear)
+
   return (
     <Card variant="outlined">
       <CardHeader>
-        <CardTitle>{t('masterData.title')}</CardTitle>
+        <CardTitle className="flex flex-wrap items-center gap-2">
+          {t('masterData.title')}
+          {notPlantedYet && <Badge variant="muted">{t('masterData.notPlantedYetBadge')}</Badge>}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-y-4">
         <DetailedList details={details} columns={1} />
+        {notPlantedYet && (
+          <Alert variant="info" size="compact">
+            <AlertDescription>
+              {t('masterData.notPlantedYetNote', { year: tree.plantingYear })}
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   )

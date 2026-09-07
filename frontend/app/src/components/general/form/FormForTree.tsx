@@ -1,11 +1,18 @@
 import { TreeForm } from '@/schema/treeSchema'
+import { expandShortYear } from '@/lib/plantingYear'
+import {
+  plantingYearIsFuture,
+  plantingYearMax,
+  plantingYearMin,
+} from '@green-ecolution/domain-wasm'
 import { FormField, TextareaField, SelectField, Button } from '@green-ecolution/ui'
 import { Sensor, TreeClusterInList } from '@/api/backendApi'
 import { MapPin } from 'lucide-react'
+import type { FocusEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import FormError from './FormError'
 import FormSubmitButton from './FormSubmitButton'
-import { Controller, SubmitHandler, useFormContext, useFormState } from 'react-hook-form'
+import { Controller, SubmitHandler, useFormContext, useFormState, useWatch } from 'react-hook-form'
 
 interface FormForTreeProps {
   isReadonly: boolean
@@ -22,8 +29,31 @@ interface FormForTreeProps {
 
 const FormForTree = (props: FormForTreeProps) => {
   const { t } = useTranslation(['tree', 'common'])
-  const { register, handleSubmit, getValues, control } = useFormContext<TreeForm>()
-  const { isValid, errors } = useFormState({ control })
+  const { register, handleSubmit, getValues, control, setValue } = useFormContext<TreeForm>()
+  const { errors } = useFormState({ control })
+
+  const plantingYearField = register('plantingYear', { valueAsNumber: true })
+
+  // useWatch, not watch: under the React Compiler `watch` does not re-render
+  // reliably (see the frontend notes in CLAUDE.md).
+  const watchedPlantingYear = useWatch<TreeForm, 'plantingYear'>({
+    control,
+    name: 'plantingYear',
+  })
+  const isPlannedPlanting =
+    Number.isInteger(watchedPlantingYear) && plantingYearIsFuture(watchedPlantingYear)
+
+  const handlePlantingYearBlur = (event: FocusEvent<HTMLInputElement>) => {
+    void plantingYearField.onBlur(event)
+
+    const entered = event.target.valueAsNumber
+    if (Number.isNaN(entered)) return
+
+    const expanded = expandShortYear(entered)
+    if (expanded !== entered) {
+      setValue('plantingYear', expanded, { shouldValidate: true, shouldDirty: true })
+    }
+  }
 
   return (
     <form
@@ -33,6 +63,8 @@ const FormForTree = (props: FormForTreeProps) => {
           : 'flex flex-col gap-y-6 lg:grid lg:grid-cols-2 lg:gap-11'
       }
       onSubmit={handleSubmit(props.onSubmit)}
+      // The domain validator owns every message; native bubbles would compete with it.
+      noValidate
       onBlur={props.onBlur}
     >
       <div className="flex flex-col gap-y-6">
@@ -59,9 +91,13 @@ const FormForTree = (props: FormForTreeProps) => {
             placeholder={t('form.plantingYearLabel')}
             label={t('form.plantingYearLabel')}
             type="number"
+            min={plantingYearMin()}
+            max={plantingYearMax()}
             error={errors.plantingYear?.message}
+            description={isPlannedPlanting ? t('form.plantingYearFutureHint') : undefined}
             required
-            {...register('plantingYear', { valueAsNumber: true })}
+            {...plantingYearField}
+            onBlur={handlePlantingYearBlur}
           />
         )}
         {!props.isReadonly && (
@@ -98,6 +134,10 @@ const FormForTree = (props: FormForTreeProps) => {
               value={field.value ?? '-1'}
               onValueChange={(val) => field.onChange(val === '-1' ? null : val)}
               error={errors.sensorId?.message}
+              // The backend rejects this pairing; saying so beats a control
+              // that is greyed out without explanation.
+              disabled={isPlannedPlanting}
+              description={isPlannedPlanting ? t('form.sensorFutureDisabledHint') : undefined}
               options={[
                 { value: '-1', label: t('form.sensorNoneOption') },
                 ...props.sensors.map((sensor) => ({
@@ -146,10 +186,7 @@ const FormForTree = (props: FormForTreeProps) => {
 
       <FormError show={props.displayError} error={props.errorMessage} />
 
-      <FormSubmitButton
-        disabled={!isValid}
-        className={props.fullWidth ? 'mt-8 w-full' : undefined}
-      />
+      <FormSubmitButton className={props.fullWidth ? 'mt-8 w-full' : undefined} />
     </form>
   )
 }

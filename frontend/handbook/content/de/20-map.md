@@ -121,7 +121,16 @@ anschließend auf die Karte, um den Standort des Baums festzulegen; den gesetzte
 kannst du danach noch beliebig verschieben. Trage dann Baumnummer, Baumart, Pflanzjahr
 und optional eine Bewässerungsgruppe sowie einen Sensor ein und speichere.
 
+Beim Pflanzjahr genügt die verkürzte Schreibweise: Aus **25** wird beim Verlassen des
+Feldes **2025**, aus **85** wird **1985**. Das Feld zeigt danach immer die vollständige
+Jahreszahl an, sodass du siehst, was gespeichert wird. Ein Jahr in der Zukunft ist
+erlaubt und erfasst eine geplante Pflanzung; die Anwendung weist dann darauf hin und
+sperrt die Sensor-Auswahl, mehr dazu im
+[Kapitel zu den Bäumen](./trees.md#geplante-baume).
+
 ![Der Dialog Kataster-Einstellungen mit der Schaltfläche Neuen Baum manuell hinzufügen](../images/map-tree-new.png)
+
+![Das Baumformular mit einem Pflanzjahr in der Zukunft, Hinweis und gesperrter Sensor-Auswahl](../images/tree-form-planned.png)
 
 Eine neue Bewässerungsgruppe legst du über die Schaltfläche **Gruppe anlegen** an. Nach
 Name, Adresse und Bodenbeschaffenheit klickst du die Bäume, die zur Gruppe gehören
