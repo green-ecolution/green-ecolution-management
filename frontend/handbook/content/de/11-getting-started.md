@@ -102,13 +102,17 @@ Safari bietet die Installation nicht von sich aus an, sondern nur über das Teil
 
 ### Auf Android
 
-Green Ecolution bietet die Installation an geeigneter Stelle von sich aus an, etwa beim
-Scannen eines QR-Codes zur Aktivierung eines Sensors. Dort erscheint ein Hinweis mit der
-Schaltfläche **Installieren**, über die sich die App direkt einrichten lässt. Kommt der
-Hinweis nicht, findest du denselben Befehl im Menü von Chrome, das sich über das Symbol
-mit den drei Punkten oben rechts öffnet.
+In Chrome führt der Weg über das Menü:
 
-![Links der Installationshinweis unter Android mit der Schaltfläche Installieren, rechts der Eintrag zum Installieren im Menü von Chrome](../images/install-android.png)
+1. Öffne das Menü über das Symbol mit den drei Punkten oben rechts und wähle den Eintrag
+   zum Installieren.
+2. Bestätige den Hinweis mit **Installieren**.
+
+An geeigneter Stelle, etwa beim Scannen eines QR-Codes zur Aktivierung eines Sensors,
+bietet Green Ecolution die Installation auch von sich aus an. Dann erscheint der Hinweis
+ohne Umweg über das Menü, und es genügt der zweite Schritt.
+
+![Links das Menü von Chrome mit dem Eintrag zum Installieren, rechts der Hinweis mit der Schaltfläche Installieren](../images/install-android.png)
 
 > [!NOTE]
 > Bei einem privaten Fenster beziehungsweise Inkognito-Modus bieten die Browser die
