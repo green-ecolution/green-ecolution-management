@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Handbook",
+    "description": "Everything about using Green Ecolution, from signing in to managing roles.",
+    "pdfDownload": "Download the handbook as PDF",
+    "scale": "{chapters} chapters in {parts} parts",
+    "startReading": "Read from the start"
+  },
+  "search": {
+    "label": "Search the handbook",
+    "placeholder": "Search for a term",
+    "empty": "Nothing found for \"{query}\".",
+    "resultsLabel": "Search results",
+    "error": "Search is not available right now. Chapters can still be opened from the overview.",
+    "resultCount_one": "{count} result",
+    "resultCount_other": "{count} results"
+  },
+  "chapter": {
+    "backToOverview": "Back to the handbook overview",
+    "onThisPage": "On this page",
+    "contextHelp": "Help for this page",
+    "fallbackNotice": "This chapter is not available in English yet and is shown in German.",
+    "chapterNavigation": "Chapter navigation",
+    "previous": "Previous",
+    "next": "Next",
+    "sectionLink": "Link to this section",
+    "enlargeFigure": "Enlarge figure"
+  }
+}

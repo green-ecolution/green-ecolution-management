@@ -12,6 +12,7 @@
     "vehicles": "Vehicles",
     "sensors": "Sensors",
     "evaluations": "Evaluation",
+    "help": "Handbook",
     "debug": "Debug",
     "backToDashboard": "Back to your dashboard",
     "logoAlt": "Green Ecolution logo — smart green-space management",
@@ -51,11 +52,13 @@
     "settings": "Settings",
     "team": "Team & roles",
     "plugins": "Plugins",
-    "info": "System information"
+    "info": "System information",
+    "handbook": "Handbook"
   },
   "footer": {
     "tagline": "Smart green-space management - Green Ecolution {version}",
     "nav": "Footer navigation",
+    "handbook": "Handbook",
     "contact": "Contact",
     "imprint": "Imprint",
     "privacy": "Privacy Policy",
