@@ -49,3 +49,23 @@ export function searchHandbook(entries: SearchEntry[], query: string): SearchHit
     .sort((a, b) => a.rank - b.rank)
     .map(({ hit }) => hit)
 }
+
+export interface MatchParts {
+  before: string
+  match: string
+  after: string
+}
+
+/** Splits text around the first case-insensitive occurrence, so the hit can be marked. */
+export function splitOnMatch(text: string, query: string): MatchParts | null {
+  if (!isSearchableQuery(query)) return null
+  const needle = query.trim().toLowerCase()
+  const at = text.toLowerCase().indexOf(needle)
+  if (at < 0) return null
+
+  return {
+    before: text.slice(0, at),
+    match: text.slice(at, at + needle.length),
+    after: text.slice(at + needle.length),
+  }
+}

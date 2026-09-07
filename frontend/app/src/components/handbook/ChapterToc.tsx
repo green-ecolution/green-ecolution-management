@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useActiveSection } from '@/hooks/useActiveSection'
 import type { ChapterSection } from '@/lib/handbook/types'
 
-function ChapterToc({ sections }: { sections: ChapterSection[] }) {
+function ChapterToc({
+  sections,
+  withHeading = true,
+}: {
+  sections: ChapterSection[]
+  withHeading?: boolean
+}) {
   const { t } = useTranslation('help')
   const active = useActiveSection(sections.map((section) => section.anchor))
 
@@ -29,7 +35,7 @@ function ChapterToc({ sections }: { sections: ChapterSection[] }) {
 
   return (
     <nav className="text-sm">
-      <p className="font-lato font-semibold mb-2">{t('chapter.onThisPage')}</p>
+      {withHeading && <p className="font-lato font-semibold mb-2">{t('chapter.onThisPage')}</p>}
       <ul className="space-y-1 border-l border-dark-100">
         {sections.map((section) => (
           <li key={section.anchor} className={section.level === 3 ? 'pl-4' : ''}>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chapterNeighbours, handbookIndex, loadChapter } from './index'
+import { chapterNeighbours, firstChapter, handbookIndex, loadChapter } from './index'
 import type { HandbookIndex } from './types'
 
 describe('handbook index', () => {
@@ -71,5 +71,15 @@ describe('chapterNeighbours', () => {
 
   it('rejects an unknown chapter', () => {
     expect(() => chapterNeighbours('nope')).toThrow(/unknown chapter/)
+  })
+})
+
+describe('firstChapter', () => {
+  it('names the chapter the handbook opens with', () => {
+    expect(firstChapter()).toEqual({
+      slug: 'introduction',
+      title: 'Über Green Ecolution',
+      partTitle: 'Einstieg',
+    })
   })
 })

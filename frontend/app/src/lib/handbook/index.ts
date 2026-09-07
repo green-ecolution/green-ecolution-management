@@ -89,3 +89,8 @@ export function chapterNeighbours(slug: string): ChapterNeighbours {
     next: step(readingOrder[position + 1]),
   }
 }
+
+/** The chapter the handbook opens with, for the "read from the start" entry point. */
+export function firstChapter(): ChapterLink {
+  return chapterLink(readingOrder[0])
+}

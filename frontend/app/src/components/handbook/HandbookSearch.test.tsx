@@ -33,12 +33,14 @@ vi.mock('@/lib/handbook', () => ({
 
 const mockedLoadSearchEntries = vi.mocked(loadSearchEntries)
 
-function buildHandbookSearchRouter() {
+type Variant = 'page' | 'sidebar'
+
+function buildHandbookSearchRouter(variant: Variant) {
   const rootRoute = createRootRoute({ component: () => <Outlet /> })
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: () => <HandbookSearch />,
+    component: () => <HandbookSearch variant={variant} />,
   })
   const chapterRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -52,14 +54,14 @@ function buildHandbookSearchRouter() {
   })
 }
 
-function renderHandbookSearch() {
-  return render(<RouterProvider router={buildHandbookSearchRouter()} />)
+function renderHandbookSearch(variant: Variant = 'page') {
+  return render(<RouterProvider router={buildHandbookSearchRouter(variant)} />)
 }
 
 function renderHandbookSearchInStrictMode() {
   return render(
     <StrictMode>
-      <RouterProvider router={buildHandbookSearchRouter()} />
+      <RouterProvider router={buildHandbookSearchRouter('page')} />
     </StrictMode>,
   )
 }
@@ -67,6 +69,64 @@ function renderHandbookSearchInStrictMode() {
 describe('HandbookSearch', () => {
   beforeEach(() => {
     mockedLoadSearchEntries.mockReset()
+  })
+
+  const twoHits: SearchEntry[] = [
+    {
+      slug: 'watering-plans',
+      anchor: 'route-festlegen',
+      sectionTitle: 'Route festlegen',
+      text: 'Erst die Gruppen wählen, dann die Route berechnen lassen.',
+    },
+    {
+      slug: 'sensors',
+      anchor: 'zustaende',
+      sectionTitle: 'Zustände',
+      text: 'Die Route eines Sensors spielt hier keine Rolle.',
+    },
+  ]
+
+  it('marks the searched term inside the excerpt', async () => {
+    mockedLoadSearchEntries.mockResolvedValue(twoHits)
+    const user = userEvent.setup()
+    renderHandbookSearch()
+
+    await user.type(await screen.findByLabelText(/suchen/i), 'berechnen')
+
+    const marks = await screen.findAllByText('berechnen')
+    expect(marks.some((node) => node.tagName === 'MARK')).toBe(true)
+  })
+
+  it('announces how many results a query produced', async () => {
+    mockedLoadSearchEntries.mockResolvedValue(twoHits)
+    const user = userEvent.setup()
+    renderHandbookSearch()
+
+    await user.type(await screen.findByLabelText(/suchen/i), 'route')
+
+    expect(await screen.findByRole('status')).toHaveTextContent('2 Treffer')
+  })
+
+  it('clears the query and its results on escape', async () => {
+    mockedLoadSearchEntries.mockResolvedValue(twoHits)
+    const user = userEvent.setup()
+    renderHandbookSearch()
+
+    const field = await screen.findByLabelText(/suchen/i)
+    await user.type(field, 'route')
+    await screen.findByRole('link', { name: /Route festlegen/ })
+
+    await user.type(field, '{Escape}')
+
+    expect(screen.queryByRole('link', { name: /Route festlegen/ })).not.toBeInTheDocument()
+    expect(field).toHaveValue('')
+  })
+
+  it('keeps the field labelled when it sits in the sidebar', async () => {
+    mockedLoadSearchEntries.mockResolvedValue(twoHits)
+    renderHandbookSearch('sidebar')
+
+    expect(await screen.findByLabelText(/suchen/i)).toBeInTheDocument()
   })
 
   it('does not render an excerpt line for a title match on a section without paragraph text', async () => {
@@ -146,8 +206,6 @@ describe('HandbookSearch', () => {
 
     await user.type(await screen.findByLabelText(/suchen/i), 'route')
 
-    await waitFor(() => {
-      expect(screen.getByText('Route festlegen')).toBeInTheDocument()
-    })
+    expect(await screen.findByRole('link', { name: /Route festlegen/ })).toBeInTheDocument()
   })
 })

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft } from 'lucide-react'
 import { handbookIndex, loadChapter } from '@/lib/handbook'
 import Blocks from '@/components/handbook/Blocks'
-import ChapterToc from '@/components/handbook/ChapterToc'
+import ChapterAside from '@/components/handbook/ChapterAside'
 import ChapterPager from '@/components/handbook/ChapterPager'
 import LanguageFallbackNotice from '@/components/handbook/LanguageFallbackNotice'
 
@@ -22,7 +22,9 @@ function HandbookChapter() {
 
   return (
     <div className="container mt-6 mb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-12">
-      <article>
+      <ChapterAside sections={meta.sections} />
+
+      <article className="lg:col-start-1 lg:row-start-1">
         <Link
           to="/help"
           className="inline-flex items-center gap-2 text-sm text-dark-600 transition-colors duration-quick ease-out hover:text-dark"
@@ -36,10 +38,6 @@ function HandbookChapter() {
         <Blocks blocks={content.blocks} />
         <ChapterPager slug={meta.slug} />
       </article>
-
-      <aside className="mt-10 lg:mt-24 lg:sticky lg:top-24 lg:self-start">
-        <ChapterToc sections={meta.sections} />
-      </aside>
     </div>
   )
 }

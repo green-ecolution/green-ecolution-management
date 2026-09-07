@@ -3,7 +3,17 @@
    partial update can happen */
 import { Fragment } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Alert, AlertContent, AlertIcon } from '@green-ecolution/ui'
+import { useTranslation } from 'react-i18next'
+import { Link2 } from 'lucide-react'
+import {
+  Alert,
+  AlertContent,
+  AlertIcon,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from '@green-ecolution/ui'
 import { imageUrl } from '@/lib/handbook'
 import type { Block, Inline } from '@/lib/handbook/types'
 
@@ -84,14 +94,26 @@ function Runs({ runs }: { runs: Inline[] }) {
 }
 
 function One({ block }: { block: Block }) {
+  const { t } = useTranslation('help')
   switch (block.kind) {
     case 'heading': {
       const Tag = block.level === 2 ? 'h2' : 'h3'
       const size = block.level === 2 ? 'text-2xl mt-10' : 'text-xl mt-8'
+      // The anchor sits beside the heading rather than inside it, so it stays
+      // out of the heading's accessible name.
       return (
-        <Tag id={block.anchor} className={`font-lato font-bold scroll-mt-24 ${size}`}>
-          {block.text}
-        </Tag>
+        <div className={`group flex items-baseline gap-2 ${size}`}>
+          <Tag id={block.anchor} className="font-lato font-bold scroll-mt-24">
+            {block.text}
+          </Tag>
+          <a
+            href={`#${block.anchor}`}
+            aria-label={t('chapter.sectionLink')}
+            className="text-dark-300 opacity-0 transition-opacity duration-quick ease-out group-hover:opacity-100 hover:text-green-dark focus-visible:opacity-100"
+          >
+            <Link2 aria-hidden className="size-4" />
+          </a>
+        </div>
       )
     }
     case 'paragraph':
@@ -129,17 +151,39 @@ function One({ block }: { block: Block }) {
           </AlertContent>
         </Alert>
       )
-    case 'figure':
+    case 'figure': {
+      // The screenshots are desktop captures; on a phone the scaled-down copy is
+      // unreadable, so the full-size one has to be one tap away.
+      const source = imageUrl(block.image)
       return (
         <figure className="mt-8">
-          <img
-            src={imageUrl(block.image)}
-            alt={block.caption}
-            className="rounded-2xl border border-dark-100 shadow-cards"
-          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                aria-label={t('chapter.enlargeFigure')}
+                className="block w-full cursor-zoom-in"
+              >
+                <img
+                  src={source}
+                  alt={block.caption}
+                  className="rounded-2xl border border-dark-100 shadow-cards"
+                />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[96vw] sm:max-w-5xl">
+              <img src={source} alt={block.caption} className="w-full rounded-xl" />
+              {/* Doubles as the dialog's accessible name, hence DialogTitle
+                  rather than a plain figcaption. */}
+              <DialogTitle className="text-sm font-normal text-dark-600">
+                {block.caption}
+              </DialogTitle>
+            </DialogContent>
+          </Dialog>
           <figcaption className="mt-2 text-sm text-dark-600">{block.caption}</figcaption>
         </figure>
       )
+    }
     case 'table':
       return (
         <div className="mt-6 overflow-x-auto">

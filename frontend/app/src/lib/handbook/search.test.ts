@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isSearchableQuery, searchHandbook } from './search'
+import { isSearchableQuery, searchHandbook, splitOnMatch } from './search'
 import type { SearchEntry } from './types'
 
 const entries: SearchEntry[] = [
@@ -71,5 +71,39 @@ describe('isSearchableQuery', () => {
   it('trims surrounding whitespace before checking the length', () => {
     expect(isSearchableQuery('  a  ')).toBe(false)
     expect(isSearchableQuery('  ro  ')).toBe(true)
+  })
+})
+
+describe('splitOnMatch', () => {
+  it('splits around the match and keeps the original casing', () => {
+    expect(splitOnMatch('Erst die Route berechnen', 'route')).toEqual({
+      before: 'Erst die ',
+      match: 'Route',
+      after: ' berechnen',
+    })
+  })
+
+  it('leaves nothing before a match at the start', () => {
+    expect(splitOnMatch('Route festlegen', 'Route')).toEqual({
+      before: '',
+      match: 'Route',
+      after: ' festlegen',
+    })
+  })
+
+  it('splits on the first occurrence only', () => {
+    expect(splitOnMatch('Route und Route', 'route')?.after).toBe(' und Route')
+  })
+
+  it('returns nothing when the text does not contain the query', () => {
+    expect(splitOnMatch('Route festlegen', 'sensor')).toBeNull()
+  })
+
+  it('returns nothing for a query too short to search with', () => {
+    expect(splitOnMatch('Route festlegen', 'r')).toBeNull()
+  })
+
+  it('ignores whitespace around the query', () => {
+    expect(splitOnMatch('Route festlegen', '  route  ')?.match).toBe('Route')
   })
 })

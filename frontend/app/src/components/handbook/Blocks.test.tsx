@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Tests use ad-hoc routes not in the generated route tree
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import {
   createRootRoute,
@@ -160,5 +161,37 @@ describe('Blocks', () => {
       '/help/trees#liste',
     )
     expect(screen.getByRole('link', { name: 'karte' })).toHaveAttribute('href', '/map')
+  })
+})
+
+describe('section anchors', () => {
+  it('offers a link to the heading it renders', async () => {
+    renderBlocks([{ kind: 'heading', level: 2, text: 'Route festlegen', anchor: 'route' }])
+
+    expect(await screen.findByRole('link', { name: /Link zu diesem Abschnitt/i })).toHaveAttribute(
+      'href',
+      '#route',
+    )
+  })
+
+  it('leaves the heading name untouched by the anchor', async () => {
+    renderBlocks([{ kind: 'heading', level: 2, text: 'Route festlegen', anchor: 'route' }])
+
+    expect(await screen.findByRole('heading', { name: 'Route festlegen' })).toBeInTheDocument()
+  })
+})
+
+describe('figures', () => {
+  const figure: Block = { kind: 'figure', image: 'dashboard.png', caption: 'Das Dashboard' }
+
+  it('opens the screenshot at full size on demand', async () => {
+    const user = userEvent.setup()
+    renderBlocks([figure])
+
+    await user.click(await screen.findByRole('button', { name: /vergrößern/i }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(screen.getAllByAltText('Das Dashboard').length).toBeGreaterThan(1)
   })
 })
