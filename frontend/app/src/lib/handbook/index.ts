@@ -1,5 +1,12 @@
 import indexJson from '../../../../handbook/generated/index.json'
-import type { ChapterContent, HandbookIndex, SearchEntry } from './types'
+import type {
+  ChapterContent,
+  ChapterLink,
+  ChapterNeighbours,
+  ChapterStep,
+  HandbookIndex,
+  SearchEntry,
+} from './types'
 
 export const handbookIndex = indexJson as HandbookIndex
 
@@ -48,4 +55,37 @@ export function imageUrl(file: string): string {
   const url = images[file]
   if (!url) throw new Error(`handbook: missing image "${file}"`)
   return url
+}
+
+/** The order the parts spell out, which is also the order the PDF sets the chapters in. */
+const readingOrder = handbookIndex.parts.flatMap((part) => part.chapters)
+
+const partTitles = new Map(handbookIndex.parts.map((part) => [part.id, part.title]))
+
+function chapterLink(slug: string): ChapterLink {
+  const meta = handbookIndex.chapters[slug]
+  return {
+    slug,
+    title: meta.title,
+    partTitle: partTitles.get(meta.part) ?? '',
+  }
+}
+
+export function chapterNeighbours(slug: string): ChapterNeighbours {
+  const position = readingOrder.indexOf(slug)
+  if (position === -1) throw new Error(`handbook: unknown chapter "${slug}"`)
+
+  const herePart = handbookIndex.chapters[slug].part
+  const step = (neighbour: string | undefined): ChapterStep | null => {
+    if (!neighbour) return null
+    return {
+      ...chapterLink(neighbour),
+      entersNewPart: handbookIndex.chapters[neighbour].part !== herePart,
+    }
+  }
+
+  return {
+    previous: step(readingOrder[position - 1]),
+    next: step(readingOrder[position + 1]),
+  }
 }

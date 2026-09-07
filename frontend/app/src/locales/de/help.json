@@ -15,6 +15,9 @@
     "backToOverview": "Zur Handbuch-Übersicht",
     "onThisPage": "Auf dieser Seite",
     "contextHelp": "Hilfe zu dieser Seite",
-    "fallbackNotice": "Dieses Kapitel liegt noch nicht auf Englisch vor und wird auf Deutsch angezeigt."
+    "fallbackNotice": "Dieses Kapitel liegt noch nicht auf Englisch vor und wird auf Deutsch angezeigt.",
+    "chapterNavigation": "Kapitel-Navigation",
+    "previous": "Zurück",
+    "next": "Weiter"
   }
 }

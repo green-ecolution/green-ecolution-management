@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { handbookIndex, loadChapter } from '@/lib/handbook'
 import Blocks from '@/components/handbook/Blocks'
 import ChapterToc from '@/components/handbook/ChapterToc'
+import ChapterPager from '@/components/handbook/ChapterPager'
 import LanguageFallbackNotice from '@/components/handbook/LanguageFallbackNotice'
 
 export const Route = createFileRoute('/help/$slug')({
@@ -33,6 +34,7 @@ function HandbookChapter() {
         <p className="mt-2 text-dark-600">{meta.summary}</p>
         <LanguageFallbackNotice className="mt-6" />
         <Blocks blocks={content.blocks} />
+        <ChapterPager slug={meta.slug} />
       </article>
 
       <aside className="mt-10 lg:mt-24 lg:sticky lg:top-24 lg:self-start">

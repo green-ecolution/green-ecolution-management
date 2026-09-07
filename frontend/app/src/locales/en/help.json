@@ -15,6 +15,9 @@
     "backToOverview": "Back to the handbook overview",
     "onThisPage": "On this page",
     "contextHelp": "Help for this page",
-    "fallbackNotice": "This chapter is not available in English yet and is shown in German."
+    "fallbackNotice": "This chapter is not available in English yet and is shown in German.",
+    "chapterNavigation": "Chapter navigation",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

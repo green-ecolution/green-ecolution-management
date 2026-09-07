@@ -59,3 +59,19 @@ export interface SearchEntry {
   sectionTitle: string
   text: string
 }
+
+export interface ChapterLink {
+  slug: string
+  title: string
+  partTitle: string
+}
+
+export interface ChapterStep extends ChapterLink {
+  /** True when following this step leaves the part the reader is currently in. */
+  entersNewPart: boolean
+}
+
+export interface ChapterNeighbours {
+  previous: ChapterStep | null
+  next: ChapterStep | null
+}

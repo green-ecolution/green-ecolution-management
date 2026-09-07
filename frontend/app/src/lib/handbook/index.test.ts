@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { handbookIndex, loadChapter } from './index'
+import { chapterNeighbours, handbookIndex, loadChapter } from './index'
 import type { HandbookIndex } from './types'
 
 describe('handbook index', () => {
@@ -24,5 +24,52 @@ describe('handbook index', () => {
 
   it('rejects an unknown chapter', async () => {
     await expect(loadChapter('nope')).rejects.toThrow(/unknown chapter/)
+  })
+})
+
+describe('chapterNeighbours', () => {
+  it('points at the chapters around one in the middle of a part', () => {
+    const { previous, next } = chapterNeighbours('trees')
+
+    expect(previous).toEqual({
+      slug: 'map',
+      title: 'Die Karte',
+      partTitle: 'Grünflächen',
+      entersNewPart: false,
+    })
+    expect(next).toEqual({
+      slug: 'treecluster',
+      title: 'Bewässerungsgruppen',
+      partTitle: 'Grünflächen',
+      entersNewPart: false,
+    })
+  })
+
+  it('marks a step that leaves the current part', () => {
+    expect(chapterNeighbours('sensors').next).toEqual({
+      slug: 'settings-profile',
+      title: 'Profil',
+      partTitle: 'Verwaltung',
+      entersNewPart: true,
+    })
+    expect(chapterNeighbours('settings-profile').previous?.entersNewPart).toBe(true)
+  })
+
+  it('has no predecessor for the first chapter', () => {
+    const { previous, next } = chapterNeighbours('introduction')
+
+    expect(previous).toBeNull()
+    expect(next?.slug).toBe('getting-started')
+  })
+
+  it('has no successor for the last chapter', () => {
+    const { previous, next } = chapterNeighbours('troubleshooting')
+
+    expect(previous?.slug).toBe('glossary')
+    expect(next).toBeNull()
+  })
+
+  it('rejects an unknown chapter', () => {
+    expect(() => chapterNeighbours('nope')).toThrow(/unknown chapter/)
   })
 })
