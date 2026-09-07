@@ -86,6 +86,19 @@ files with YAML frontmatter, one per file, under `frontend/handbook/content/de/`
 generator turns them into both the in-app help under `/help` and a PDF, so a chapter never
 has to be written twice for the two outputs.
 
+A change a user would notice belongs in the handbook in the same pull request: a new feature,
+a renamed label, a changed workflow, a status that no longer exists. The `routes` list in a
+chapter's frontmatter links the context-help button in the application to that chapter, so a
+new or renamed route belongs there too.
+
+Figures are part of that. `frontend/handbook/images/README.md` holds the brief and the capture
+conditions for every screenshot in the handbook. A feature that needs its own figure gets a
+brief there; a change that makes an existing screenshot wrong should say whether that figure
+is to be re-shot, replaced by a different view, or dropped, rather than leaving a stale one in
+place. You do not have to take the capture yourself: write a placeholder with `writePlaceholder`
+from `frontend/handbook/src/placeholder.mjs` so the PDF still builds, and say so in the pull
+request.
+
 Only the Markdown constructs the generator can render identically in both outputs are
 permitted, and that set is closed: anything outside it (an unsupported block or inline node,
 a heading deeper than `###`, a bare relative link, and so on) fails the build with an error
