@@ -48,6 +48,47 @@ Zustand kommen, erklärt das [Gruppendashboard](./treecluster.md#bewasserungssta
 
 ![Die eingeblendete Legende Bewässerungsstatus mit ihren fünf Zuständen](../images/map-legend.png)
 
+## Sich auf der Karte bewegen
+
+Die Karte bedienst du vollständig mit der Maus. Halte die linke Maustaste gedrückt und
+zieh die Karte an die Stelle, die du sehen willst. Mit dem Mausrad zoomst du hinein und
+heraus, und zwar immer auf den Punkt unter dem Mauszeiger: Was du unter dem Cursor hast,
+bleibt beim Zoomen an seinem Platz. Dieselben Zoomstufen erreichst du über die
+Schaltflächen mit dem Plus und dem Minus in der Kartensteuerung rechts unten und über
+einen Doppelklick auf die Karte, der eine Stufe näher heranholt; mit gehaltener
+Umschalttaste geht der Doppelklick eine Stufe heraus. Ziehst du mit gehaltener
+Umschalttaste ein Rechteck auf, zoomt die Karte genau auf diesen Ausschnitt.
+
+Die Blickrichtung änderst du mit der rechten Maustaste. Halte sie gedrückt und zieh nach
+links oder rechts, um die Karte zu drehen, oder nach oben und unten, um sie zu neigen.
+Beides zusammen ergibt dieselbe perspektivische Ansicht, die auch die Schaltfläche **3D**
+einnimmt. Wenn du die rechte Maustaste nicht verwenden kannst, halte stattdessen die
+Strg-Taste und zieh mit der linken.
+
+An einem Tablet oder Telefon verschiebst du die Karte mit einem Finger und zoomst mit der
+Aufziehbewegung aus zwei Fingern. Drehst du diese zwei Finger gegeneinander, dreht sich
+die Karte mit; ziehst du sie gemeinsam nach oben oder unten, neigt sie sich. Ein doppeltes
+Antippen zoomt eine Stufe näher heran, ein Tipp mit zwei Fingern eine Stufe heraus.
+
+Zum Zoomen mit nur einer Hand tippst du doppelt, lässt den Finger beim zweiten Mal aber
+liegen: Ziehst du ihn dann nach unten, zoomt die Karte stufenlos hinein, nach oben wieder
+heraus.
+
+Auch über die Tastatur lässt sich die Karte führen, sobald sie den Fokus hat. Dafür genügt
+ein Klick auf die Karte oder das Weiterspringen mit der Tabulatortaste.
+
+| Taste                              | Wirkung                  |
+| ---------------------------------- | ------------------------ |
+| Pfeiltasten                        | Karte verschieben        |
+| Plus und Minus                     | hinein- und herauszoomen |
+| Umschalt + Pfeil links oder rechts | Karte drehen             |
+| Umschalt + Pfeil oben oder unten   | Karte neigen             |
+
+> [!NOTE]
+> Die Karte bleibt am Rand des Gebiets stehen, das für deine Installation hinterlegt ist,
+> und auch der Zoom ist nach beiden Seiten begrenzt. Weiter hinaus geht es nicht, das ist
+> kein Fehler.
+
 ## Die 3D-Ansicht
 
 Die Schaltfläche **3D** in der Kartensteuerung rechts unten kippt die Karte in eine
