@@ -49,19 +49,22 @@ out next to the rest:
   forms such as the vehicle form collapse from two columns to one. A narrow shot of a
   desktop view therefore shows a layout the caption does not describe. The portrait
   format is reserved for views that genuinely belong on a hand-held device.
-- The portrait shots are 900 px wide: `sensor-wizard-qr.png` (a field device, the
-  activation is done at the tree) and `install-android.png`. Portrait is capped at
-  900×1100 because the PDF scales every figure to the full text width, so a phone's
-  native 9:19.5 frame would render taller than the page. Crop a phone screenshot around
-  the menu or prompt to reach that size; don't squash the whole screen into it. Crop the
-  whole prompt, though: `install-android.png` starts at the top edge of Chrome's install
-  sheet and keeps it complete down to the app previews, so the figure shows the dialog
-  the reader sees and not just its first half.
-- `install-ios-safari.png` is the one figure built from several phone screenshots: three
-  panels side by side, one per step, each cropped from a 1290 px wide capture and all
-  scaled by the same factor so the iOS interface reads at one size across the figure.
-  A numbered badge over each panel ties it to the numbered steps in the chapter. Panels
-  end where their content ends, so their heights differ; that is intended.
+- The one portrait shot is 900 px wide: `sensor-wizard-qr.png` (a field device, the
+  activation is done at the tree). Portrait is capped at 900×1100 because the PDF scales
+  every figure to the full text width, so a phone's native 9:19.5 frame would render
+  taller than the page. Crop a phone screenshot around the menu or prompt to reach that
+  size; don't squash the whole screen into it.
+- `install-ios-safari.png` and `install-android.png` are built from several phone
+  screenshots: panels side by side, one per step or per way to install, each cropped from
+  one capture and all scaled by the same factor so the phone interface reads at one size
+  across the figure. A numbered badge over each panel ties it to the order the chapter
+  names them in. Panels end where their content ends, so their heights differ; that is
+  intended. Both figures share the layout: 1440 px wide, panels starting 35 px from the
+  left with a 29 px gap, a 1 px `#DCDCDC` frame on `#FCFCFC`, and the badge (`#4C7741`,
+  34 px) plus its Lato-Bold label in the 95 px strip above the panels. Crop each panel
+  around what the label names, from an edge of the interface rather than through it —
+  `install-android.png` starts at the top edge of Chrome's install sheet and keeps it
+  complete down to the app previews.
 - Light appearance (not dark mode).
 - German interface language.
 - Signed in as a user with full administration rights, so every button and panel the
@@ -87,7 +90,7 @@ out next to the rest:
 | `app-shell.png`              | 1440×900  | Erste Schritte (`getting-started`)                | Any page with the sidebar expanded (not collapsed to icons), the breadcrumb trail visible in the header, and the user avatar/menu visible at the bottom of the sidebar.                                                                                                                                                                                                                                                      |
 | `install-desktop-chrome.png` | 1440×900  | Erste Schritte (`getting-started`)                | Desktop Chrome or Edge with the install icon visible in the address bar and its "Green Ecolution installieren" confirmation popover open. Browser chrome IS part of this shot — the address bar is the subject — so capture the window, not just the viewport.                                                                                                                                                               |
 | `install-ios-safari.png`     | 1440×815  | Erste Schritte (`getting-started`)                | Three panels side by side, matching the three numbered steps in the chapter: Safari's menu with **Teilen**, the share sheet scrolled so **Zum Home-Bildschirm** is in the list, and the "Zum Home-Bildschirm" dialog with **Hinzufügen**. Shot on an iPhone in German iOS interface language.                                                                                                                                                                                                                                                  |
-| `install-android.png`        | 900×1100  | Erste Schritte (`getting-started`)                | Chrome on Android showing the in-app install prompt with the "Installieren" button — easiest to trigger on the sensor activation QR screen. Frame the sheet itself, from its top edge down through the app previews; the dimmed page and the address bar above it are not the subject.                                                                                                                                                                                                                                                                                  |
+| `install-android.png`        | 1440×1156 | Erste Schritte (`getting-started`)                | Two panels, matching the two ways the chapter names: Chrome's install sheet with the **Installieren** button (easiest to trigger on the sensor activation QR screen), and Chrome's menu scrolled so the install entry is in the list. Frame the sheet from its top edge down through the app previews; the dimmed page and the address bar above it are not the subject.                                                                                                                                                                                                                                                                                  |
 | `dashboard.png`              | 1440×900  | Das Dashboard (`dashboard`)                       | The personal dashboard with the greeting and all six tiles under "Schnellverweise" filled in and readable, for a user who can open every tile.                                                                                                                                                                                                                                                                               |
 | `map-overview.png`           | 1440×900  | Die Karte (`map`)                                 | The map zoomed to a level where several tree clusters are visible as coloured outlines with a mix of individual trees and grouped markers, no side panel or legend open.                                                                                                                                                                                                                                                     |
 | `map-legend.png`             | 1440×900  | Die Karte (`map`)                                 | The map with the "Bewässerungsstatus" legend open (via the question-mark button, bottom left), showing all five status entries with their actual colours.                                                                                                                                                                                                                                                                    |
