@@ -18,4 +18,8 @@ pub enum TreeError {
     /// Cluster soil type is `Unknown` (or unset), so no KA5 calibration applies.
     #[error("soil type is uncalibrated (unknown)")]
     UncalibratedSoil,
+    /// The planting year has not arrived yet, so the tree is not in the ground:
+    /// no reading can describe it and no sensor can be attached to it.
+    #[error("tree is not planted yet")]
+    NotYetPlanted,
 }

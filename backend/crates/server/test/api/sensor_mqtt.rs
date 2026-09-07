@@ -790,3 +790,68 @@ async fn ingest_keeps_the_plausible_depth_of_a_partly_faulty_uplink() {
     .unwrap();
     assert_eq!(flagged, 1, "only the 40 cm probe is faulty");
 }
+
+fn future_planting_year() -> i32 {
+    chrono::Datelike::year(&chrono::Utc::now()) + 3
+}
+
+#[tokio::test]
+async fn activating_a_sensor_on_a_tree_planted_in_the_future_returns_422() {
+    let app = spawn_app().await;
+    let model_id = app.ecodrizzler_model_id().await;
+    create_sensor(&app, "eui-mqtt-future-1", model_id).await;
+
+    let tree_id = Uuid::now_v7();
+    sqlx::query!(
+        r#"INSERT INTO trees (id, planting_year, species, number, latitude, longitude, geometry, description, organization_id)
+        VALUES ($1, $2, 'Eiche', 'T-MQ-FUT-1', 54.79, 9.45, ST_SetSRID(ST_MakePoint(9.45, 54.79), 4326), 'Test', '01980000-0000-7000-8000-000000000001')"#,
+        tree_id,
+        future_planting_year(),
+    )
+    .execute(&app.db_pool)
+    .await
+    .unwrap();
+
+    let r = app
+        .post_json(
+            "/api/v1/sensors/eui-mqtt-future-1/activate",
+            &json!({ "tree_id": tree_id }),
+        )
+        .await;
+
+    assert_eq!(r.status().as_u16(), 422);
+    let body: serde_json::Value = r.json().await.unwrap();
+    assert_eq!(body["code"], "tree.not_yet_planted");
+}
+
+// The API now refuses this pairing, but rows predating the rule still carry it.
+// Such a tree must report no status rather than a score invented from readings.
+#[tokio::test]
+async fn ingest_leaves_a_tree_planted_in_the_future_on_unknown() {
+    let app = spawn_app().await;
+    let model_id = app.ecodrizzler_model_id().await;
+    create_sensor(&app, "eui-mqtt-future-2", model_id).await;
+
+    sqlx::query!(
+        r#"INSERT INTO trees (id, planting_year, species, number, latitude, longitude, geometry, description, sensor_id, watering_status, organization_id)
+        VALUES ($1, $2, 'Eiche', 'T-MQ-FUT-2', 54.79, 9.45, ST_SetSRID(ST_MakePoint(9.45, 54.79), 4326), 'Test', $3, 'good'::watering_status, '01980000-0000-7000-8000-000000000001')"#,
+        Uuid::now_v7(),
+        future_planting_year(),
+        "eui-mqtt-future-2",
+    )
+    .execute(&app.db_pool)
+    .await
+    .unwrap();
+
+    app.ingest_ecodrizzler("eui-mqtt-future-2", 5)
+        .await
+        .unwrap();
+
+    let status: String = sqlx::query_scalar!(
+        r#"SELECT watering_status::text AS "ws!" FROM trees WHERE number = 'T-MQ-FUT-2'"#
+    )
+    .fetch_one(&app.db_pool)
+    .await
+    .unwrap();
+    assert_eq!(status, "unknown");
+}

@@ -69,9 +69,12 @@ impl TreeWateringFromSensorHandler {
         let new_status = match outcome {
             Ok(s) => s,
             // No calibration applies, so a stored status can never be refreshed.
-            Err(TreeError::UncalibratedSoil | TreeError::BeyondMonitoring) => {
-                WateringStatus::Unknown
-            }
+            // A tree still in the future has no soil to measure at all.
+            Err(
+                TreeError::UncalibratedSoil
+                | TreeError::BeyondMonitoring
+                | TreeError::NotYetPlanted,
+            ) => WateringStatus::Unknown,
             Err(e) => {
                 tracing::debug!(error = %e, "skipping tree watering update; calibration rejected payload");
                 return Ok(vec![]);

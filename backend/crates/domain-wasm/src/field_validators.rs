@@ -6,13 +6,12 @@ use domain::shared::distance::Distance;
 use domain::shared::email::Email;
 use domain::shared::phone_number::PhoneNumber;
 use domain::shared::water_capacity::WaterCapacity;
-use domain::tree::{PlantingYear, Species, TreeNumber};
+use domain::tree::{MAX_PLANTING_YEAR, MIN_PLANTING_YEAR, PlantingYear, Species, TreeNumber};
 use domain::user::Username;
 use domain::vehicle::{NumberPlate, VehicleDimension, VehicleModel};
-use serde_wasm_bindgen::to_value;
 use wasm_bindgen::prelude::*;
 
-use crate::issue::ValidationIssue;
+use crate::issue::{ValidationIssue, to_js};
 
 /// Convert a value-object construction result into a `JsValue` containing
 /// either `null` (success) or a serialized [`ValidationIssue`] (failure).
@@ -24,7 +23,7 @@ fn finish<T>(
         Ok(_) => Ok(JsValue::NULL),
         Err(err) => {
             let issue = ValidationIssue::from_error(&err, path);
-            Ok(to_value(&issue).map_err(|e| JsError::new(&e.to_string()))?)
+            to_js(&issue)
         }
     }
 }
@@ -44,6 +43,25 @@ pub fn validate_planting_year(year: u32) -> Result<JsValue, JsError> {
     finish(PlantingYear::new(year), "plantingYear")
 }
 
+/// Exposed so input controls can constrain their steppers to the same range the
+/// domain enforces, instead of restating the bounds in TypeScript.
+#[wasm_bindgen(js_name = plantingYearMin)]
+pub fn planting_year_min() -> u32 {
+    MIN_PLANTING_YEAR
+}
+
+#[wasm_bindgen(js_name = plantingYearMax)]
+pub fn planting_year_max() -> u32 {
+    MAX_PLANTING_YEAR
+}
+
+/// Whether the planting still lies ahead, by the same rule the backend uses to
+/// refuse a sensor and to withhold a watering status.
+#[wasm_bindgen(js_name = plantingYearIsFuture)]
+pub fn planting_year_is_future(year: u32) -> bool {
+    PlantingYear::reconstitute(year).is_future(chrono::Utc::now())
+}
+
 #[wasm_bindgen(js_name = validateCoordinate)]
 pub fn validate_coordinate(latitude: f64, longitude: f64) -> Result<JsValue, JsError> {
     // The domain returns the first failing axis; the path maps accordingly.
@@ -59,7 +77,7 @@ pub fn validate_coordinate(latitude: f64, longitude: f64) -> Result<JsValue, JsE
                 _ => "latitude",
             };
             let issue = ValidationIssue::from_error(&err, path);
-            Ok(to_value(&issue).map_err(|e| JsError::new(&e.to_string()))?)
+            to_js(&issue)
         }
     }
 }
@@ -109,7 +127,7 @@ pub fn validate_vehicle_dimension(
                 _ => "dimension",
             };
             let issue = ValidationIssue::from_error(&err, path);
-            Ok(to_value(&issue).map_err(|e| JsError::new(&e.to_string()))?)
+            to_js(&issue)
         }
     }
 }

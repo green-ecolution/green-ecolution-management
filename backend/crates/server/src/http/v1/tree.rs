@@ -91,11 +91,12 @@ pub async fn list_trees(
         .map(domain::shared::watering_status::WateringStatus::from)
         .collect();
 
+    // A lookup, not a write: rows predating the lower bound must stay filterable.
     let planting_years = params
         .planting_year
         .into_iter()
-        .map(|y| PlantingYear::new(y as u32))
-        .collect::<Result<Vec<_>, _>>()?;
+        .map(|y| PlantingYear::reconstitute(y as u32))
+        .collect::<Vec<_>>();
 
     let visible = state
         .authorization_service
@@ -441,11 +442,12 @@ pub async fn list_tree_markers(
             detail,
         })?;
 
+    // A lookup, not a write: rows predating the lower bound must stay filterable.
     let planting_years = params
         .planting_year
         .into_iter()
-        .map(|y| PlantingYear::new(y as u32))
-        .collect::<Result<Vec<_>, _>>()?;
+        .map(|y| PlantingYear::reconstitute(y as u32))
+        .collect::<Vec<_>>();
 
     let watering_statuses = params
         .watering_status

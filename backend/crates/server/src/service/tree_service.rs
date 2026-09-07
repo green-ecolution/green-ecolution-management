@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use chrono::Utc;
+
 use domain::{
     Id,
     authorization::Visibility,
@@ -143,7 +145,12 @@ impl TreeService {
 
     #[tracing::instrument(level = "debug", skip_all)]
     pub async fn create(&self, draft: TreeDraft) -> Result<Tree, ServiceError> {
+        // `save_new` writes the draft's sensor straight to the row, so the
+        // aggregate rule in `attach_sensor` never runs on this path.
         if let Some(ref sid) = draft.sensor_id {
+            if draft.planting_year.is_future(Utc::now()) {
+                return Err(ServiceError::TreeNotYetPlanted);
+            }
             self.ensure_sensor_unassigned(sid, None).await?;
             self.ensure_sensor_matches_org(sid, draft.organization_id)
                 .await?;
@@ -183,8 +190,11 @@ impl TreeService {
             draft.provenance,
         ));
         events.extend(tree.move_to_cluster(draft.cluster_id));
+        // Runs after replace_details, so the rule sees the planting year the
+        // request is setting: keeping a sensor on a tree moved into the future
+        // is rejected, dropping it in the same edit stays allowed.
         events.extend(match draft.sensor_id {
-            Some(sid) => tree.attach_sensor(sid),
+            Some(sid) => tree.attach_sensor(sid, Utc::now())?,
             None => tree.detach_sensor(),
         });
         self.writer.save(&tree).await?;
@@ -217,7 +227,7 @@ impl TreeService {
         let mut tree = self.reader.by_id(id).await?;
         self.ensure_sensor_matches_org(&sensor_id, tree.organization_id())
             .await?;
-        let events = tree.attach_sensor(sensor_id);
+        let events = tree.attach_sensor(sensor_id, Utc::now())?;
         self.writer.save(&tree).await?;
         self.event_bus.publish_all(events).await;
         Ok(tree)
