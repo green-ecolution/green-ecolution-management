@@ -28,11 +28,11 @@ RUN if [ "$ENV" == "dev" ]; then \
 #############################################
 FROM alpine:3.22 AS handbook
 # amd64-only pin; add an arch mapping here if another platform target is ever built.
-# 0.14.2 is the version the handbook layout was verified against; the local `just`
+# 0.15.1 is the version the handbook layout was verified against; the local `just`
 # recipe and the CI job must stay on the same pin. TYPST_VERSION and TYPST_SHA256
 # describe one release each and must be updated together.
-ARG TYPST_VERSION=0.14.2
-ARG TYPST_SHA256=a6044cbad2a954deb921167e257e120ac0a16b20339ec01121194ff9d394996d
+ARG TYPST_VERSION=0.15.1
+ARG TYPST_SHA256=a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c
 RUN apk add --no-cache curl tar xz \
     && curl -fsSL -o /tmp/typst.tar.xz \
         "https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz" \
