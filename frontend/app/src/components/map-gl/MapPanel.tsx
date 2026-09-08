@@ -8,6 +8,8 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 interface MapPanelProps extends PropsWithChildren {
   title: string
   onClose: () => void
+  // Never for overflow: the panel body scrolls on its own, and an overflow here
+  // would take the header with the close button out of reach.
   className?: string
   // Accessible label for the close button (the panel context differs per flow).
   closeLabel?: string
@@ -87,7 +89,9 @@ const MapPanel = ({
         <h2 className="font-lato text-lg font-semibold">{title}</h2>
         {headerControls}
       </div>
-      {children}
+      {/* Same scroll container as the mobile sheet: the panel height is capped, so
+          without it anything the children cannot shrink escapes the white box. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</div>
     </div>
   )
 }

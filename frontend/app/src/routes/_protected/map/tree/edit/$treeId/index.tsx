@@ -129,7 +129,7 @@ function EditTreeOnMap() {
     <>
       {!isProvider && <DraggableMarker lng={pos.lng} lat={pos.lat} onDragEnd={handleDragEnd} />}
 
-      <MapPanel title={t('tree.editTitle')} onClose={handleCancel} className="overflow-y-auto">
+      <MapPanel title={t('tree.editTitle')} onClose={handleCancel}>
         {!isProvider && (
           <p className="mb-5 shrink-0 text-sm text-dark-600">{t('tree.dragMarkerHint')}</p>
         )}

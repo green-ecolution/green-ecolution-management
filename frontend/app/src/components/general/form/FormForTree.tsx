@@ -59,7 +59,7 @@ const FormForTree = (props: FormForTreeProps) => {
     <form
       className={
         props.fullWidth
-          ? 'flex flex-col gap-y-6'
+          ? 'flex shrink-0 flex-col gap-y-6'
           : 'flex flex-col gap-y-6 lg:grid lg:grid-cols-2 lg:gap-11'
       }
       onSubmit={handleSubmit(props.onSubmit)}
