@@ -32,7 +32,7 @@ For further information, visit:
 **Core Stack:**
 
 - [React 19](https://react.dev/) — UI library
-- [TypeScript](https://www.typescriptlang.org/) — type safety
+- [TypeScript 7](https://www.typescriptlang.org/) — type safety; `tsc` is the native compiler, while the `typescript` dependency is aliased to `@typescript/typescript6` (bin `tsc6`) because typescript-eslint and vite-plugin-dts still need the TypeScript 6 JavaScript API
 - [Vite](https://vitejs.dev/) — fast dev server and bundler
 - [pnpm](https://pnpm.io/) — workspace-based package manager (required)
 
