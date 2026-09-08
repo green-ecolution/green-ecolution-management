@@ -9,6 +9,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import { handbook } from '../handbook/src/vite-plugin.mjs'
+import { navigateFallbackDenylist } from './src/lib/pwaNavigateFallback'
 
 const useTraefik = !!process.env.USE_TRAEFIK
 
@@ -61,6 +62,7 @@ export default defineConfig({
         // Handbook screenshots must not enter the precache: they would add their
         // full weight to every install. They are runtime-cached on first read.
         globIgnores: ['**/assets/handbook/**'],
+        navigateFallbackDenylist,
         runtimeCaching: [
           {
             urlPattern: /\/assets\/handbook\/.*\.png$/,
