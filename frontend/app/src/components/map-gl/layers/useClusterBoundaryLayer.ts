@@ -7,6 +7,7 @@ import { clusterQueries } from '@/api/queries'
 import { useMaplibreMap } from '../MapContext'
 import { LAYERS, SOURCES, STATUS_COLOR_EXPRESSION } from '../mapStyle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 import { usePointerCursor } from './usePointerCursor'
 
 export interface UseClusterBoundaryLayerOptions {
@@ -82,7 +83,7 @@ const useClusterBoundaryLayer = ({
           properties: { id: b.id, name: b.name, status: b.wateringStatus },
         })),
     }
-    map.getSource<GeoJSONSource>(SOURCES.clusterBoundaries)?.setData(fc)
+    setSourceData(map.getSource<GeoJSONSource>(SOURCES.clusterBoundaries), fc)
   }, [map, data, wateringStatuses, clusterIds, nameFilter])
 
   useEffect(() => {

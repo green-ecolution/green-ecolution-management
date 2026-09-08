@@ -4,6 +4,7 @@ import type { Feature, LineString } from 'geojson'
 import { useMaplibreMap } from '../MapContext'
 import { LAYERS, ROUTE_COLORS, SOURCES } from '../mapStyle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 
 export interface UseRouteLayerOptions {
   /** GeoJSON positions ([lng, lat]); undefined/empty hides the route. */
@@ -54,7 +55,7 @@ const useRouteLayer = ({ coordinates }: UseRouteLayerOptions) => {
       geometry: { type: 'LineString', coordinates: coordinates ?? [] },
       properties: {},
     }
-    map.getSource<GeoJSONSource>(SOURCES.route)?.setData({
+    setSourceData(map.getSource<GeoJSONSource>(SOURCES.route), {
       type: 'FeatureCollection',
       features: coordinates?.length ? [feature] : [],
     })

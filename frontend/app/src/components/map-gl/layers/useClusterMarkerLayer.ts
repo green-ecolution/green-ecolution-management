@@ -7,6 +7,7 @@ import { clusterQueries } from '@/api/queries'
 import { useMaplibreMap } from '../MapContext'
 import { LAYERS, SOURCES, STATUS_COLOR_EXPRESSION, TREE_ZOOM_THRESHOLD } from '../mapStyle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 import { usePointerCursor } from './usePointerCursor'
 
 export interface UseClusterMarkerLayerOptions {
@@ -97,7 +98,7 @@ const useClusterMarkerLayer = ({
           properties: { id: c.id, name: c.name, count: c.treeCount, status: c.wateringStatus },
         })),
     }
-    map.getSource<GeoJSONSource>(SOURCES.clusterMarkers)?.setData(fc)
+    setSourceData(map.getSource<GeoJSONSource>(SOURCES.clusterMarkers), fc)
   }, [map, data, wateringStatuses, clusterIds, nameFilter])
 
   usePointerCursor(LAYERS.clusterMarkers, interactive)

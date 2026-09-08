@@ -16,6 +16,7 @@ import {
 } from '../mapStyle'
 import useViewportBBox from '../hooks/useViewportBBox'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 import { usePointerCursor } from './usePointerCursor'
 
 // Opacity of trees that belong to another organization.
@@ -169,9 +170,10 @@ const useSelectableTreeLayer = ({
 
   useEffect(() => {
     if (!isMapAlive(map)) return
-    map
-      .getSource<GeoJSONSource>(SOURCES.selectTrees)
-      ?.setData(toFC(data?.data ?? [], selectedSet, organizationId))
+    setSourceData(
+      map.getSource<GeoJSONSource>(SOURCES.selectTrees),
+      toFC(data?.data ?? [], selectedSet, organizationId),
+    )
   }, [map, data, selectedSet, organizationId])
 
   usePointerCursor(LAYERS.selectTreePoints)

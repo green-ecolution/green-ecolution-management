@@ -38,7 +38,7 @@
     "immer": "^11.1.18",
     "lottie-react": "^2.4.0",
     "lucide-react": "^1.41.0",
-    "maplibre-gl": "^5.0.0",
+    "maplibre-gl": "^6.7.0",
     "oidc-client-ts": "^3.5.0",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
