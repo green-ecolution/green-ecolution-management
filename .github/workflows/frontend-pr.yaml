@@ -110,7 +110,7 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Install typst
-        uses: typst-community/setup-typst@v4
+        uses: typst-community/setup-typst@v5
         with:
           typst-version: ${{ steps.typst_version.outputs.version }}
       - name: Compile the handbook pdf
