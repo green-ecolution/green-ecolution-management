@@ -150,18 +150,6 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: [
-      { find: '@', replacement: path.resolve(import.meta.dirname, './src') },
-      {
-        find: /^lottie-react$/,
-        replacement: path.resolve(
-          import.meta.dirname,
-          'node_modules/lottie-react/build/index.es.js',
-        ),
-      },
-      // The light player drops the expression engine and its direct `eval`.
-      // Our SVGator animations use no expressions.
-      { find: /^lottie-web$/, replacement: 'lottie-web/build/player/esm/lottie_light.min.js' },
-    ],
+    alias: [{ find: '@', replacement: path.resolve(import.meta.dirname, './src') }],
   },
 })
