@@ -5,6 +5,7 @@ import { toast } from '@green-ecolution/ui'
 import { useMaplibreMap } from '../MapContext'
 import { metersCircle } from '../metersCircle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 
 const ACCURACY_SOURCE = 'gps-accuracy'
 const ACCURACY_FILL = 'gps-accuracy-fill'
@@ -93,11 +94,11 @@ export const useGpsPosition = () => {
         return
       }
       ensureLayers(map)
-      map.getSource<GeoJSONSource>(ACCURACY_SOURCE)?.setData({
+      setSourceData(map.getSource<GeoJSONSource>(ACCURACY_SOURCE), {
         type: 'FeatureCollection',
         features: accuracy > 0 ? [metersCircle(longitude, latitude, accuracy)] : [],
       })
-      map.getSource<GeoJSONSource>(DOT_SOURCE)?.setData({
+      setSourceData(map.getSource<GeoJSONSource>(DOT_SOURCE), {
         type: 'FeatureCollection',
         features: [
           {

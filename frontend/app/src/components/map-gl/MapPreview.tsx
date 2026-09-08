@@ -1,5 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import maplibregl, { type LngLatBoundsLike, type Map as MaplibreMap } from 'maplibre-gl'
+import { Map as MaplibreMap, type LngLatBoundsLike } from 'maplibre-gl'
 import { type PropsWithChildren, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@green-ecolution/ui'
@@ -48,7 +48,7 @@ const MapPreviewCanvas = ({
     const framing = bounds
       ? { bounds, fitBoundsOptions: FIT_OPTIONS }
       : { center: center ?? fallbackCenter ?? ([0, 0] as [number, number]), zoom }
-    const m = new maplibregl.Map({
+    const m = new MaplibreMap({
       container: containerRef.current,
       style: OPENFREEMAP_STYLE_URL,
       interactive,

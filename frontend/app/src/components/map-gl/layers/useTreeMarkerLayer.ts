@@ -5,6 +5,7 @@ import type { WateringStatus } from '@green-ecolution/backend-client'
 import { useMaplibreMap } from '../MapContext'
 import { STATUS_COLOR_EXPRESSION, TREE_ICON_IMAGE, TREE_ICON_URL } from '../mapStyle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 
 export interface TreeMarkerPoint {
   id: string
@@ -155,7 +156,7 @@ const useTreeMarkerLayer = ({
 
   useEffect(() => {
     if (!isMapAlive(map)) return
-    map.getSource<GeoJSONSource>(sourceId)?.setData(fc)
+    setSourceData(map.getSource<GeoJSONSource>(sourceId), fc)
   }, [map, sourceId, fc])
 
   useEffect(() => {

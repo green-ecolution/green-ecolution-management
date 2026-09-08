@@ -6,6 +6,7 @@ import { clusterQueries } from '@/api/queries'
 import { useMaplibreMap } from '../MapContext'
 import { LAYERS, SOURCES, STATUS_COLOR_EXPRESSION } from '../mapStyle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 import { usePointerCursor } from './usePointerCursor'
 
 export interface UseSelectableClusterLayerOptions {
@@ -98,7 +99,7 @@ const useSelectableClusterLayer = ({
         },
       })),
     }
-    map.getSource<GeoJSONSource>(SOURCES.selectClusters)?.setData(fc)
+    setSourceData(map.getSource<GeoJSONSource>(SOURCES.selectClusters), fc)
   }, [map, data, selectedSet, disabledSet])
 
   usePointerCursor(LAYERS.selectClusterPoints)

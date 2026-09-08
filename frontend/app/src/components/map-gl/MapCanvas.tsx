@@ -1,5 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import maplibregl, { type Map as MaplibreMap } from 'maplibre-gl'
+import { Map as MaplibreMap } from 'maplibre-gl'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { infoQueries } from '@/api/queries'
@@ -18,7 +18,7 @@ const MapCanvas = ({ children }: React.PropsWithChildren) => {
   useEffect(() => {
     if (!containerRef.current) return
     const { mapCenter, mapZoom } = useStore.getState()
-    const m = new maplibregl.Map({
+    const m = new MaplibreMap({
       container: containerRef.current,
       style: OPENFREEMAP_STYLE_URL,
       center: [mapCenter[1], mapCenter[0]],

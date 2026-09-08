@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { GeoJSONSource, Map as MaplibreMap } from 'maplibre-gl'
 import { metersCircle } from '../metersCircle'
 import { isMapAlive } from '../mapReady'
+import { setSourceData } from '../setSourceData'
 
 // idPrefix must be unique per ring; two rings sharing a prefix clash on the same source/layer ids.
 export const useAccuracyRing = (
@@ -49,6 +50,6 @@ export const useAccuracyRing = (
       accuracyMeters && accuracyMeters > 0
         ? [metersCircle(longitude, latitude, accuracyMeters)]
         : []
-    map.getSource<GeoJSONSource>(sourceId)?.setData({ type: 'FeatureCollection', features })
+    setSourceData(map.getSource<GeoJSONSource>(sourceId), { type: 'FeatureCollection', features })
   }, [map, sourceId, longitude, latitude, accuracyMeters])
 }

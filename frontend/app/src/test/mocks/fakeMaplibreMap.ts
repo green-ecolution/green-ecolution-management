@@ -41,7 +41,7 @@ export const createFakeMap = () => {
     },
     getMaxBounds: vi.fn(() => ({ contains: () => boundsContains })),
     addSource: vi.fn((id: string) => {
-      sources.set(id, { setData: vi.fn() })
+      sources.set(id, { setData: vi.fn(() => Promise.resolve()) })
     }),
     getSource: vi.fn((id: string) => sources.get(id)),
     addLayer: vi.fn((layer: { id: string }) => {
