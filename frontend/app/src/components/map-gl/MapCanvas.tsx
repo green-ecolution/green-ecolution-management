@@ -1,5 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { Map as MaplibreMap } from 'maplibre-gl'
+import { MaplibreMap } from './maplibre'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { infoQueries } from '@/api/queries'

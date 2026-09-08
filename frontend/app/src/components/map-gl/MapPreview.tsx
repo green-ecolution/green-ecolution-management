@@ -1,5 +1,6 @@
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { Map as MaplibreMap, type LngLatBoundsLike } from 'maplibre-gl'
+import { type LngLatBoundsLike } from 'maplibre-gl'
+import { MaplibreMap } from './maplibre'
 import { type PropsWithChildren, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@green-ecolution/ui'
