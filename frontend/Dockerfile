@@ -26,7 +26,7 @@ RUN if [ "$ENV" == "dev" ]; then \
 #############################################
 # Handbook PDF
 #############################################
-FROM alpine:3.22 AS handbook
+FROM alpine:3.24 AS handbook
 # amd64-only pin; add an arch mapping here if another platform target is ever built.
 # 0.15.1 is the version the handbook layout was verified against; the local `just`
 # recipe and the CI job must stay on the same pin. TYPST_VERSION and TYPST_SHA256
