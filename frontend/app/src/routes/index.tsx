@@ -4,7 +4,7 @@ import KeyFacts from '@/components/startpage/KeyFacts'
 import { createFileRoute } from '@tanstack/react-router'
 import { Mail, MoveRight } from 'lucide-react'
 import { Button } from '@green-ecolution/ui'
-import Lottie from 'lottie-react'
+import { LottieLight } from 'lottie-react'
 import dashboardAnimation from '../../src/animations/dashboardAnimation.json'
 import QuickLinks from '@/components/startpage/QuickLinks'
 import { useAuthSession } from '@/lib/auth/authSessionContext'
@@ -54,7 +54,7 @@ function Startpage() {
         </div>
 
         <div className="mt-10 max-w-screen-md mx-auto">
-          <Lottie animationData={dashboardAnimation} />
+          <LottieLight src={dashboardAnimation} autoplay loop />
         </div>
       </article>
 

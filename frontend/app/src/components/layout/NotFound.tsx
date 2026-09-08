@@ -1,4 +1,4 @@
-import Lottie from 'lottie-react'
+import { LottieLight } from 'lottie-react'
 import cableAnimation from '../../animations/cableAnimation.json'
 import ButtonLink from '../general/links/ButtonLink'
 import { MoveRight } from 'lucide-react'
@@ -12,7 +12,7 @@ function NotFound() {
   return (
     <>
       <figure aria-hidden="true">
-        <Lottie className="h-[40vh] max-h-96" animationData={cableAnimation} />
+        <LottieLight className="h-[40vh] max-h-96" src={cableAnimation} autoplay loop />
       </figure>
       <div className="mx-auto max-w-208 xl:max-w-screen-lg">
         <section className="mb-28 px-4 md:px-6 lg:mb-36">

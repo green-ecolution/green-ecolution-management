@@ -1,3 +1,8 @@
+/* Rank lottie-react's own layer below Tailwind's, so utility classes on
+   <Lottie> win over the library's zero-specificity defaults. Must precede
+   the Tailwind import, which declares its layers on first appearance. */
+@layer lottie-react;
+
 @import 'tailwindcss';
 @import '../../../packages/ui/src/styles/fonts.css';
 @import '../../../packages/ui/src/styles/globals.css';

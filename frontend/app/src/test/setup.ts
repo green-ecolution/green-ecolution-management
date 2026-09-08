@@ -5,7 +5,7 @@ import { createI18n } from '@/lib/i18n'
 import { server } from './mocks/server'
 
 // The lottie player touches a real canvas on import, which jsdom does not provide
-vi.mock('lottie-react', () => ({ default: () => null }))
+vi.mock('lottie-react', () => ({ LottieLight: () => null }))
 
 // Mock PointerEvent methods for Radix UI components (not available in jsdom)
 Element.prototype.hasPointerCapture = vi.fn(() => false)
