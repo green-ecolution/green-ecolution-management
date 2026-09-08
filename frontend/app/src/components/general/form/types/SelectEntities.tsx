@@ -2,7 +2,7 @@ import React from 'react'
 import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import SelectedCard from '../../cards/SelectedCard'
-import { Button } from '@green-ecolution/ui'
+import { Button, cn } from '@green-ecolution/ui'
 
 interface SelectEntitiesProps {
   onChange: (entries: string[]) => void
@@ -31,8 +31,19 @@ const SelectEntities: React.FC<SelectEntitiesProps> = ({
   const hasEntities = entityIds.length > 0
 
   return (
-    <div className={fill ? 'flex min-h-0 flex-1 flex-col' : undefined}>
-      <div className="mb-2.5 flex items-center justify-between gap-2">
+    <div
+      className={
+        fill
+          ? // Needs a floor, never min-h-0: this block is the only shrinkable item in the
+            // panel column, so without one a short viewport shrinks it below its own
+            // content and the form's actions get drawn on top of the selection. The empty
+            // hint takes min-h-fit because its height depends on the translated text; the
+            // list takes a fixed floor so a long selection scrolls inside itself.
+            cn('flex flex-1 flex-col', hasEntities ? 'min-h-40' : 'min-h-fit')
+          : undefined
+      }
+    >
+      <div className="mb-2.5 flex shrink-0 items-center justify-between gap-2">
         <p className="block font-semibold text-dark-800">
           {t('form.selectEntities.selectedLabel', { label })}
           {required && <span className="text-destructive">&nbsp;*</span>}
@@ -66,7 +77,7 @@ const SelectEntities: React.FC<SelectEntitiesProps> = ({
           ))}
         </ul>
       ) : (
-        <div className="rounded-lg border border-dashed border-dark-200 bg-dark-50/60 px-4 py-6 text-center text-sm">
+        <div className="shrink-0 rounded-lg border border-dashed border-dark-200 bg-dark-50/60 px-4 py-6 text-center text-sm">
           {required ? (
             <p className="font-semibold text-destructive">
               {t('form.selectEntities.requiredHint')}

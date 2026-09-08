@@ -72,15 +72,10 @@ function NewTree() {
 
   return (
     <>
-      <MapPanel
-        title={t('tree.newTitle')}
-        onClose={handleCancel}
-        className="overflow-y-auto"
-        mobileCollapsedSnap="260px"
-      >
+      <MapPanel title={t('tree.newTitle')} onClose={handleCancel} mobileCollapsedSnap="260px">
         {pos ? (
           <>
-            <div className="mb-5 flex items-center gap-3 rounded-lg bg-dark-50 px-3 py-2.5">
+            <div className="mb-5 flex shrink-0 items-center gap-3 rounded-lg bg-dark-50 px-3 py-2.5">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-primary-500 shadow-sm">
                 <MapPin className="size-4" />
               </span>
