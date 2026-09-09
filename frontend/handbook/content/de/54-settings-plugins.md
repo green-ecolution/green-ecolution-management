@@ -38,7 +38,8 @@ optional eine Beschreibung sowie die Organisation, der das Plugin gehören soll,
 Pflichtangaben. Der Slug besteht aus Kleinbuchstaben, Ziffern und Bindestrichen und
 lässt sich nach dem Anlegen nicht mehr ändern: Er dient zugleich als Herkunftskennung
 aller Daten, die das Plugin importiert, und ein nachträglicher Wechsel würde diese
-Zuordnung verwaisen lassen.
+Zuordnung verwaisen lassen. Einzelne Wörter sind für die Plugin-Schnittstelle selbst
+reserviert, derzeit `me`; der Dialog weist sie mit einem Hinweis zurück.
 
 Darunter legst du fest, ob und wie das Plugin eine eigene Ansicht mitbringt: **Keine
 Ansicht** für ein reines Datenplugin, **Extern gehostet** für eine Adresse außerhalb
@@ -54,14 +55,27 @@ Klartext. Das ist der einzige Moment, in dem du ihn zu sehen bekommst: Green Eco
 speichert nur einen Hashwert davon und kann ihn dir später nicht erneut anzeigen.
 Kopiere ihn also sofort dorthin, wo das Plugin ihn zur Anmeldung braucht.
 
+Ein frisch installiertes Plugin ist zunächst deaktiviert. Solange es das ist, weist
+Green Ecolution seine Anfragen auch mit gültigem Schlüssel ab. Aktiviere es deshalb
+auf seiner Detailseite, bevor du den Schlüssel weitergibst, sonst scheitert der erste
+Anmeldeversuch des Plugins ohne erkennbaren Grund.
+
 ![Der Installationsdialog eines Plugins mit beiden Rechtematrizen](../images/plugin-install.png)
 
 Ein installiertes Plugin lässt sich über seine Detailseite jederzeit umbenennen,
 beschreiben, in seiner Ansicht und seinen Rechten anpassen, vorübergehend deaktivieren
 oder ganz deinstallieren. Deaktivieren sperrt lediglich die Anmeldung des Plugins an
 seiner Schnittstelle, ohne bereits importierte Daten anzutasten; erst **Deinstallieren**
-entfernt das Plugin selbst, wobei von ihm bereits angelegte Bäume unangetastet erhalten
-bleiben.
+entfernt das Plugin selbst.
+
+> [!WARNING]
+> Beim Deinstallieren bleiben die vom Plugin angelegten Bäume zwar erhalten, ihre
+> Verknüpfung mit dem Plugin geht dabei aber verloren. Installierst du dasselbe Plugin
+> später erneut, bekommt es eine neue Kennung und erkennt die alten Datensätze nicht
+> wieder: Der nächste Import legt sie allesamt ein zweites Mal an, und an die
+> ursprünglichen Datensätze kommt das Plugin nicht mehr heran. Bei einem Kataster mit
+> zehntausenden Bäumen ist das eine große Menge an Dubletten. Zum vorübergehenden
+> Stilllegen eines Plugins ist **Deaktivieren** deshalb der richtige Weg.
 
 ## Die beiden Rechtemengen
 

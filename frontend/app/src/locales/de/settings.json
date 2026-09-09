@@ -119,6 +119,7 @@
       "installedTitle": "Plugin installiert",
       "rotatedTitle": "Schlüssel erneuert",
       "description": "Dieser Schlüssel wird nur jetzt angezeigt und lässt sich später nicht erneut einsehen. Bewahre ihn sicher auf.",
+      "activationHint": "Das Plugin ist zunächst deaktiviert. Solange es das ist, weist Green Ecolution seinen Adapter auch mit gültigem Schlüssel ab. Aktiviere es auf der Detailseite, bevor du den Schlüssel weitergibst.",
       "keyLabel": "API-Schlüssel",
       "close": "Schließen"
     },
@@ -138,7 +139,7 @@
       "enableHint": "Ein deaktiviertes Plugin kann sich nicht mehr anmelden und keine Daten mehr schreiben.",
       "uninstallButton": "Deinstallieren",
       "uninstallConfirmTitle": "Plugin deinstallieren?",
-      "uninstallConfirmDescription": "{name} wird entfernt. Von diesem Plugin bereits importierte Daten bleiben erhalten.",
+      "uninstallConfirmDescription": "{name} wird entfernt. Die bereits importierten Datensätze bleiben in Green Ecolution erhalten, aber ihre Verknüpfung mit dem Plugin geht verloren. Wird dasselbe Plugin später erneut installiert, erkennt es diese Datensätze nicht wieder und importiert alles ein zweites Mal.",
       "saveButton": "Speichern",
       "cancelButton": "Abbrechen",
       "toast": {

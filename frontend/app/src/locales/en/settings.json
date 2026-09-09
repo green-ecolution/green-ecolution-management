@@ -119,6 +119,7 @@
       "installedTitle": "Plugin installed",
       "rotatedTitle": "Key rotated",
       "description": "This key is shown only now and cannot be viewed again afterwards. Keep it safe.",
+      "activationHint": "The plugin starts out disabled. While it is, Green Ecolution rejects its adapter even with a valid key. Enable it on the detail page before you hand the key over.",
       "keyLabel": "API key",
       "close": "Close"
     },
@@ -138,7 +139,7 @@
       "enableHint": "A disabled plugin can no longer authenticate or write any data.",
       "uninstallButton": "Uninstall",
       "uninstallConfirmTitle": "Uninstall the plugin?",
-      "uninstallConfirmDescription": "{name} will be removed. Data already imported by this plugin is kept.",
+      "uninstallConfirmDescription": "{name} will be removed. The records it has already imported stay in Green Ecolution, but the link between them and the plugin is lost. If the same plugin is installed again later, it will not recognise those records and will import everything a second time.",
       "saveButton": "Save",
       "cancelButton": "Cancel",
       "toast": {

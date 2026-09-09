@@ -12,7 +12,7 @@ import {
 
 interface PluginKeyDialogProps {
   open: boolean
-  /** Distinguishes the install-time title from the rotate-time one; the body is identical. */
+  /** Install-time and rotate-time differ in title, and install adds the activation hint. */
   variant: 'installed' | 'rotated'
   apiKey: string
   onOpenChange: (open: boolean) => void
@@ -30,7 +30,13 @@ const PluginKeyDialog = ({ open, variant, apiKey, onOpenChange }: PluginKeyDialo
               ? t('plugin.keyDialog.installedTitle')
               : t('plugin.keyDialog.rotatedTitle')}
           </DialogTitle>
-          <DialogDescription>{t('plugin.keyDialog.description')}</DialogDescription>
+          <DialogDescription>
+            {t('plugin.keyDialog.description')}
+            {/* Only on install: save_new writes enabled = false, so the adapter
+                is answered with 403 plugin.disabled until an admin enables it.
+                Rotation leaves the flag alone, so the hint would be wrong there. */}
+            {variant === 'installed' && ` ${t('plugin.keyDialog.activationHint')}`}
+          </DialogDescription>
         </DialogHeader>
 
         <CopyableText label={t('plugin.keyDialog.keyLabel')} value={apiKey} />
