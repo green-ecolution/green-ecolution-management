@@ -86,6 +86,8 @@ pub struct AppState {
     pub organization_service: Arc<OrganizationService>,
     pub role_service: Arc<RoleService>,
     pub authorization_service: Arc<AuthorizationService>,
+    pub plugin_reader: Arc<dyn domain::plugin::PluginReader>,
+    pub plugin_writer: Arc<dyn domain::plugin::PluginWriter>,
 }
 
 #[derive(OpenApi)]

@@ -22,6 +22,7 @@ use crate::{
         pg_comment::PgCommentRepository,
         pg_evaluation::PgEvaluationRepository,
         pg_organization::PgOrganizationRepository,
+        pg_plugin::PgPluginRepository,
         pg_region::PgRegionRepository,
         pg_role::PgRoleRepository,
         pg_sensor::PgSensorRepository,
@@ -195,6 +196,8 @@ impl Application {
             organization_service: services.organization,
             role_service: services.role,
             authorization_service: services.authorization,
+            plugin_reader: repos.plugin_reader,
+            plugin_writer: repos.plugin_writer,
         });
 
         let listener = TcpListener::bind(address).await?;
@@ -314,6 +317,8 @@ struct Repositories {
     statistics: Arc<dyn StatisticsReader>,
     start_point_reader: Arc<dyn domain::start_point::StartPointReader>,
     start_point_writer: Arc<dyn domain::start_point::StartPointWriter>,
+    plugin_reader: Arc<dyn domain::plugin::PluginReader>,
+    plugin_writer: Arc<dyn domain::plugin::PluginWriter>,
 }
 
 impl Repositories {
@@ -332,6 +337,7 @@ impl Repositories {
         let comment_repo = Arc::new(PgCommentRepository::new(pool.clone()));
         let watering_plan_repo = Arc::new(PgWateringPlanRepository::new(pool.clone()));
         let start_point_repo = Arc::new(PgStartPointRepository::new(pool.clone()));
+        let plugin_repo = Arc::new(PgPluginRepository::new(pool.clone()));
 
         Self {
             organization_reader: organization_repo.clone(),
@@ -359,6 +365,8 @@ impl Repositories {
             statistics: Arc::new(PgStatisticsRepo::new(pool.clone())),
             start_point_reader: start_point_repo.clone(),
             start_point_writer: start_point_repo,
+            plugin_reader: plugin_repo.clone(),
+            plugin_writer: plugin_repo,
         }
     }
 }

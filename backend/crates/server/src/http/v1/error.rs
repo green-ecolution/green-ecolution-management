@@ -102,10 +102,11 @@ fn repository_error_response(e: &RepositoryError) -> (StatusCode, &'static str) 
 /// `IntoResponse` impls so `ServiceError::Auth` cannot drift from `AuthError`.
 fn auth_error_response(e: &AuthError) -> (StatusCode, String) {
     let status = match e {
-        AuthError::MissingToken | AuthError::InvalidToken(_) | AuthError::TokenExpired => {
-            StatusCode::UNAUTHORIZED
-        }
-        AuthError::Forbidden => StatusCode::FORBIDDEN,
+        AuthError::MissingToken
+        | AuthError::InvalidToken(_)
+        | AuthError::TokenExpired
+        | AuthError::PluginKeyInvalid => StatusCode::UNAUTHORIZED,
+        AuthError::Forbidden | AuthError::PluginDisabled => StatusCode::FORBIDDEN,
         AuthError::IdpUnavailable(_) => StatusCode::SERVICE_UNAVAILABLE,
     };
     let message = match e {

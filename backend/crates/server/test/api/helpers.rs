@@ -90,6 +90,39 @@ impl TestApp {
             .expect("failed to execute request")
     }
 
+    pub async fn post_json_with_bearer(
+        &self,
+        path: &str,
+        body: &serde_json::Value,
+        token: &str,
+    ) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(format!("{}{}", self.address, path))
+            .bearer_auth(token)
+            .json(body)
+            .send()
+            .await
+            .expect("failed to execute request")
+    }
+
+    pub async fn get_with_bearer(&self, path: &str, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .get(format!("{}{}", self.address, path))
+            .bearer_auth(token)
+            .send()
+            .await
+            .expect("failed to execute request")
+    }
+
+    pub async fn delete_with_bearer(&self, path: &str, token: &str) -> reqwest::Response {
+        reqwest::Client::new()
+            .delete(format!("{}{}", self.address, path))
+            .bearer_auth(token)
+            .send()
+            .await
+            .expect("failed to execute request")
+    }
+
     /// Mirrors what `infra::mqtt::build_eco_drizzler` produces after parsing:
     /// three watermarks (30/60/90 cm) plus temperature and humidity at 15 cm.
     pub async fn ingest_ecodrizzler(
@@ -290,6 +323,14 @@ pub async fn spawn_app_with_routing_and_auth(streamlet_url: &str, auth: AuthSett
     let app = spawn_with_settings(settings).await;
     seed_routing_depots(&app.db_pool).await;
     app
+}
+
+pub async fn spawn_app_with_plugins() -> TestApp {
+    let mut settings = Settings::for_test(disabled_auth_settings());
+    settings.info.health_check_interval_secs = 1;
+    settings.info.update_check_repo = None;
+    settings.plugins.enabled = true;
+    spawn_with_settings(settings).await
 }
 
 /// Seeds the same start points the production seed file provides, plus a

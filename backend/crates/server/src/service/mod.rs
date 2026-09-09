@@ -296,6 +296,13 @@ pub enum AuthError {
     Forbidden,
     #[error("identity provider unavailable: {0}")]
     IdpUnavailable(String),
+    /// Separate from `InvalidToken`: a plugin key is not a JWT, and the code
+    /// must let a client tell it apart from a bad user token without parsing
+    /// prose. Never carries the key, the secret or the hash.
+    #[error("invalid plugin key")]
+    PluginKeyInvalid,
+    #[error("plugin is disabled")]
+    PluginDisabled,
 }
 
 impl AuthError {
@@ -306,6 +313,8 @@ impl AuthError {
             Self::TokenExpired => "auth.token_expired",
             Self::Forbidden => "auth.forbidden",
             Self::IdpUnavailable(_) => "auth.idp_unavailable",
+            Self::PluginKeyInvalid => "plugin.key_invalid",
+            Self::PluginDisabled => "plugin.disabled",
         }
     }
 }
