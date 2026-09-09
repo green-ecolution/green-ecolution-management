@@ -34,6 +34,7 @@ import {
   OrganizationDetailResponse,
   OrganizationResponse,
   pluginApi,
+  PluginResponse,
   regionApi,
   ResponseError,
   RoleResponse,
@@ -499,6 +500,12 @@ export const pluginsQuery = () =>
   queryOptions({
     queryKey: ['plugins'],
     queryFn: () => pluginApi.listPlugins(),
+  })
+
+export const pluginQuery = (slug: string) =>
+  queryOptions<PluginResponse>({
+    queryKey: ['plugins', slug],
+    queryFn: () => pluginApi.getPlugin({ pluginSlug: slug }),
   })
 
 export const routingStartPointsQuery = () =>

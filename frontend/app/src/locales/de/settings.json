@@ -53,10 +53,103 @@
     "overviewTitle": "Übersicht der Plugins",
     "overviewIntro": "Hier findest du eine Übersicht aller installierten Plugins. Diese Plugins erweitern die Funktionalität der Anwendung und können eine Vielzahl nützlicher Features bieten. Klicke auf eines der Plugins, um mehr darüber zu erfahren.",
     "loading": "Laden von Plugins...",
-    "startAriaLabel": "{name} starten",
-    "startLabel": "{name} starten",
     "empty": "Zur Zeit sind keine Plugins registriert.",
-    "unavailable": "Das Plugin {pluginName} kann derzeit nicht geladen werden. Das Plugin-System wird überarbeitet."
+    "installButton": "Plugin installieren",
+    "detailAriaLabel": "{name} öffnen",
+    "neverSeen": "Noch kein Kontakt",
+    "columns": {
+      "status": "Status",
+      "slug": "Slug",
+      "organization": "Organisation",
+      "lastSeen": "Letztes Lebenszeichen"
+    },
+    "status": {
+      "enabled": "Aktiv",
+      "disabled": "Deaktiviert"
+    },
+    "entityName": "Plugin",
+    "backLabel": "Zurück zur Übersicht",
+    "notFoundBackLabel": "Zurück zur Übersicht",
+    "install": {
+      "title": "Plugin installieren",
+      "description": "Verbindet ein externes System mit Green Ecolution und stellt ihm ein API-Zugriffsrecht aus.",
+      "slugLabel": "Slug",
+      "slugHint": "Kleinbuchstaben, Ziffern und Bindestriche. Dient auch als Herkunftskennung importierter Daten und lässt sich später nicht mehr ändern.",
+      "nameLabel": "Name",
+      "descriptionLabel": "Beschreibung",
+      "organizationLabel": "Organisation",
+      "organizationPlaceholder": "Organisation wählen",
+      "organizationSearchPlaceholder": "Organisation suchen",
+      "frontendModeLabel": "Ansicht",
+      "frontendModeOption": {
+        "none": "Keine Ansicht",
+        "external": "Extern gehostet",
+        "proxied": "Im Cluster (proxied)"
+      },
+      "targetLabel": "Adresse",
+      "targetExternalHint": "Absolute https-Adresse, localhost ausgenommen.",
+      "targetProxiedHint": "Host und Port des internen Dienstes, z. B. plugin-backend:8080.",
+      "permissionsHeading": "Rechte des Plugins",
+      "permissionsHint": "Diese Rechte darf das Plugin selbst nutzen, wenn es Daten in Green Ecolution schreibt.",
+      "accessPermissionsHeading": "Zugriffsrechte für die Ansicht",
+      "accessPermissionsHint": "Wer die Ansicht des Plugins öffnen darf. Übernimmt zunächst die Rechte des Plugins; eine eigene Änderung hier beendet diese Übernahme dauerhaft. Eine Ansicht mit Aktionsknöpfen reicht die Rechte des Plugins an ihren Bediener weiter — lockere diese Rechte deshalb nur bewusst.",
+      "slugRequired": "Gib einen Slug an.",
+      "slugInvalid": "Nur Kleinbuchstaben, Ziffern und Bindestriche, nicht am Anfang oder Ende.",
+      "nameRequired": "Gib dem Plugin einen Namen.",
+      "organizationRequired": "Wähle eine Organisation.",
+      "targetRequired": "Gib eine Adresse an.",
+      "targetInvalidUrl": "Das ist keine gültige Adresse.",
+      "targetRequiresHttps": "Die externe Adresse muss https verwenden (außer bei localhost).",
+      "targetInvalidHostPort": "Erwartet wird host:port, zum Beispiel plugin-backend:8080.",
+      "targetInvalidPort": "Der Port muss zwischen 1 und 65535 liegen.",
+      "submit": "Installieren"
+    },
+    "permissionMatrix": {
+      "areaColumnLabel": "Bereich",
+      "accessPrefix": "Zugang",
+      "actionShort": {
+        "read": "Lesen",
+        "create": "Anlegen",
+        "update": "Bearbeiten",
+        "delete": "Löschen"
+      }
+    },
+    "keyDialog": {
+      "installedTitle": "Plugin installiert",
+      "rotatedTitle": "Schlüssel erneuert",
+      "description": "Dieser Schlüssel wird nur jetzt angezeigt und lässt sich später nicht erneut einsehen. Bewahre ihn sicher auf.",
+      "keyLabel": "API-Schlüssel",
+      "close": "Schließen"
+    },
+    "detail": {
+      "loading": "Plugin wird geladen",
+      "slugLabel": "Slug",
+      "createdLabel": "Installiert am {date}",
+      "lastSeenLabel": "Letztes Lebenszeichen: {date}",
+      "credentialLabel": "API-Schlüssel",
+      "credentialSet": "Hinterlegt",
+      "credentialMissing": "Kein Schlüssel hinterlegt",
+      "rotateButton": "Schlüssel erneuern",
+      "rotateConfirmTitle": "Schlüssel erneuern?",
+      "rotateConfirmDescription": "Der bisherige Schlüssel wird sofort ungültig. Hinterlege den neuen Schlüssel dort, wo das Plugin ihn braucht.",
+      "enableLabel": "Aktiviert",
+      "enableHint": "Ein deaktiviertes Plugin kann sich nicht mehr anmelden und keine Daten mehr schreiben.",
+      "uninstallButton": "Deinstallieren",
+      "uninstallConfirmTitle": "Plugin deinstallieren?",
+      "uninstallConfirmDescription": "{name} wird entfernt. Von diesem Plugin bereits importierte Daten bleiben erhalten.",
+      "saveButton": "Speichern",
+      "cancelButton": "Abbrechen",
+      "toast": {
+        "saved": "Gespeichert",
+        "saveFailed": "Das Plugin konnte nicht gespeichert werden.",
+        "rotated": "Schlüssel erneuert",
+        "rotateFailed": "Der Schlüssel konnte nicht erneuert werden.",
+        "uninstalled": "Plugin deinstalliert",
+        "uninstallFailed": "Das Plugin konnte nicht deinstalliert werden.",
+        "installed": "Plugin installiert",
+        "installFailed": "Das Plugin konnte nicht installiert werden."
+      }
+    }
   },
   "notProvided": "Nicht hinterlegt",
   "dialog": {
@@ -412,6 +505,18 @@
           "create": "Neue Rolle anlegen oder kopieren",
           "update": "Rechte einer Rolle ändern",
           "delete": "Rolle löschen"
+        }
+      },
+      "plugin": {
+        "label": "Plugins",
+        "pluralNoun": "Plugins",
+        "singular": "Plugin",
+        "description": "Externe Anbindungen",
+        "hint": {
+          "read": "Installierte Plugins einsehen",
+          "create": "Neues Plugin installieren",
+          "update": "Plugin-Konfiguration ändern oder Schlüssel erneuern",
+          "delete": "Plugin deinstallieren"
         }
       }
     }
