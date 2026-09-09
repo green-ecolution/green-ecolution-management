@@ -366,6 +366,8 @@ mod tests {
             ServiceError::Auth(AuthError::TokenExpired),
             ServiceError::Auth(AuthError::Forbidden),
             ServiceError::Auth(AuthError::IdpUnavailable("x".into())),
+            ServiceError::Auth(AuthError::PluginKeyInvalid),
+            ServiceError::Auth(AuthError::PluginDisabled),
             ServiceError::TreeAlreadyHasSensor,
             ServiceError::SensorAlreadyAssigned,
             ServiceError::AlreadyActivated,

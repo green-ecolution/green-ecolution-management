@@ -5,7 +5,7 @@ use axum::{
     http::{header, request::Parts},
 };
 
-use domain::plugin::Plugin;
+use domain::{RepositoryError, plugin::Plugin};
 
 use crate::{
     http::AppState,
@@ -38,11 +38,15 @@ impl FromRequestParts<Arc<AppState>> for PluginPrincipal {
             .ok_or(AuthError::MissingToken)?;
 
         let (id, secret) = plugin_key::parse_key(raw).ok_or(AuthError::PluginKeyInvalid)?;
-        let plugin = state
-            .plugin_reader
-            .by_id(domain::Id::new(id))
-            .await
-            .map_err(|_| AuthError::PluginKeyInvalid)?;
+        // Only `NotFound` means "this key names no plugin". Every other
+        // repository failure (a dead pool, `Internal`, `DataIntegrity`, ...) is
+        // a real infrastructure problem and must surface as its own 5xx and get
+        // logged, not disappear behind an unauthenticated-looking 401.
+        let plugin = match state.plugin_reader.by_id(domain::Id::new(id)).await {
+            Ok(plugin) => plugin,
+            Err(RepositoryError::NotFound) => return Err(AuthError::PluginKeyInvalid.into()),
+            Err(e) => return Err(e.into()),
+        };
 
         let stored = plugin.key_hash().ok_or(AuthError::PluginKeyInvalid)?;
         if !constant_time_eq(stored.as_str(), plugin_key::hash_secret(&secret).as_str()) {
