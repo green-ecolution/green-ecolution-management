@@ -33,7 +33,7 @@ export const SegmentedControl = <T extends string>({
     onChange(next.value)
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault()
@@ -49,7 +49,6 @@ export const SegmentedControl = <T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      onKeyDown={handleKeyDown}
       className={cn('inline-flex items-center gap-0.5 rounded-lg bg-dark-100 p-0.5', className)}
     >
       {options.map((option, index) => {
@@ -63,6 +62,7 @@ export const SegmentedControl = <T extends string>({
             disabled={disabled}
             tabIndex={selected || (value === null && index === 0) ? 0 : -1}
             onClick={() => onChange(option.value)}
+            onKeyDown={handleKeyDown}
             className={cn(
               'rounded-md font-nunito-sans whitespace-nowrap transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

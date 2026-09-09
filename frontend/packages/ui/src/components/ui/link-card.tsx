@@ -43,8 +43,10 @@ LinkCard.displayName = 'LinkCard'
 const LinkCardTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3 ref={ref} className={cn('font-lato text-lg text-dark font-semibold', className)} {...props} />
+>(({ className, children, ...props }, ref) => (
+  <h3 ref={ref} className={cn('font-lato text-lg text-dark font-semibold', className)} {...props}>
+    {children}
+  </h3>
 ))
 LinkCardTitle.displayName = 'LinkCardTitle'
 

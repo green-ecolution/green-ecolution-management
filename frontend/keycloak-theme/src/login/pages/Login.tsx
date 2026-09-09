@@ -78,6 +78,9 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: 'log
                 id="username"
                 name="username"
                 type="text"
+                // The login form is the only purpose of this page, so starting in the
+                // username field is the expected entry point rather than a surprise.
+                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
                 autoComplete="username"
                 placeholder={msgStr('geEmailPlaceholder')}

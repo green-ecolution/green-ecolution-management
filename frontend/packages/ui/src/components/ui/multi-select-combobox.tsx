@@ -82,6 +82,8 @@ const MultiSelectCombobox = React.forwardRef<HTMLButtonElement, MultiSelectCombo
           ? value.map((v) => options.find((o) => o.value === v)?.label ?? v).join(', ')
           : t('combobox.selectedCount', { count: value.length })
 
+    const popupId = React.useId()
+
     return (
       <Popover modal open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -91,6 +93,7 @@ const MultiSelectCombobox = React.forwardRef<HTMLButtonElement, MultiSelectCombo
             type="button"
             role="combobox"
             aria-expanded={open}
+            aria-controls={open ? popupId : undefined}
             disabled={disabled}
             data-slot="multi-select-combobox-trigger"
             className={cn(
@@ -103,7 +106,11 @@ const MultiSelectCombobox = React.forwardRef<HTMLButtonElement, MultiSelectCombo
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+        <PopoverContent
+          id={popupId}
+          align="start"
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+        >
           <Command>
             {searchable && <CommandInput placeholder={resolvedSearchPlaceholder} />}
             <CommandList>

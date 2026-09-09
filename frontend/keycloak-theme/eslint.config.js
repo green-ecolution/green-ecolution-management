@@ -5,6 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 
 export default tseslint.config(
   { ignores: ['dist', 'dist_keycloak', 'public', 'src/kc.gen.tsx'] },
@@ -32,11 +33,13 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
       'react-x': reactX,
       'react-dom': reactDom,
+      'jsx-a11y': jsxA11y,
     },
     rules: {
       ...reactX.configs['recommended-typescript'].rules,
       ...reactDom.configs.recommended.rules,
       ...reactHooks.configs['recommended-latest'].rules,
+      ...jsxA11y.flatConfigs.strict.rules,
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },

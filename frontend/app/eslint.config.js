@@ -6,6 +6,7 @@ import tseslint from 'typescript-eslint'
 import reactX from 'eslint-plugin-react-x'
 import reactDom from 'eslint-plugin-react-dom'
 import i18next from 'eslint-plugin-i18next'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 
 export default tseslint.config(
   { ignores: ['dist', 'dev-dist'] },
@@ -33,11 +34,27 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
       'react-x': reactX,
       'react-dom': reactDom,
+      'jsx-a11y': jsxA11y,
     },
     rules: {
       ...reactX.configs['recommended-typescript'].rules,
       ...reactDom.configs.recommended.rules,
       ...reactHooks.configs['recommended-latest'].rules,
+      ...jsxA11y.flatConfigs.strict.rules,
+      // Safari/VoiceOver drops list semantics when list-style is none, so role="list"
+      // on a list-none <ul> is a workaround rather than redundancy.
+      'jsx-a11y/no-redundant-roles': ['error', { ul: ['list'] }],
+      'jsx-a11y/no-noninteractive-element-interactions': [
+        'error',
+        {
+          body: ['onError', 'onLoad'],
+          iframe: ['onError', 'onLoad'],
+          img: ['onError', 'onLoad'],
+          // The form-level onBlur handlers delegate from the natively focusable
+          // controls inside; the <form> itself is never a focus target.
+          form: ['onBlur', 'onFocus'],
+        },
+      ],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true, allowExportNames: ['Route', 'loader'] },
@@ -112,5 +129,11 @@ export default tseslint.config(
       'src/main.tsx',
     ],
     rules: { 'i18next/no-literal-string': 'off' },
+  },
+  {
+    // Test files render fixtures and mocks, not shipped markup — an <a> stub standing
+    // in for a router link is not an accessibility defect.
+    files: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+    rules: Object.fromEntries(Object.keys(jsxA11y.flatConfigs.strict.rules).map((r) => [r, 'off'])),
   },
 )

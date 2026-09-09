@@ -64,6 +64,10 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
+    // Clicking the addon forwards focus to the input, the same mouse affordance a
+    // <label> gives. Keyboard users tab straight to the input, so there is no
+    // keyboard equivalent to add here.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <div
       role="group"
       data-slot="input-group-addon"

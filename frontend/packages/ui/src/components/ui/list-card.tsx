@@ -121,8 +121,10 @@ ListCardStatus.displayName = 'ListCardStatus'
 const ListCardTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h2 ref={ref} className={cn('font-bold text-lg', className)} {...props} />
+>(({ className, children, ...props }, ref) => (
+  <h2 ref={ref} className={cn('font-bold text-lg', className)} {...props}>
+    {children}
+  </h2>
 ))
 ListCardTitle.displayName = 'ListCardTitle'
 

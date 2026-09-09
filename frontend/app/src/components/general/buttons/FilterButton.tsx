@@ -23,7 +23,7 @@ const FilterButton: React.FC<FilterButtonProps> = ({
       type="button"
       aria-label={ariaLabel}
       id="filter-button"
-      aria-selected={active}
+      aria-pressed={active}
       onClick={onClick}
       className={`relative flex cursor-pointer items-center justify-center gap-x-2 rounded-full border border-green-light bg-white font-medium transition-colors duration-quick ease-out hover:bg-green-light-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-dark ${
         isOnMap ? 'z-10 px-5 py-2 shadow-cards' : 'h-10 w-10 sm:h-auto sm:w-auto sm:px-5 sm:py-2'

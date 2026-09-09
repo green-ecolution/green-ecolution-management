@@ -5,205 +5,242 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    ...
-  }: let
-    nodeVersion = 24;
+  outputs =
+    {
+      self,
+      nixpkgs,
+      ...
+    }:
+    let
+      nodeVersion = 24;
 
-    supportedSystems = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ];
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
 
-    forEachSupportedSystem = f:
-      nixpkgs.lib.genAttrs supportedSystems (system:
-        f {
-          pkgs = import nixpkgs {
-            inherit system;
-            overlays = [self.overlays.default];
-          };
-        });
-  in {
-    overlays.default = final: prev: {
-      nodejs = final."nodejs_${toString nodeVersion}";
-    };
-
-    packages = forEachSupportedSystem ({pkgs}: let
-      lib = pkgs.lib;
-
-      version = (lib.importTOML ./backend/Cargo.toml).workspace.package.version;
-
-      meta = {
-        description = "Green Ecolution – Smart irrigation system to optimize water use, reduce operational workload, and lower costs.";
-        longDescription = ''
-          Green Ecolution is an intelligent irrigation platform designed to enable sustainable and efficient green space management.
-          By optimizing water usage and reducing manual maintenance efforts, it helps organizations save resources and costs, while supporting environmental goals.
-        '';
-        homepage = "https://green-ecolution.de";
-        changelog = "https://github.com/green-ecolution/green-ecolution/releases";
-        license = lib.licenses.agpl3Only;
-        maintainers = [
-          {
-            name = "Cedrik Hoffmann";
-            email = "choffmann@green-ecolution.de";
-            github = "choffmann";
-            githubId = 73289312;
+      forEachSupportedSystem =
+        f:
+        nixpkgs.lib.genAttrs supportedSystems (
+          system:
+          f {
+            pkgs = import nixpkgs {
+              inherit system;
+              overlays = [ self.overlays.default ];
+            };
           }
-        ];
-        mainProgram = "green-ecolution";
-        platforms = lib.platforms.linux ++ lib.platforms.darwin;
+        );
+    in
+    {
+      overlays.default = final: prev: {
+        nodejs = final."nodejs_${toString nodeVersion}";
       };
 
-      si = self.sourceInfo or {};
-      gitCommit = si.rev or si.dirtyRev or "local";
-      gitBranch = "local";
+      packages = forEachSupportedSystem (
+        { pkgs }:
+        let
+          lib = pkgs.lib;
 
-      buildDate =
-        if si ? lastModifiedDate
-        then let
-          d = si.lastModifiedDate;
-          sub = builtins.substring;
-        in "${sub 0 4 d}-${sub 4 2 d}-${sub 6 2 d}T${sub 8 2 d}:${sub 10 2 d}:${sub 12 2 d}Z"
-        else "unknown";
-    in rec {
-      domain-wasm = pkgs.rustPlatform.buildRustPackage {
-        inherit meta version;
-        pname = "domain-wasm";
-        src = lib.cleanSource ./backend;
+          version = (lib.importTOML ./backend/Cargo.toml).workspace.package.version;
 
-        cargoLock = {
-          lockFile = ./backend/Cargo.lock;
-        };
+          meta = {
+            description = "Green Ecolution – Smart irrigation system to optimize water use, reduce operational workload, and lower costs.";
+            longDescription = ''
+              Green Ecolution is an intelligent irrigation platform designed to enable sustainable and efficient green space management.
+              By optimizing water usage and reducing manual maintenance efforts, it helps organizations save resources and costs, while supporting environmental goals.
+            '';
+            homepage = "https://green-ecolution.de";
+            changelog = "https://github.com/green-ecolution/green-ecolution/releases";
+            license = lib.licenses.agpl3Only;
+            maintainers = [
+              {
+                name = "Cedrik Hoffmann";
+                email = "choffmann@green-ecolution.de";
+                github = "choffmann";
+                githubId = 73289312;
+              }
+            ];
+            mainProgram = "green-ecolution";
+            platforms = lib.platforms.linux ++ lib.platforms.darwin;
+          };
 
-        # clang/lld: host artifacts (proc-macros) pick up the linker
-        # override in backend/.cargo/config.toml
-        nativeBuildInputs = with pkgs; [wasm-bindgen-cli clang lld];
+          si = self.sourceInfo or { };
+          gitCommit = si.rev or si.dirtyRev or "local";
+          gitBranch = "local";
 
-        auditable = false;
-        doCheck = false;
+          buildDate =
+            if si ? lastModifiedDate then
+              let
+                d = si.lastModifiedDate;
+                sub = builtins.substring;
+              in
+              "${sub 0 4 d}-${sub 4 2 d}-${sub 6 2 d}T${sub 8 2 d}:${sub 10 2 d}:${sub 12 2 d}Z"
+            else
+              "unknown";
+        in
+        rec {
+          domain-wasm = pkgs.rustPlatform.buildRustPackage {
+            inherit meta version;
+            pname = "domain-wasm";
+            src = lib.cleanSource ./backend;
 
-        # custom buildPhase: cargoBuildHook pins --target to the host
-        # triple and cannot cross-build to wasm32
-        buildPhase = ''
-          runHook preBuild
-          cargo build --release --offline -j $NIX_BUILD_CORES \
-            -p domain-wasm --target wasm32-unknown-unknown
-          runHook postBuild
-        '';
+            cargoLock = {
+              lockFile = ./backend/Cargo.lock;
+            };
 
-        installPhase = ''
-          runHook preInstall
-          wasm-bindgen --target bundler --out-dir $out \
-            target/wasm32-unknown-unknown/release/domain_wasm.wasm
-          runHook postInstall
-        '';
-      };
+            # clang/lld: host artifacts (proc-macros) pick up the linker
+            # override in backend/.cargo/config.toml
+            nativeBuildInputs = with pkgs; [
+              wasm-bindgen-cli
+              clang
+              lld
+            ];
 
-      frontend = pkgs.stdenv.mkDerivation rec {
-        inherit meta version;
-        pname = "frontend";
-        src = lib.cleanSource ./frontend;
+            auditable = false;
+            doCheck = false;
 
-        nativeBuildInputs = with pkgs; [nodejs pnpm pnpmConfigHook];
+            # custom buildPhase: cargoBuildHook pins --target to the host
+            # triple and cannot cross-build to wasm32
+            buildPhase = ''
+              runHook preBuild
+              cargo build --release --offline -j $NIX_BUILD_CORES \
+                -p domain-wasm --target wasm32-unknown-unknown
+              runHook postBuild
+            '';
 
-        env.VITE_BACKEND_BASEURL = "/api";
+            installPhase = ''
+              runHook preInstall
+              wasm-bindgen --target bundler --out-dir $out \
+                target/wasm32-unknown-unknown/release/domain_wasm.wasm
+              runHook postInstall
+            '';
+          };
 
-        pnpmDeps = pkgs.fetchPnpmDeps {
-          inherit pname version src;
-          fetcherVersion = 4;
-          hash = "sha256-iZIecdU5ZWUUxtwNu+2N9dVX9q2uAbwO1VUNV72GZXo=";
-        };
+          frontend = pkgs.stdenv.mkDerivation rec {
+            inherit meta version;
+            pname = "frontend";
+            src = lib.cleanSource ./frontend;
 
-        # domain-wasm/pkg is wasm-pack output, gitignored and thus absent
-        # from the flake source; inject the Nix-built bindings instead.
-        preBuild = ''
-          mkdir -p packages/domain-wasm/pkg
-          cp -r ${domain-wasm}/. packages/domain-wasm/pkg/
-        '';
+            nativeBuildInputs = with pkgs; [
+              nodejs
+              pnpm
+              pnpmConfigHook
+            ];
 
-        buildPhase = ''
-          runHook preBuild
-          pnpm build
-          runHook postBuild
-        '';
+            env.VITE_BACKEND_BASEURL = "/api";
 
-        installPhase = ''
-          mkdir -p $out
-          cp -r app/dist/* $out/
-        '';
+            pnpmDeps = pkgs.fetchPnpmDeps {
+              inherit pname version src;
+              fetcherVersion = 4;
+              hash = "sha256-fx7MdqzKOtsckZCbBeWJ/tfhNs6CvP8jh5QQ0brBMpo=";
+            };
 
-        dontFixup = true;
-      };
+            # domain-wasm/pkg is wasm-pack output, gitignored and thus absent
+            # from the flake source; inject the Nix-built bindings instead.
+            preBuild = ''
+              mkdir -p packages/domain-wasm/pkg
+              cp -r ${domain-wasm}/. packages/domain-wasm/pkg/
+            '';
 
-      backend = pkgs.rustPlatform.buildRustPackage {
-        inherit meta version;
-        pname = "green-ecolution";
-        src = lib.cleanSource ./backend;
+            buildPhase = ''
+              runHook preBuild
+              pnpm build
+              runHook postBuild
+            '';
 
-        cargoLock = {
-          lockFile = ./backend/Cargo.lock;
-        };
+            installPhase = ''
+              mkdir -p $out
+              cp -r app/dist/* $out/
+            '';
 
-        nativeBuildInputs = with pkgs; [clang lld];
+            dontFixup = true;
+          };
 
-        cargoBuildFlags = ["--bin" "green-ecolution" "--bin" "migrate"];
+          backend = pkgs.rustPlatform.buildRustPackage {
+            inherit meta version;
+            pname = "green-ecolution";
+            src = lib.cleanSource ./backend;
 
-        # Tests rely on testcontainers (live Postgres)
-        doCheck = false;
+            cargoLock = {
+              lockFile = ./backend/Cargo.lock;
+            };
 
-        env = {
-          SQLX_OFFLINE = "true";
-          GE_GIT_COMMIT = gitCommit;
-          GE_GIT_BRANCH = gitBranch;
-          GE_BUILD_TIME = buildDate;
-        };
-      };
+            nativeBuildInputs = with pkgs; [
+              clang
+              lld
+            ];
 
-      default = backend;
-    });
+            cargoBuildFlags = [
+              "--bin"
+              "green-ecolution"
+              "--bin"
+              "migrate"
+            ];
 
-    devShells = forEachSupportedSystem ({pkgs}: {
-      default = pkgs.mkShell {
-        name = "dev-shell";
-        packages = with pkgs; [
-          git
-          just
-          # Frontend/Node
-          nodejs
-          pnpm
-          # Handbook PDF
-          typst
-          # Keycloak theme build (keycloakify shells out to mvn)
-          jdk21
-          maven
-          # Rust
-          rustc
-          cargo
-          rustfmt
-          clippy
-          rust-analyzer
-          cargo-deny
-          sqlx-cli
-          clang
-          lld
-          bacon
-          wasm-pack
-        ];
-        shellHook = ''
-          echo "Dev shell loaded 🧪"
-          export PS1="(dev) $PS1"
-        '';
-      };
-    });
+            # Tests rely on testcontainers (live Postgres)
+            doCheck = false;
 
-    formatter = forEachSupportedSystem ({pkgs}: pkgs.alejandra);
+            env = {
+              SQLX_OFFLINE = "true";
+              GE_GIT_COMMIT = gitCommit;
+              GE_GIT_BRANCH = gitBranch;
+              GE_BUILD_TIME = buildDate;
+            };
+          };
 
-    checks = forEachSupportedSystem ({pkgs}: {
-      inherit (self.packages.${pkgs.system}) domain-wasm frontend backend default;
-    });
-  };
+          default = backend;
+        }
+      );
+
+      devShells = forEachSupportedSystem (
+        { pkgs }: {
+          default = pkgs.mkShell {
+            name = "dev-shell";
+            packages = with pkgs; [
+              git
+              just
+              # Frontend/Node
+              nodejs
+              pnpm
+              # Handbook PDF
+              typst
+              # Keycloak theme build (keycloakify shells out to mvn)
+              jdk21
+              maven
+              # Rust
+              rustc
+              cargo
+              rustfmt
+              clippy
+              rust-analyzer
+              cargo-deny
+              sqlx-cli
+              clang
+              lld
+              bacon
+              wasm-pack
+            ];
+            shellHook = ''
+              echo "Dev shell loaded 🧪"
+              export PS1="(dev) $PS1"
+            '';
+          };
+        }
+      );
+
+      formatter = forEachSupportedSystem ({ pkgs }: pkgs.alejandra);
+
+      checks = forEachSupportedSystem (
+        { pkgs }: {
+          inherit (self.packages.${pkgs.system})
+            domain-wasm
+            frontend
+            backend
+            default
+            ;
+        }
+      );
+    };
 }

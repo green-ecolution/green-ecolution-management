@@ -104,7 +104,7 @@ const AlertContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
 AlertContent.displayName = 'AlertContent'
 
 const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <h5
       ref={ref}
       className={cn(
@@ -112,7 +112,9 @@ const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<H
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </h5>
   ),
 )
 AlertTitle.displayName = 'AlertTitle'

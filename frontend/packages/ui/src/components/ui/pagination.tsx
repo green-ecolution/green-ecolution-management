@@ -45,7 +45,13 @@ type PaginationLinkProps = {
 
 // `size` is accepted for API parity but not applied to the plain anchor;
 // pull it out so it doesn't leak onto the DOM element.
-const PaginationLink = ({ className, isActive, size: _size, ...props }: PaginationLinkProps) => (
+const PaginationLink = ({
+  className,
+  isActive,
+  size: _size,
+  children,
+  ...props
+}: PaginationLinkProps) => (
   <a
     data-slot="pagination-link"
     aria-current={isActive ? 'page' : undefined}
@@ -57,7 +63,9 @@ const PaginationLink = ({ className, isActive, size: _size, ...props }: Paginati
       className,
     )}
     {...props}
-  />
+  >
+    {children}
+  </a>
 )
 PaginationLink.displayName = 'PaginationLink'
 

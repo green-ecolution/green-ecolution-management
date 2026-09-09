@@ -75,6 +75,8 @@ const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
       return Array.from(map, ([label, opts]) => ({ label, options: opts }))
     }, [options])
 
+    const popupId = React.useId()
+
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -84,6 +86,7 @@ const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
             type="button"
             role="combobox"
             aria-expanded={open}
+            aria-controls={open ? popupId : undefined}
             aria-label={ariaLabel}
             aria-describedby={ariaDescribedBy}
             aria-invalid={ariaInvalid}
@@ -102,6 +105,7 @@ const Combobox = React.forwardRef<HTMLButtonElement, ComboboxProps>(
           </button>
         </PopoverTrigger>
         <PopoverContent
+          id={popupId}
           align="start"
           className={cn('w-[var(--radix-popover-trigger-width)] p-0', contentClassName)}
         >

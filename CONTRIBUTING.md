@@ -302,6 +302,37 @@ its copy is already centralized in one catalog file — so reviewers reject a
 hardcoded JSX text node or quoted sentence there on sight. The `de`/`en`
 parity test fails when only one of the two catalogs is updated.
 
+#### Accessibility
+
+`eslint-plugin-jsx-a11y` runs in its `strict` configuration in `frontend/app`,
+`frontend/packages/ui` and `frontend/keycloak-theme`, at error level, so an
+accessibility regression fails the build rather than a review. Two deviations are
+configured rather than left to individual files: the app allows `onBlur`/`onFocus`
+on a `<form>`, because those handlers delegate from the natively focusable controls
+inside it, and the rules are off in test files, where an `<a>` stub standing in for
+a router link is not a defect.
+
+Everything else is expected to be fixed rather than silenced, and a disable is the
+last resort, not the first reflex. Most findings have a restructuring that removes
+them for real: a primitive that spreads `{...props}` onto a heading or anchor can
+destructure `children` and render them, which is what the rule was asking for; a
+key handler on a container with roving tabindex belongs on the items that actually
+receive focus; and an `autoFocus` inside a Radix dialog is usually redundant,
+because the dialog already moves focus to the first control.
+
+Only where a rule is genuinely wrong about correct markup, disable that one rule on
+that one line with `eslint-disable-next-line` and a comment saying why. Three such
+cases exist today: the input group whose click only forwards focus the way a
+`<label>` does, and the two `autoFocus` uses whose behaviour is deliberate. Note
+what does not count as a fix: replacing `autoFocus` with a ref and an effect
+produces exactly the same behaviour where the linter cannot see it, so the disable
+that records the decision is the better artefact. A blanket disable for a whole file
+or directory is not acceptable either.
+
+The linter only sees markup. It cannot tell whether focus order, colour contrast or
+a live region actually work, so it is a floor and not a substitute for testing a
+change with the keyboard and a screen reader.
+
 ### General
 
 - Prefer editing existing files over creating new ones

@@ -120,11 +120,7 @@ const SensorTreeSearchResults = ({
           ? t('treeSearch.resultCountMatches', { shown: items.length, total })
           : t('treeSearch.resultCountTrees', { shown: items.length, total })}
       </p>
-      <ul
-        className="flex flex-col gap-2"
-        role="radiogroup"
-        aria-label={t('treeSearch.selectResultAriaLabel')}
-      >
+      <ul className="flex flex-col gap-2" aria-label={t('treeSearch.selectResultAriaLabel')}>
         {items.map((tree) => (
           <li key={tree.id}>
             <ResultRow

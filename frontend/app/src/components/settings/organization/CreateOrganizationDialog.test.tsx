@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, userEvent } from '@/test/utils'
+import { render, screen, userEvent, waitFor } from '@/test/utils'
 import CreateOrganizationDialog from './CreateOrganizationDialog'
 
 describe('CreateOrganizationDialog', () => {
@@ -54,5 +54,19 @@ describe('CreateOrganizationDialog', () => {
     )
     await userEvent.type(screen.getByLabelText('Name der Organisation'), '   {Enter}')
     expect(onSubmit).not.toHaveBeenCalled()
+  })
+
+  it('puts focus in the name field when it opens', async () => {
+    render(
+      <CreateOrganizationDialog
+        open
+        parentName="Stadt Flensburg"
+        saving={false}
+        nameError={null}
+        onOpenChange={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    )
+    await waitFor(() => expect(screen.getByLabelText('Name der Organisation')).toHaveFocus())
   })
 })
