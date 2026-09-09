@@ -28,6 +28,12 @@ export const validateTarget = (
     if (url.protocol !== 'https:' && !isLocalhost) {
       return t('plugin.install.targetRequiresHttps')
     }
+    // The iframe sandbox's allow-same-origin flag is safe only because the
+    // plugin's document sits on a foreign origin; the app's own origin would
+    // give it unrestricted script access to the app's DOM and storage.
+    if (url.origin === window.location.origin) {
+      return t('plugin.install.targetMatchesAppOrigin')
+    }
     return null
   }
 

@@ -11,6 +11,7 @@ use domain::{
     },
 };
 
+use crate::http::AppOrigins;
 use crate::service::{
     Malformed, ServiceError,
     plugin_ingest_service::{IngestResult, IngestStatus, TreeIngestItem},
@@ -92,7 +93,7 @@ pub enum PluginFrontendDto {
 }
 
 impl PluginFrontendDto {
-    fn into_domain(self) -> Result<PluginFrontend, ServiceError> {
+    fn into_domain(self, app_origins: &AppOrigins) -> Result<PluginFrontend, ServiceError> {
         match self {
             Self::None => Ok(PluginFrontend::None),
             Self::External { target } => {
@@ -109,6 +110,16 @@ impl PluginFrontendDto {
                         detail:
                             "external frontend target must be an absolute https url (localhost excepted)"
                                 .into(),
+                    });
+                }
+                // The iframe sandbox keeps `allow-same-origin` safe only because the
+                // plugin's document sits on a foreign origin; the app's own origin
+                // would give it unrestricted script access to the app's DOM and storage.
+                if app_origins.contains(&url) {
+                    return Err(ServiceError::Malformed {
+                        kind: Malformed::PluginFrontend,
+                        detail: "external frontend target must not be the application's own origin"
+                            .into(),
                     });
                 }
                 Ok(PluginFrontend::External(url))
@@ -154,7 +165,7 @@ pub struct PluginCreateRequest {
 }
 
 impl PluginCreateRequest {
-    pub fn into_draft(self) -> Result<PluginDraft, ServiceError> {
+    pub fn into_draft(self, app_origins: &AppOrigins) -> Result<PluginDraft, ServiceError> {
         Ok(PluginDraft {
             slug: PluginSlug::new(self.slug)?,
             name: PluginName::new(self.name)?,
@@ -162,7 +173,7 @@ impl PluginCreateRequest {
             organization_id: Id::new(self.organization_id),
             permissions: parse_permissions(&self.permissions)?,
             required_permissions: parse_permissions(&self.required_permissions)?,
-            frontend: self.frontend.into_domain()?,
+            frontend: self.frontend.into_domain(app_origins)?,
         })
     }
 }
@@ -185,13 +196,13 @@ pub struct PluginUpdateRequest {
 }
 
 impl PluginUpdateRequest {
-    pub fn into_change(self) -> Result<PluginChange, ServiceError> {
+    pub fn into_change(self, app_origins: &AppOrigins) -> Result<PluginChange, ServiceError> {
         Ok(PluginChange {
             name: self.name.map(PluginName::new).transpose()?,
             description: self.description,
             frontend: self
                 .frontend
-                .map(PluginFrontendDto::into_domain)
+                .map(|frontend| frontend.into_domain(app_origins))
                 .transpose()?,
             permissions: self
                 .permissions

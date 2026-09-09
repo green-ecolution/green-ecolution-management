@@ -123,6 +123,7 @@ describe('connectToHost', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         data: { ns: 'green-ecolution', v: 1, type: 'ge:init', payload: context },
+        source: window.parent,
       }),
     )
 
@@ -136,15 +137,47 @@ describe('connectToHost', () => {
     window.dispatchEvent(
       new MessageEvent('message', {
         data: { ns: 'green-ecolution', v: 1, type: 'ge:resize', payload: { height: 1 } },
+        source: window.parent,
       }),
     )
     window.dispatchEvent(
       new MessageEvent('message', {
         data: { ns: 'green-ecolution', v: 1, type: 'ge:init', payload: { plugin: { slug: 'x' } } },
+        source: window.parent,
       }),
     )
 
     await expect(pending).resolves.toEqual({ plugin: { slug: 'x' } })
+  })
+
+  it('ignores a ge:init from a window other than the parent', async () => {
+    const pending = connectToHost()
+    const context = {
+      locale: 'en' as const,
+      theme: 'dark' as const,
+      user: { displayName: 'Test' },
+      plugin: { slug: 'acme' },
+    }
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          ns: 'green-ecolution',
+          v: 1,
+          type: 'ge:init',
+          payload: { plugin: { slug: 'not-it' } },
+        },
+        source: { postMessage: vi.fn() } as unknown as Window,
+      }),
+    )
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { ns: 'green-ecolution', v: 1, type: 'ge:init', payload: context },
+        source: window.parent,
+      }),
+    )
+
+    await expect(pending).resolves.toEqual(context)
   })
 })
 

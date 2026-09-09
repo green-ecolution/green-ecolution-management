@@ -63,6 +63,36 @@ pub struct NearestTreeLimits {
     pub max_limit: u32,
 }
 
+/// Origins the app's own frontend (and API) are served from, so an
+/// `external` plugin frontend target can be rejected when it points back at
+/// the app itself — see `PluginFrontendDto::into_domain`. A wildcard in
+/// `cors.allowed_origins` cannot discriminate a specific origin, so it is
+/// skipped in favor of `base_url` alone rather than treated as "reject
+/// everything".
+#[derive(Debug, Clone)]
+pub struct AppOrigins {
+    origins: Vec<url::Origin>,
+}
+
+impl AppOrigins {
+    pub fn from_settings(cors: &CorsSettings, base_url: &url::Url) -> Self {
+        let mut origins = vec![base_url.origin()];
+        if !cors.allowed_origins.iter().any(|o| o == "*") {
+            origins.extend(
+                cors.allowed_origins
+                    .iter()
+                    .filter_map(|o| url::Url::parse(o).ok())
+                    .map(|u| u.origin()),
+            );
+        }
+        Self { origins }
+    }
+
+    pub fn contains(&self, url: &url::Url) -> bool {
+        self.origins.iter().any(|o| *o == url.origin())
+    }
+}
+
 pub struct AppState {
     pub region_service: Arc<RegionService>,
     pub tree_service: Arc<TreeService>,
@@ -90,6 +120,7 @@ pub struct AppState {
     pub plugin_writer: Arc<dyn domain::plugin::PluginWriter>,
     pub plugin_service: Arc<PluginService>,
     pub plugin_ingest_service: Arc<PluginIngestService>,
+    pub app_origins: AppOrigins,
 }
 
 #[derive(OpenApi)]

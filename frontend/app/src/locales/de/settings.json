@@ -100,6 +100,7 @@
       "targetRequired": "Gib eine Adresse an.",
       "targetInvalidUrl": "Das ist keine gültige Adresse.",
       "targetRequiresHttps": "Die externe Adresse muss https verwenden (außer bei localhost).",
+      "targetMatchesAppOrigin": "Die Adresse darf nicht die Herkunft dieser Anwendung selbst sein.",
       "targetInvalidHostPort": "Erwartet wird host:port, zum Beispiel plugin-backend:8080.",
       "targetInvalidPort": "Der Port muss zwischen 1 und 65535 liegen.",
       "submit": "Installieren"
@@ -151,7 +152,9 @@
       }
     },
     "view": {
-      "loading": "Ansicht wird geladen"
+      "loading": "Ansicht wird geladen",
+      "proxiedNotice": "Dieses Plugin läuft im Cluster (proxied). Seine Ansicht lässt sich hier noch nicht anzeigen.",
+      "noFrontendNotice": "Dieses Plugin hat keine eigene Ansicht."
     }
   },
   "notProvided": "Nicht hinterlegt",

@@ -86,7 +86,7 @@ pub async fn install_plugin(
     Json(req): Json<PluginCreateRequest>,
 ) -> Result<(StatusCode, Json<PluginKeyResponse>), ServiceError> {
     guard(&state)?;
-    let draft = req.into_draft()?;
+    let draft = req.into_draft(&state.app_origins)?;
     let (_, key) = state.plugin_service.install(user.id, draft).await?;
     Ok((StatusCode::CREATED, Json(PluginKeyResponse { key })))
 }
@@ -155,7 +155,7 @@ pub async fn update_plugin(
 ) -> Result<Json<PluginResponse>, ServiceError> {
     guard(&state)?;
     let slug = PluginSlug::new(slug)?;
-    let change = req.into_change()?;
+    let change = req.into_change(&state.app_origins)?;
     let view = state.plugin_service.update(user.id, &slug, change).await?;
     Ok(Json((&view).into()))
 }

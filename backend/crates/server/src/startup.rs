@@ -7,7 +7,8 @@ use tokio::net::TcpListener;
 use crate::{
     configuration::{CorsSettings, DatabaseSettings, Settings},
     http::{
-        AppState, FeatureFlags, NearestTreeLimits, OidcSwaggerSettings, auth::AuthLayer, router,
+        AppOrigins, AppState, FeatureFlags, NearestTreeLimits, OidcSwaggerSettings,
+        auth::AuthLayer, router,
     },
     infra::{
         self,
@@ -202,6 +203,7 @@ impl Application {
             plugin_writer: repos.plugin_writer,
             plugin_service: services.plugin,
             plugin_ingest_service: services.plugin_ingest,
+            app_origins: AppOrigins::from_settings(&settings.cors, &settings.application.base_url),
         });
 
         let listener = TcpListener::bind(address).await?;

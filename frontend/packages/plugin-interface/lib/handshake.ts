@@ -70,11 +70,14 @@ export function createPluginHost(
 /**
  * Runs inside the plugin's own document. The target is '*' because the
  * envelope carries no secret; the host itself only ever answers a hello that
- * came from its own iframe's contentWindow (see createPluginHost).
+ * came from its own iframe's contentWindow (see createPluginHost). The
+ * plugin's counterpart is always window.parent, so that is checked here too
+ * — nothing secret travels this way, but both sides verify each other.
  */
 export function connectToHost(): Promise<PluginContext> {
   return new Promise((resolve) => {
     const handleMessage = (event: MessageEvent) => {
+      if (event.source !== window.parent) return
       if (!isEnvelope(event.data) || event.data.type !== 'ge:init') return
       window.removeEventListener('message', handleMessage)
       resolve(event.data.payload as PluginContext)

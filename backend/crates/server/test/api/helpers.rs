@@ -329,6 +329,18 @@ pub async fn spawn_app_with_plugins() -> TestApp {
     spawn_app_with_plugins_and_auth(disabled_auth_settings()).await
 }
 
+/// Same as [`spawn_app_with_plugins`], but with a chosen `application.base_url`
+/// so a test can submit a plugin `frontend_target` matching the app's own
+/// origin and assert it is rejected.
+pub async fn spawn_app_with_plugins_and_base_url(base_url: &str) -> TestApp {
+    let mut settings = Settings::for_test(disabled_auth_settings());
+    settings.info.health_check_interval_secs = 1;
+    settings.info.update_check_repo = None;
+    settings.plugins.enabled = true;
+    settings.application.base_url = url::Url::parse(base_url).expect("test base_url");
+    spawn_with_settings(settings).await
+}
+
 pub async fn spawn_app_with_plugins_and_auth(auth: AuthSettings) -> TestApp {
     let mut settings = Settings::for_test(auth);
     settings.info.health_check_interval_secs = 1;

@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Alert, AlertContent, AlertDescription, AlertIcon } from '@green-ecolution/ui'
 import { createPluginHost, type PluginContext } from '@green-ecolution/plugin-interface'
 import { pluginQuery, userQueries } from '@/api/queries'
 import {
@@ -14,6 +15,7 @@ import { readAuthBypass } from '@/lib/auth/runtimeConfig'
 import { useCurrentUser } from '@/lib/auth/useCurrentUser'
 import { languageOf } from '@/lib/i18n/languages'
 import { entityNotFound, pendingLoading, prefetch } from '@/lib/router'
+import { pluginViewKind } from '@/components/plugin/pluginView'
 
 export const Route = createFileRoute('/_protected/plugin/$slug/')({
   component: PluginViewPage,
@@ -21,14 +23,11 @@ export const Route = createFileRoute('/_protected/plugin/$slug/')({
   beforeLoad: async ({ context: { queryClient }, params: { slug } }) => {
     const plugin = await queryClient.ensureQueryData(pluginQuery(slug))
 
-    // Only an externally hosted frontend can be embedded today; a proxied
-    // target is served through the backend and has no browser-reachable URL
-    // yet (see the follow-up proxy plan), so it redirects the same as a
-    // missing one.
-    if (plugin.frontendMode !== 'external' || !plugin.frontendTarget) {
-      throw redirect({ to: '/settings/plugin' })
-    }
-
+    // A missing or insufficient permission redirects rather than explaining,
+    // same as every other route guard — but whether the view exists at all
+    // (frontendMode) is not an access question, so it is rendered as a
+    // message by the component instead of redirecting here, which would be
+    // indistinguishable from "you may not".
     const perms = readAuthBypass()
       ? UNRESTRICTED
       : permissionsOf(await queryClient.ensureQueryData(userQueries.me()))
@@ -45,15 +44,29 @@ export const Route = createFileRoute('/_protected/plugin/$slug/')({
   }),
 })
 
+function PluginViewNotice({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="container mt-6">
+      <Alert variant="info" className="flex items-start gap-3">
+        <AlertIcon variant="info" />
+        <AlertContent>
+          <AlertDescription>{children}</AlertDescription>
+        </AlertContent>
+      </Alert>
+    </div>
+  )
+}
+
 function PluginViewPage() {
   const { slug } = Route.useParams()
   const { data: plugin } = useSuspenseQuery(pluginQuery(slug))
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation('settings')
   const { firstName, lastName, username } = useCurrentUser()
   const frameRef = useRef<HTMLIFrameElement>(null)
 
   const displayName = `${firstName} ${lastName}`.trim() || username
-  const target = plugin.frontendTarget
+  const view = pluginViewKind(plugin)
+  const target = view.kind === 'iframe' ? view.target : null
 
   useEffect(() => {
     const iframe = frameRef.current
@@ -70,10 +83,17 @@ function PluginViewPage() {
     return createPluginHost(iframe, { origin: new URL(target).origin, context })
   }, [target, plugin.slug, displayName, i18n.language])
 
+  if (view.kind === 'proxied') {
+    return <PluginViewNotice>{t('plugin.view.proxiedNotice')}</PluginViewNotice>
+  }
+  if (view.kind === 'unavailable') {
+    return <PluginViewNotice>{t('plugin.view.noFrontendNotice')}</PluginViewNotice>
+  }
+
   return (
     <iframe
       ref={frameRef}
-      src={target ?? undefined}
+      src={view.target}
       title={plugin.name}
       // allow-same-origin is safe here only because frontend_target is always a
       // foreign origin (enforced on install/update); serving a plugin from the

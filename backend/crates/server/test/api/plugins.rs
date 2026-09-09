@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::auth_helpers::AuthHarness;
 use crate::helpers::{
     seed_user_with_permissions, spawn_app, spawn_app_with_plugins, spawn_app_with_plugins_and_auth,
+    spawn_app_with_plugins_and_base_url,
 };
 
 const ROOT_ORG: &str = "01980000-0000-7000-8000-000000000001";
@@ -142,6 +143,47 @@ async fn external_frontend_must_be_https() {
         )
         .await;
     assert_eq!(resp.status().as_u16(), 400);
+}
+
+/// The iframe sandbox's `allow-same-origin` flag is safe only because a
+/// plugin's frontend is served from a different origin than the app; without
+/// this check an admin could point `frontend_target` at the app's own origin
+/// and turn that flag into a full same-origin isolation failure.
+#[tokio::test]
+async fn external_frontend_must_not_be_the_apps_own_origin() {
+    let app = spawn_app_with_plugins_and_base_url("https://app.example.com").await;
+    let resp = app
+        .post_json(
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme", "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [],
+                "frontend": { "mode": "external", "target": "https://app.example.com" }
+            }),
+        )
+        .await;
+    assert_eq!(resp.status().as_u16(), 400);
+}
+
+/// Same host as the app's own origin, but a different port: this must be
+/// accepted, proving the check compares scheme, host *and* port rather than
+/// rejecting on a host substring match.
+#[tokio::test]
+async fn external_frontend_on_a_different_port_of_the_apps_host_is_allowed() {
+    let app = spawn_app_with_plugins_and_base_url("https://app.example.com").await;
+    let resp = app
+        .post_json(
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme", "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [],
+                "frontend": { "mode": "external", "target": "https://app.example.com:8443" }
+            }),
+        )
+        .await;
+    assert_eq!(resp.status().as_u16(), 201);
 }
 
 /// `PluginService::by_slug` (unlike every other plugin service method) does

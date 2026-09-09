@@ -34,6 +34,10 @@ describe('validateTarget', () => {
       expect(() => validateTarget('external', 'not a url at all', t)).not.toThrow()
       expect(validateTarget('external', 'not a url at all', t)).not.toBeNull()
     })
+
+    it("rejects the app's own origin", () => {
+      expect(validateTarget('external', window.location.origin, t)).not.toBeNull()
+    })
   })
 
   describe('proxied', () => {
