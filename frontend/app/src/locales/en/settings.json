@@ -95,6 +95,7 @@
       "accessPermissionsHint": "Who may open the plugin's view. Starts out mirroring the plugin's own rights; the first change made here ends that mirroring for good. A view with action buttons hands the plugin's rights to whoever operates it — loosen these rights only deliberately.",
       "slugRequired": "Enter a slug.",
       "slugInvalid": "Only lowercase letters, digits and hyphens, not at the start or end.",
+      "slugReserved": "The slug \"{slug}\" is reserved by the plugin api and cannot be used.",
       "nameRequired": "Give the plugin a name.",
       "organizationRequired": "Choose an organization.",
       "targetRequired": "Enter an address.",

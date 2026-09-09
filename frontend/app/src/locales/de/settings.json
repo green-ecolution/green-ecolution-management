@@ -95,6 +95,7 @@
       "accessPermissionsHint": "Wer die Ansicht des Plugins öffnen darf. Übernimmt zunächst die Rechte des Plugins; eine eigene Änderung hier beendet diese Übernahme dauerhaft. Eine Ansicht mit Aktionsknöpfen reicht die Rechte des Plugins an ihren Bediener weiter — lockere diese Rechte deshalb nur bewusst.",
       "slugRequired": "Gib einen Slug an.",
       "slugInvalid": "Nur Kleinbuchstaben, Ziffern und Bindestriche, nicht am Anfang oder Ende.",
+      "slugReserved": "Der Slug \"{slug}\" ist von der Plugin-Schnittstelle belegt und kann nicht verwendet werden.",
       "nameRequired": "Gib dem Plugin einen Namen.",
       "organizationRequired": "Wähle eine Organisation.",
       "targetRequired": "Gib eine Adresse an.",

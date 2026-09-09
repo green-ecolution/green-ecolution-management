@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
 import {
   Button,
   Combobox,
@@ -18,6 +17,7 @@ import type { OrganizationResponse, PluginFrontendDto } from '@/api/backendApi'
 import PluginPermissionMatrix from './PluginPermissionMatrix'
 import { usePluginPermissionDraft } from './usePluginPermissionDraft'
 import { buildFrontendDto, validateTarget, type FrontendMode } from './pluginFrontend'
+import { validateSlug } from './pluginSlug'
 
 export type { FrontendMode } from './pluginFrontend'
 
@@ -37,14 +37,6 @@ interface PluginInstallDialogProps {
   saving?: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (payload: PluginInstallPayload) => void
-}
-
-const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
-
-const validateSlug = (value: string, t: TFunction<'settings'>): string | null => {
-  if (value === '') return t('plugin.install.slugRequired')
-  if (value.length > 64 || !SLUG_PATTERN.test(value)) return t('plugin.install.slugInvalid')
-  return null
 }
 
 interface FieldErrors {

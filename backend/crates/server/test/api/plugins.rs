@@ -145,6 +145,27 @@ async fn external_frontend_must_be_https() {
     assert_eq!(resp.status().as_u16(), 400);
 }
 
+/// `/plugins/me` is the ingest self-lookup route and matches before the
+/// dynamic `/plugins/{plugin_slug}`, so a plugin installed under that slug
+/// would answer 401 on GET and 405 on PATCH and DELETE forever, while still
+/// holding its organization against deletion.
+#[tokio::test]
+async fn install_rejects_a_slug_reserved_by_the_plugin_routes() {
+    let app = spawn_app_with_plugins().await;
+    let resp = app
+        .post_json(
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "me", "name": "Me",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [],
+                "frontend": { "mode": "none" }
+            }),
+        )
+        .await;
+    assert_eq!(resp.status().as_u16(), 400);
+}
+
 /// The iframe sandbox's `allow-same-origin` flag is safe only because a
 /// plugin's frontend is served from a different origin than the app; without
 /// this check an admin could point `frontend_target` at the app's own origin

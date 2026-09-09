@@ -37,6 +37,16 @@ crate::newtype_nonempty! {
     PluginKeyHash, "plugin.key_hash", 1, 255
 }
 
+/// Slugs the plugin routes already spend on static segments. A plugin
+/// carrying one of these is reachable by no admin endpoint afterwards,
+/// because `/plugins/<segment>` matches the static route before the dynamic
+/// `/plugins/{plugin_slug}` — the row could then only be removed with direct
+/// database access, while still pinning its organization against deletion.
+/// Only single-segment collisions belong here: `ingest` is safe because the
+/// route below it is `/plugins/ingest/trees`, one level deeper than any
+/// admin endpoint.
+pub const RESERVED_PLUGIN_SLUGS: &[&str] = &["me"];
+
 /// Immutable identifier, also used as the `ProviderId` on imported records.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PluginSlug(String);
@@ -56,6 +66,14 @@ impl PluginSlug {
             return Err(ValidationError::InvalidFormat {
                 field: "plugin.slug",
                 reason: "expected 1-64 chars of [a-z0-9-], not starting or ending with '-'".into(),
+            });
+        }
+        if RESERVED_PLUGIN_SLUGS.contains(&trimmed) {
+            return Err(ValidationError::InvalidFormat {
+                field: "plugin.slug",
+                reason: format!(
+                    "'{trimmed}' is reserved by the plugin api and cannot be used as a slug"
+                ),
             });
         }
         Ok(Self(trimmed.to_string()))
@@ -295,6 +313,25 @@ mod tests {
     #[test]
     fn slug_accepts_valid() {
         assert_ok!(PluginSlug::new("tbz-baumkataster"));
+    }
+
+    /// `/plugins/me` is the ingest self-lookup route and wins over the dynamic
+    /// `/plugins/{plugin_slug}` in the router, so a plugin installed under
+    /// this slug could never be read, renamed, disabled or uninstalled again.
+    #[test]
+    fn slug_rejects_a_reserved_route_segment() {
+        for reserved in RESERVED_PLUGIN_SLUGS {
+            assert_err!(PluginSlug::new(*reserved));
+            assert_err!(PluginSlug::new(format!("  {reserved} ")));
+        }
+    }
+
+    /// The reservation covers the exact segment only; a longer slug that
+    /// merely starts with it still routes to the dynamic segment.
+    #[test]
+    fn slug_accepts_a_reserved_segment_as_a_prefix() {
+        assert_ok!(PluginSlug::new("me-too"));
+        assert_ok!(PluginSlug::new("ingest"));
     }
 
     #[test]
