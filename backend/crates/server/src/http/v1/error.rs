@@ -79,23 +79,19 @@ fn body_response(
 
 /// Repository error details carry raw driver output (constraint and table
 /// names, connection errors). They are logged server-side; clients only ever
-/// see the generic per-variant message.
+/// see `RepositoryError::generic_message()` — the same text a plugin ingest
+/// per-item failure uses, so the two cannot drift apart.
 fn repository_error_response(e: &RepositoryError) -> (StatusCode, &'static str) {
-    match e {
-        RepositoryError::NotFound => (StatusCode::NOT_FOUND, "resource not found"),
-        RepositoryError::AlreadyExists(_) => (StatusCode::CONFLICT, "resource already exists"),
-        RepositoryError::ForeignKeyViolation(_) => (
-            StatusCode::UNPROCESSABLE_ENTITY,
-            "referenced resource does not exist",
-        ),
-        RepositoryError::ConstraintViolation(_) => (
-            StatusCode::BAD_REQUEST,
-            "request violates a data constraint",
-        ),
+    let status = match e {
+        RepositoryError::NotFound => StatusCode::NOT_FOUND,
+        RepositoryError::AlreadyExists(_) => StatusCode::CONFLICT,
+        RepositoryError::ForeignKeyViolation(_) => StatusCode::UNPROCESSABLE_ENTITY,
+        RepositoryError::ConstraintViolation(_) => StatusCode::BAD_REQUEST,
         RepositoryError::DataIntegrity(_) | RepositoryError::Internal(_) => {
-            (StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
+            StatusCode::INTERNAL_SERVER_ERROR
         }
-    }
+    };
+    (status, e.generic_message())
 }
 
 /// Status and client-facing message for an auth failure. Shared by both
