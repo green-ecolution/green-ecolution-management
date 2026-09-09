@@ -46,6 +46,7 @@ function DatePickerField({
   const generatedId = React.useId()
   const inputId = id || generatedId
   const [open, setOpen] = React.useState(false)
+  const popupId = React.useId()
   const resolvedPlaceholder = placeholder ?? t('datePicker.placeholder')
 
   return (
@@ -60,6 +61,9 @@ function DatePickerField({
             type="button"
             id={inputId}
             disabled={disabled}
+            role="combobox"
+            aria-expanded={open}
+            aria-controls={open ? popupId : undefined}
             aria-invalid={!!error}
             aria-describedby={
               error ? `${inputId}-error` : description ? `${inputId}-description` : undefined
@@ -76,7 +80,7 @@ function DatePickerField({
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent id={popupId} className="w-auto p-0" align="start">
           <Calendar
             mode="single"
             selected={value}
