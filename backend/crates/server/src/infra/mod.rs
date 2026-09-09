@@ -15,6 +15,7 @@ pub mod pg_tree;
 pub mod pg_user_profile;
 pub mod pg_vehicle;
 pub mod pg_watering_plan;
+pub mod plugin_key;
 pub(crate) mod sql;
 pub mod statistics_repo;
 pub mod streamlet;
