@@ -50,8 +50,13 @@ pub trait PluginReader: Send + Sync {
 
 #[async_trait]
 pub trait PluginWriter: Send + Sync {
+    /// Takes the id from the caller rather than minting its own (unlike every
+    /// other `save_new` in this codebase): the API key returned alongside the
+    /// plugin embeds this id, so the caller must know it before the row
+    /// exists.
     async fn save_new(
         &self,
+        id: Id<Plugin>,
         draft: PluginDraft,
         key_hash: Option<PluginKeyHash>,
     ) -> Result<Plugin, RepositoryError>;

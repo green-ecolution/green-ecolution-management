@@ -180,10 +180,10 @@ impl PluginWriter for PgPluginRepository {
     #[tracing::instrument(level = "trace", skip_all)]
     async fn save_new(
         &self,
+        id: Id<Plugin>,
         draft: PluginDraft,
         key_hash: Option<PluginKeyHash>,
     ) -> Result<Plugin, RepositoryError> {
-        let id = Id::<Plugin>::new_v7();
         let (frontend_mode, frontend_target) = frontend_parts(&draft.frontend);
         let permissions: Vec<String> = draft.permissions.iter().map(|p| p.to_string()).collect();
         let required_permissions: Vec<String> = draft

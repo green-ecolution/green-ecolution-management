@@ -24,7 +24,8 @@ async fn save_new_then_load_by_slug() {
     let app = spawn_app().await;
     let repo = PgPluginRepository::new(app.db_pool.clone());
 
-    let saved = repo.save_new(draft("acme"), None).await.unwrap();
+    let id = domain::Id::new_v7();
+    let saved = repo.save_new(id, draft("acme"), None).await.unwrap();
     let loaded = repo
         .by_slug(&PluginSlug::new("acme").unwrap())
         .await
@@ -39,7 +40,10 @@ async fn save_new_then_load_by_slug() {
 async fn tree_refs_pages_over_the_keyset() {
     let app = spawn_app().await;
     let repo = PgPluginRepository::new(app.db_pool.clone());
-    let plugin = repo.save_new(draft("pager"), None).await.unwrap();
+    let plugin = repo
+        .save_new(domain::Id::new_v7(), draft("pager"), None)
+        .await
+        .unwrap();
 
     for i in 0..5 {
         let tree_id = insert_tree(&app.db_pool).await;
@@ -63,7 +67,10 @@ async fn tree_refs_pages_over_the_keyset() {
 async fn deleting_a_tree_removes_its_ref() {
     let app = spawn_app().await;
     let repo = PgPluginRepository::new(app.db_pool.clone());
-    let plugin = repo.save_new(draft("cascade"), None).await.unwrap();
+    let plugin = repo
+        .save_new(domain::Id::new_v7(), draft("cascade"), None)
+        .await
+        .unwrap();
     let tree_id = insert_tree(&app.db_pool).await;
     repo.link_tree(plugin.id, "ext-1", domain::Id::new(tree_id))
         .await

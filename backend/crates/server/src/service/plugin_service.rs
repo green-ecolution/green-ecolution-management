@@ -98,7 +98,7 @@ impl PluginService {
 
         let id = Id::<Plugin>::new_v7();
         let (plaintext, hash) = plugin_key::generate_key(id);
-        let plugin = self.writer.save_new(draft, Some(hash)).await?;
+        let plugin = self.writer.save_new(id, draft, Some(hash)).await?;
         Ok((PluginView::from_aggregate(&plugin, None), plaintext))
     }
 
@@ -201,6 +201,24 @@ mod tests {
             .await
             .unwrap();
         assert!(reloaded.has_credential, "the hash is persisted");
+    }
+
+    #[tokio::test]
+    async fn install_returns_a_key_matching_the_persisted_id() {
+        // The key embeds an id minted before the row exists (`install` mints
+        // it to generate the key, then hands it to `save_new`); this catches
+        // a repository silently minting its own id instead of using the one
+        // it was given, which would hand out a key that can never resolve
+        // back to a real plugin.
+        let svc = service_with_unrestricted_auth();
+        let (view, key) = svc.install(Uuid::nil(), draft("acme")).await.unwrap();
+
+        let (parsed_id, _secret) = plugin_key::parse_key(&key).expect("key must parse");
+        assert_eq!(
+            parsed_id,
+            view.id.value(),
+            "the key must reference the plugin that was actually persisted"
+        );
     }
 
     #[tokio::test]
@@ -320,10 +338,10 @@ mod tests {
     impl PluginWriter for FakePluginRepo {
         async fn save_new(
             &self,
+            id: Id<Plugin>,
             draft: PluginDraft,
             key_hash: Option<PluginKeyHash>,
         ) -> Result<Plugin, RepositoryError> {
-            let id = Id::<Plugin>::new_v7();
             let mut plugin = Plugin::reconstitute(PluginSnapshot {
                 id: id.value(),
                 slug: draft.slug.as_str().to_string(),
