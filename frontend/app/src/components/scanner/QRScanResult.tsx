@@ -67,6 +67,9 @@ const QRScanResult = ({
           variant="default"
           size="sm"
           onClick={handleContinue}
+          // The result card replaces the camera viewport, so focus has to be moved
+          // deliberately; the primary action is where the user continues.
+          // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
           className="w-full sm:w-auto"
         >
