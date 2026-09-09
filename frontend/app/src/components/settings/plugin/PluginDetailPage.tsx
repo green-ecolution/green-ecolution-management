@@ -36,6 +36,11 @@ interface PluginDetailPageProps {
   plugin: PluginResponse
 }
 
+const unchangedSet = (draft: ReadonlySet<string>, stored: readonly string[]): boolean => {
+  const right = new Set(stored)
+  return draft.size === right.size && [...right].every((entry) => draft.has(entry))
+}
+
 const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
   const { t, i18n } = useTranslation(['settings', 'common'])
   const navigate = useNavigate()
@@ -61,14 +66,23 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
     organizationNameOf(plugin.organizationId, organizations ?? []) ?? plugin.organizationId
 
   const handleSave = () => {
+    const trimmedDescription = description.trim()
+    // PluginService::update only runs require_superset when the request
+    // actually carries a permission set, so that a rename does not demand
+    // every right the plugin holds. Echoing both sets back unconditionally
+    // defeats that: an admin with plugin:update but without, say, tree:delete
+    // could not change the plugin's name. An untouched set is therefore left
+    // out of the request entirely.
     updatePlugin.mutate({
       slug: plugin.slug,
       change: {
         name: name.trim(),
-        description: description.trim() === '' ? null : description.trim(),
+        description: trimmedDescription === '' ? null : trimmedDescription,
         frontend: buildFrontendDto(frontendMode, target),
-        permissions: [...permissions],
-        requiredPermissions: [...accessPermissions],
+        ...(unchangedSet(permissions, plugin.permissions) ? {} : { permissions: [...permissions] }),
+        ...(unchangedSet(accessPermissions, plugin.requiredPermissions)
+          ? {}
+          : { requiredPermissions: [...accessPermissions] }),
       },
     })
   }
