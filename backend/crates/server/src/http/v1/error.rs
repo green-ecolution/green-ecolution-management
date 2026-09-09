@@ -196,6 +196,9 @@ impl IntoResponse for ServiceError {
             ServiceError::FeatureDisabled { .. } => {
                 (StatusCode::SERVICE_UNAVAILABLE, self.to_string())
             }
+            ServiceError::PayloadTooLarge { .. } => {
+                (StatusCode::PAYLOAD_TOO_LARGE, self.to_string())
+            }
         };
         body_response(status, message, Some(code), validation)
     }
@@ -325,6 +328,15 @@ mod tests {
         assert_eq!(routing.status(), StatusCode::SERVICE_UNAVAILABLE);
         let body: serde_json::Value = serde_json::from_str(&body_of(routing).await).unwrap();
         assert_eq!(body["code"], "feature.routing_disabled");
+    }
+
+    #[tokio::test]
+    async fn oversized_batch_is_payload_too_large() {
+        let err = ServiceError::PayloadTooLarge { limit: 500 };
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::PAYLOAD_TOO_LARGE);
+        let body: serde_json::Value = serde_json::from_str(&body_of(response).await).unwrap();
+        assert_eq!(body["code"], "plugin.batch_too_large");
     }
 
     #[tokio::test]

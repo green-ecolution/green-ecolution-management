@@ -6,7 +6,7 @@ use uuid::Uuid;
 use domain::{
     Id,
     authorization::{
-        AccessContext, Action, EffectivePermissions, Permission, Resource, Visibility,
+        AccessContext, Action, EffectivePermissions, OrgHierarchy, Permission, Resource, Visibility,
     },
     organization::{Organization, OrganizationReader},
     role::{Role, RoleReader},
@@ -110,6 +110,14 @@ impl AuthorizationService {
 
     pub fn enforced(&self) -> bool {
         self.enforced
+    }
+
+    /// Loads the organization tree on its own, for callers that build an
+    /// [`AccessContext`] from something other than a user's roles — the
+    /// plugin ingest path scopes a plugin's own `(organization_id,
+    /// permissions)` grant instead, which has no `user_id` to resolve.
+    pub async fn hierarchy(&self) -> Result<OrgHierarchy, ServiceError> {
+        Ok(self.org_reader.hierarchy().await?)
     }
 
     /// Rejects a change to a role definition that would leave the caller

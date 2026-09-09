@@ -5,6 +5,7 @@ pub mod evaluation_service;
 pub mod event_bus;
 pub mod handlers;
 pub mod organization_service;
+pub mod plugin_ingest_service;
 pub mod plugin_service;
 pub mod region_service;
 pub mod role_service;
@@ -111,6 +112,9 @@ pub enum ServiceError {
     NotActivated,
     #[error("{feature} feature is disabled")]
     FeatureDisabled { feature: Feature },
+    /// A plugin ingest batch exceeded `plugin_ingest_service::MAX_INGEST_ITEMS`.
+    #[error("batch exceeds the limit of {limit} items")]
+    PayloadTooLarge { limit: usize },
     #[error(transparent)]
     Routing(#[from] RoutingError),
     #[error(transparent)]
@@ -173,6 +177,7 @@ impl ServiceError {
                 Feature::Routing => "feature.routing_disabled",
                 Feature::Plugins => "feature.plugins_disabled",
             },
+            Self::PayloadTooLarge { .. } => "plugin.batch_too_large",
         }
     }
 
@@ -385,6 +390,7 @@ mod tests {
             ServiceError::FeatureDisabled {
                 feature: Feature::Plugins,
             },
+            ServiceError::PayloadTooLarge { limit: 500 },
             ServiceError::Routing(RoutingError::Unavailable("x".into())),
             ServiceError::Routing(RoutingError::InvalidProblem("x".into())),
             ServiceError::Routing(RoutingError::Failed("x".into())),

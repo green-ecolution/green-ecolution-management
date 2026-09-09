@@ -337,6 +337,37 @@ pub async fn spawn_app_with_plugins_and_auth(auth: AuthSettings) -> TestApp {
     spawn_with_settings(settings).await
 }
 
+/// Installs an enabled plugin in the root org and returns its plaintext key.
+pub async fn install_plugin(app: &TestApp, slug: &str, permissions: &[&str]) -> String {
+    let created: serde_json::Value = app
+        .post_json(
+            "/api/v1/plugins",
+            &json!({
+                "slug": slug,
+                "name": slug,
+                "organization_id": ROOT_ORG_ID,
+                "permissions": permissions,
+                "required_permissions": [],
+                "frontend": { "mode": "none" }
+            }),
+        )
+        .await
+        .json()
+        .await
+        .expect("install failed");
+
+    app.patch_json(
+        &format!("/api/v1/plugins/{slug}"),
+        &json!({ "enabled": true }),
+    )
+    .await;
+
+    created["key"]
+        .as_str()
+        .expect("no key returned")
+        .to_string()
+}
+
 /// Seeds the same start points the production seed file provides, plus a
 /// "Depot Nord" the routing tests select by name (lat≈54.81).
 async fn seed_routing_depots(pool: &sqlx::PgPool) {

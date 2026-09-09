@@ -47,6 +47,7 @@ use crate::{
         handlers::cluster_status::ClusterStatusAggregatorHandler,
         handlers::tree_watering::TreeWateringFromSensorHandler,
         organization_service::OrganizationService,
+        plugin_ingest_service::PluginIngestService,
         plugin_service::PluginService,
         region_service::RegionService,
         role_service::RoleService,
@@ -200,6 +201,7 @@ impl Application {
             plugin_reader: repos.plugin_reader,
             plugin_writer: repos.plugin_writer,
             plugin_service: services.plugin,
+            plugin_ingest_service: services.plugin_ingest,
         });
 
         let listener = TcpListener::bind(address).await?;
@@ -388,6 +390,7 @@ struct Services {
     role: Arc<RoleService>,
     authorization: Arc<AuthorizationService>,
     plugin: Arc<PluginService>,
+    plugin_ingest: Arc<PluginIngestService>,
 }
 
 impl Services {
@@ -413,19 +416,32 @@ impl Services {
             repos.plugin_writer.clone(),
             authorization.clone(),
         ));
+        let tree = Arc::new(TreeService::new(
+            repos.tree_reader.clone(),
+            repos.tree_writer.clone(),
+            repos.cluster_reader.clone(),
+            repos.sensor_reader.clone(),
+            repos.sensor_writer.clone(),
+            event_bus.clone(),
+        ));
+        // Reuses `TreeService::delete` for its own delete flow so `TreeDeleted`
+        // fires and cluster centroid/status stay in sync, instead of a second
+        // copy of that logic.
+        let plugin_ingest = Arc::new(PluginIngestService::new(
+            repos.tree_reader.clone(),
+            repos.tree_writer.clone(),
+            repos.plugin_reader.clone(),
+            repos.plugin_writer.clone(),
+            tree.clone(),
+            event_bus.clone(),
+            authorization.clone(),
+        ));
         Self {
             region: Arc::new(RegionService::new(
                 repos.region_reader.clone(),
                 repos.region_writer.clone(),
             )),
-            tree: Arc::new(TreeService::new(
-                repos.tree_reader.clone(),
-                repos.tree_writer.clone(),
-                repos.cluster_reader.clone(),
-                repos.sensor_reader.clone(),
-                repos.sensor_writer.clone(),
-                event_bus.clone(),
-            )),
+            tree,
             sensor: Arc::new(SensorService::new(
                 repos.sensor_reader.clone(),
                 repos.sensor_writer.clone(),
@@ -493,6 +509,7 @@ impl Services {
             )),
             authorization,
             plugin,
+            plugin_ingest,
         }
     }
 }

@@ -3,17 +3,18 @@ use std::sync::Arc;
 use axum::{extract::State, http::StatusCode};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::http::extractors::{Json, Path};
+use crate::http::extractors::{Json, Path, PluginPrincipal, Query};
 use crate::http::v1::error::ErrorBody;
 use crate::http::{AppState, auth::extractor::AuthUserExtractor};
-use crate::service::{Feature, ServiceError};
+use crate::service::{Feature, ServiceError, plugin_ingest_service::MAX_INGEST_ITEMS};
 use domain::{
     authorization::{Action, Permission, Resource},
-    plugin::PluginSlug,
+    plugin::{PluginSlug, PluginView},
 };
 
 use super::dto::plugin::{
-    PluginCreateRequest, PluginKeyResponse, PluginResponse, PluginUpdateRequest,
+    IngestBatchResponse, PluginCreateRequest, PluginKeyResponse, PluginResponse,
+    PluginUpdateRequest, TreeIngestBatchRequest, TreeRefListParams, TreeRefPageResponse,
 };
 
 pub fn routes() -> OpenApiRouter<Arc<AppState>> {
@@ -23,11 +24,14 @@ pub fn routes() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(rotate_plugin_key))
 }
 
-/// Reserved for Task 9 (the plugin ingest surface). Registered separately from
-/// [`routes`] so it can stay in the public router while installation and
-/// management require a user session.
+/// The ingest surface: authenticated with `PluginPrincipal` (an API key, not a
+/// user session), so registered separately from [`routes`] to stay in the
+/// public router while installation and management require a login.
 pub fn ingest_routes() -> OpenApiRouter<Arc<AppState>> {
-    OpenApiRouter::new().routes(routes!(ingest_resource))
+    OpenApiRouter::new()
+        .routes(routes!(get_own_plugin))
+        .routes(routes!(list_tree_refs, upsert_trees))
+        .routes(routes!(delete_tree_ref))
 }
 
 fn guard(state: &AppState) -> Result<(), ServiceError> {
@@ -208,20 +212,114 @@ pub async fn rotate_plugin_key(
     Ok(Json(PluginKeyResponse { key }))
 }
 
-#[utoipa::path(post, path = "/plugins/ingest/{resource}", tag = "Plugins",
-    operation_id = "ingestPluginData",
-    summary = "Ingest external data (not yet implemented)",
-    description = "Reserved for a later task: lets an authenticated plugin push external records for a resource kind. Currently only enforces the feature flag.",
-    params(("resource" = String, Path, description = "Resource kind, e.g. `trees`")),
+#[utoipa::path(get, path = "/plugins/me", tag = "Plugins",
+    operation_id = "getOwnPlugin",
+    summary = "Get the authenticated plugin",
+    description = "Returns the calling plugin's own registration, authenticated by its API key rather than a user session. Lets an adapter confirm its organization and rights before importing anything.",
     responses(
+        (status = 200, description = "The authenticated plugin", body = PluginResponse),
+        (status = 401, description = "Unauthorized", body = ErrorBody),
+        (status = 403, description = "Plugin is disabled", body = ErrorBody),
         (status = 503, description = "Plugins feature is disabled (code `feature.plugins_disabled`)", body = ErrorBody),
     )
 )]
 #[tracing::instrument(level = "info", skip_all)]
-pub async fn ingest_resource(
+pub async fn get_own_plugin(
     State(state): State<Arc<AppState>>,
-    Path(_resource): Path<String>,
+    plugin: PluginPrincipal,
+) -> Result<Json<PluginResponse>, ServiceError> {
+    guard(&state)?;
+    let last_seen_at = state.plugin_reader.last_seen_at(plugin.0.id).await?;
+    let view = PluginView::from_aggregate(&plugin.0, last_seen_at);
+    Ok(Json((&view).into()))
+}
+
+#[utoipa::path(get, path = "/plugins/ingest/trees", tag = "Plugins",
+    operation_id = "listPluginTreeRefs",
+    summary = "List a plugin's own tree references",
+    description = "Keyset page over the calling plugin's external_id-to-tree mappings, ordered by external_id. A plugin never sees another plugin's references.",
+    params(TreeRefListParams),
+    responses(
+        (status = 200, description = "Page of tree references", body = TreeRefPageResponse),
+        (status = 401, description = "Unauthorized", body = ErrorBody),
+        (status = 403, description = "Plugin is disabled", body = ErrorBody),
+        (status = 503, description = "Plugins feature is disabled (code `feature.plugins_disabled`)", body = ErrorBody),
+    )
+)]
+#[tracing::instrument(level = "info", skip_all)]
+pub async fn list_tree_refs(
+    State(state): State<Arc<AppState>>,
+    plugin: PluginPrincipal,
+    Query(params): Query<TreeRefListParams>,
+) -> Result<Json<TreeRefPageResponse>, ServiceError> {
+    guard(&state)?;
+    let limit = params
+        .limit
+        .unwrap_or(100)
+        .clamp(1, MAX_INGEST_ITEMS as u32);
+    let page = state
+        .plugin_ingest_service
+        .list_refs(&plugin.0, params.cursor.as_deref(), limit)
+        .await?;
+    Ok(Json(page.into()))
+}
+
+#[utoipa::path(post, path = "/plugins/ingest/trees", tag = "Plugins",
+    operation_id = "upsertPluginTrees",
+    summary = "Upsert trees from a plugin",
+    description = "Creates or updates up to 500 trees per request, matched by the plugin's own external_id. Every entry is processed independently: one bad entry fails only itself, never the batch. Requires tree:create and tree:update in the plugin's organization.",
+    request_body = TreeIngestBatchRequest,
+    responses(
+        (status = 200, description = "Per-item results plus a summary", body = IngestBatchResponse),
+        (status = 401, description = "Unauthorized", body = ErrorBody),
+        (status = 403, description = "Forbidden or plugin disabled", body = ErrorBody),
+        (status = 413, description = "Batch too large (code `plugin.batch_too_large`)", body = ErrorBody),
+        (status = 503, description = "Plugins feature is disabled (code `feature.plugins_disabled`)", body = ErrorBody),
+    )
+)]
+#[tracing::instrument(level = "info", skip_all)]
+pub async fn upsert_trees(
+    State(state): State<Arc<AppState>>,
+    plugin: PluginPrincipal,
+    Json(body): Json<TreeIngestBatchRequest>,
+) -> Result<Json<IngestBatchResponse>, ServiceError> {
+    guard(&state)?;
+    if body.items.len() > MAX_INGEST_ITEMS {
+        return Err(ServiceError::PayloadTooLarge {
+            limit: MAX_INGEST_ITEMS,
+        });
+    }
+    let items = body.items.into_iter().map(|i| i.into_item()).collect();
+    let results = state
+        .plugin_ingest_service
+        .upsert_trees(&plugin.0, items)
+        .await?;
+    Ok(Json(results.into()))
+}
+
+#[utoipa::path(delete, path = "/plugins/ingest/trees/{external_id}", tag = "Plugins",
+    operation_id = "deletePluginTree",
+    summary = "Delete a tree linked by a plugin",
+    description = "Deletes the tree the plugin's external_id resolves to, through the same path as the regular tree deletion so cluster centroid and status are recalculated. Requires tree:delete in the plugin's organization.",
+    params(("external_id" = String, Path, description = "The plugin's own external identifier for the tree")),
+    responses(
+        (status = 204, description = "Deleted"),
+        (status = 401, description = "Unauthorized", body = ErrorBody),
+        (status = 403, description = "Forbidden or plugin disabled", body = ErrorBody),
+        (status = 404, description = "No tree is linked under this external_id", body = ErrorBody),
+        (status = 503, description = "Plugins feature is disabled (code `feature.plugins_disabled`)", body = ErrorBody),
+    )
+)]
+#[tracing::instrument(level = "info", skip_all, fields(external_id = %external_id))]
+pub async fn delete_tree_ref(
+    State(state): State<Arc<AppState>>,
+    plugin: PluginPrincipal,
+    Path(external_id): Path<String>,
 ) -> Result<StatusCode, ServiceError> {
     guard(&state)?;
-    todo!("plugin ingest lands in a later task")
+    state
+        .plugin_ingest_service
+        .delete_tree(&plugin.0, &external_id)
+        .await?;
+    Ok(StatusCode::NO_CONTENT)
 }
