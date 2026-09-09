@@ -53,6 +53,7 @@ pub enum Malformed {
     SensorId,
     BoundingBox,
     Permission,
+    PluginFrontend,
 }
 
 impl Malformed {
@@ -63,6 +64,7 @@ impl Malformed {
             Self::SensorId => "request.malformed_sensor_id",
             Self::BoundingBox => "request.malformed_bounding_box",
             Self::Permission => "request.unknown_permission",
+            Self::PluginFrontend => "request.malformed_plugin_frontend",
         }
     }
 }
@@ -75,6 +77,7 @@ impl std::fmt::Display for Malformed {
             Self::SensorId => "sensor id",
             Self::BoundingBox => "bounding box",
             Self::Permission => "permission",
+            Self::PluginFrontend => "plugin frontend",
         })
     }
 }
@@ -358,6 +361,10 @@ mod tests {
             },
             ServiceError::Malformed {
                 kind: Malformed::Permission,
+                detail: "x".into(),
+            },
+            ServiceError::Malformed {
+                kind: Malformed::PluginFrontend,
                 detail: "x".into(),
             },
             ServiceError::InvalidInput("x".into()),

@@ -47,6 +47,7 @@ use crate::{
         handlers::cluster_status::ClusterStatusAggregatorHandler,
         handlers::tree_watering::TreeWateringFromSensorHandler,
         organization_service::OrganizationService,
+        plugin_service::PluginService,
         region_service::RegionService,
         role_service::RoleService,
         sensor_service::SensorService,
@@ -198,6 +199,7 @@ impl Application {
             authorization_service: services.authorization,
             plugin_reader: repos.plugin_reader,
             plugin_writer: repos.plugin_writer,
+            plugin_service: services.plugin,
         });
 
         let listener = TcpListener::bind(address).await?;
@@ -385,6 +387,7 @@ struct Services {
     organization: Arc<OrganizationService>,
     role: Arc<RoleService>,
     authorization: Arc<AuthorizationService>,
+    plugin: Arc<PluginService>,
 }
 
 impl Services {
@@ -400,6 +403,16 @@ impl Services {
         user_repo: Arc<dyn domain::user::UserRepository>,
         auth_enabled: bool,
     ) -> Self {
+        let authorization = Arc::new(AuthorizationService::new(
+            repos.organization_reader.clone(),
+            repos.role_reader.clone(),
+            auth_enabled,
+        ));
+        let plugin = Arc::new(PluginService::new(
+            repos.plugin_reader.clone(),
+            repos.plugin_writer.clone(),
+            authorization.clone(),
+        ));
         Self {
             region: Arc::new(RegionService::new(
                 repos.region_reader.clone(),
@@ -478,11 +491,8 @@ impl Services {
                 profile_reader,
                 event_bus,
             )),
-            authorization: Arc::new(AuthorizationService::new(
-                repos.organization_reader.clone(),
-                repos.role_reader.clone(),
-                auth_enabled,
-            )),
+            authorization,
+            plugin,
         }
     }
 }

@@ -326,7 +326,11 @@ pub async fn spawn_app_with_routing_and_auth(streamlet_url: &str, auth: AuthSett
 }
 
 pub async fn spawn_app_with_plugins() -> TestApp {
-    let mut settings = Settings::for_test(disabled_auth_settings());
+    spawn_app_with_plugins_and_auth(disabled_auth_settings()).await
+}
+
+pub async fn spawn_app_with_plugins_and_auth(auth: AuthSettings) -> TestApp {
+    let mut settings = Settings::for_test(auth);
     settings.info.health_check_interval_secs = 1;
     settings.info.update_check_repo = None;
     settings.plugins.enabled = true;

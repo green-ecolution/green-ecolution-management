@@ -1,73 +1,191 @@
-use crate::helpers::spawn_app;
+use std::collections::BTreeSet;
+
+use domain::plugin::{PluginDraft, PluginFrontend, PluginName, PluginSlug, PluginWriter};
+use server::infra::pg_plugin::PgPluginRepository;
+use uuid::Uuid;
+
+use crate::auth_helpers::AuthHarness;
+use crate::helpers::{
+    seed_user_with_permissions, spawn_app, spawn_app_with_plugins, spawn_app_with_plugins_and_auth,
+};
+
+const ROOT_ORG: &str = "01980000-0000-7000-8000-000000000001";
+const OTHER_ORG: &str = "01980000-0000-7000-8000-000000000003";
 
 async fn assert_plugins_503(response: reqwest::Response) {
-    assert_eq!(
-        response.status().as_u16(),
-        503,
-        "expected 503 Service Unavailable when plugins disabled"
-    );
+    assert_eq!(response.status().as_u16(), 503);
     let body = response.text().await.unwrap_or_default();
     assert!(
         body.contains("plugins"),
-        "expected error body to mention plugins, got: {body}"
+        "expected the error body to mention plugins, got: {body}"
     );
 }
 
 #[tokio::test]
 async fn list_plugins_returns_503_when_disabled() {
     let app = spawn_app().await;
-    let response = app.get("/api/v1/plugins").await;
-    assert_plugins_503(response).await;
+    assert_plugins_503(app.get("/api/v1/plugins").await).await;
 }
 
 #[tokio::test]
-async fn register_plugin_returns_503_when_disabled() {
+async fn ingest_returns_503_when_disabled() {
     let app = spawn_app().await;
-    let response = app
-        .post_json("/api/v1/plugins", &serde_json::json!({}))
-        .await;
-    assert_plugins_503(response).await;
+    assert_plugins_503(
+        app.post_json(
+            "/api/v1/plugins/ingest/trees",
+            &serde_json::json!({ "items": [] }),
+        )
+        .await,
+    )
+    .await;
 }
 
 #[tokio::test]
-async fn get_plugin_returns_503_when_disabled() {
-    let app = spawn_app().await;
-    let response = app.get("/api/v1/plugins/my-plugin").await;
-    assert_plugins_503(response).await;
-}
-
-#[tokio::test]
-async fn plugin_heartbeat_returns_503_when_disabled() {
-    let app = spawn_app().await;
-    let response = app
+async fn install_returns_the_key_exactly_once() {
+    let app = spawn_app_with_plugins().await;
+    let resp = app
         .post_json(
-            "/api/v1/plugins/my-plugin/heartbeat",
-            &serde_json::json!({}),
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme",
+                "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": ["tree:create"],
+                "required_permissions": ["tree:read"],
+                "frontend": { "mode": "none" }
+            }),
         )
         .await;
-    assert_plugins_503(response).await;
+    assert_eq!(resp.status().as_u16(), 201);
+    let body: serde_json::Value = resp.json().await.unwrap();
+    assert!(body["key"].as_str().unwrap().starts_with("gep_"));
+
+    let listed: serde_json::Value = app.get("/api/v1/plugins").await.json().await.unwrap();
+    let entry = listed
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|p| p["slug"] == "acme")
+        .unwrap();
+    assert!(
+        entry.get("key").is_none(),
+        "the key must never appear again"
+    );
+    assert!(
+        entry.get("key_hash").is_none(),
+        "the hash must never leave the server"
+    );
 }
 
 #[tokio::test]
-async fn plugin_refresh_token_returns_503_when_disabled() {
-    let app = spawn_app().await;
-    let response = app
-        .post_json(
-            "/api/v1/plugins/my-plugin/token/refresh",
-            &serde_json::json!({}),
-        )
-        .await;
-    assert_plugins_503(response).await;
+async fn slug_is_unique() {
+    let app = spawn_app_with_plugins().await;
+    let payload = serde_json::json!({
+        "slug": "acme", "name": "Acme",
+        "organization_id": "01980000-0000-7000-8000-000000000001",
+        "permissions": [], "required_permissions": [], "frontend": { "mode": "none" }
+    });
+    assert_eq!(
+        app.post_json("/api/v1/plugins", &payload)
+            .await
+            .status()
+            .as_u16(),
+        201
+    );
+    assert_eq!(
+        app.post_json("/api/v1/plugins", &payload)
+            .await
+            .status()
+            .as_u16(),
+        409
+    );
 }
 
 #[tokio::test]
-async fn unregister_plugin_returns_503_when_disabled() {
-    let app = spawn_app().await;
-    let response = app
+async fn rotate_key_returns_a_different_key() {
+    let app = spawn_app_with_plugins().await;
+    let created: serde_json::Value = app
         .post_json(
-            "/api/v1/plugins/my-plugin/unregister",
-            &serde_json::json!({}),
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme", "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [], "frontend": { "mode": "none" }
+            }),
+        )
+        .await
+        .json()
+        .await
+        .unwrap();
+
+    let rotated: serde_json::Value = app
+        .post_json("/api/v1/plugins/acme/key", &serde_json::json!({}))
+        .await
+        .json()
+        .await
+        .unwrap();
+    assert_ne!(created["key"], rotated["key"]);
+}
+
+#[tokio::test]
+async fn external_frontend_must_be_https() {
+    let app = spawn_app_with_plugins().await;
+    let resp = app
+        .post_json(
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme", "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [],
+                "frontend": { "mode": "external", "target": "http://plugin.example.com" }
+            }),
         )
         .await;
-    assert_plugins_503(response).await;
+    assert_eq!(resp.status().as_u16(), 400);
+}
+
+/// `PluginService::by_slug` (unlike every other plugin service method) does
+/// not check authorization itself, since the ingest path authenticates via
+/// the plugin's own key rather than a user token. The `GET /plugins/{slug}`
+/// handler must therefore check `plugin:read` in the plugin's own
+/// organization itself, or a caller who merely knows a slug could read a
+/// plugin belonging to another organization.
+#[tokio::test]
+async fn get_plugin_is_forbidden_across_organizations() {
+    let harness = AuthHarness::start().await;
+    let app = spawn_app_with_plugins_and_auth(harness.auth_settings(true)).await;
+
+    sqlx::query!(
+        "INSERT INTO organizations (id, parent_id, name) VALUES ($1, $2, 'Other Org')",
+        Uuid::parse_str(OTHER_ORG).unwrap(),
+        Uuid::parse_str(ROOT_ORG).unwrap(),
+    )
+    .execute(&app.db_pool)
+    .await
+    .unwrap();
+
+    let repo = PgPluginRepository::new(app.db_pool.clone());
+    repo.save_new(
+        domain::Id::new_v7(),
+        PluginDraft {
+            slug: PluginSlug::new("other-org-plugin").unwrap(),
+            name: PluginName::new("Other Org Plugin").unwrap(),
+            description: None,
+            organization_id: domain::Id::new(Uuid::parse_str(OTHER_ORG).unwrap()),
+            permissions: BTreeSet::new(),
+            required_permissions: BTreeSet::new(),
+            frontend: PluginFrontend::None,
+        },
+        None,
+    )
+    .await
+    .unwrap();
+
+    let (_org_id, token) =
+        seed_user_with_permissions(&harness, &app, "Caller Org", &["plugin:read"]).await;
+
+    let resp = app
+        .get_with_bearer("/api/v1/plugins/other-org-plugin", &token)
+        .await;
+    assert_eq!(resp.status().as_u16(), 403);
 }
