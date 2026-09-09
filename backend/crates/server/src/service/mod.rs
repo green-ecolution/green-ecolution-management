@@ -5,6 +5,7 @@ pub mod evaluation_service;
 pub mod event_bus;
 pub mod handlers;
 pub mod organization_service;
+pub mod plugin_service;
 pub mod region_service;
 pub mod role_service;
 pub mod sensor_service;
