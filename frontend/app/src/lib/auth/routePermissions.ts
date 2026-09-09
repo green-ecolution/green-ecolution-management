@@ -14,6 +14,7 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionRequirement> = {
   '/settings/team/roles': ['role:read'],
   '/map': ['tree:read', 'tree_cluster:read'],
   '/evaluations': ANY_READ,
+  '/plugin/$slug': ['plugin:read'],
 }
 
 // `to` on nav entries carries TanStack's wide LinkProps type, hence unknown.

@@ -19,7 +19,7 @@
     "ci": "pnpm --filter backend-client generate:ci",
     "lint": "prettier --check . && pnpm --filter='!green-ecolution-frontend' -r lint",
     "lint:ui": "pnpm --filter @green-ecolution/ui lint",
-    "test": "pnpm --filter frontend test:run",
+    "test": "pnpm --filter frontend test:run && pnpm --filter plugin-interface test:run",
     "preview": "pnpm --filter frontend preview",
     "fmt": "prettier --write .",
     "storybook": "pnpm --filter @green-ecolution/ui storybook",

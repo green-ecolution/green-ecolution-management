@@ -9,6 +9,7 @@ describe('ROUTE_PERMISSIONS', () => {
     expect(Object.keys(ROUTE_PERMISSIONS).sort()).toEqual([
       '/evaluations',
       '/map',
+      '/plugin/$slug',
       '/sensors',
       '/settings/team/members',
       '/settings/team/roles',

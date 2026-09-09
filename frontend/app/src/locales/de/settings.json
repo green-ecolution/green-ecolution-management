@@ -128,6 +128,7 @@
       "credentialLabel": "API-Schlüssel",
       "credentialSet": "Hinterlegt",
       "credentialMissing": "Kein Schlüssel hinterlegt",
+      "openViewButton": "Ansicht öffnen",
       "rotateButton": "Schlüssel erneuern",
       "rotateConfirmTitle": "Schlüssel erneuern?",
       "rotateConfirmDescription": "Der bisherige Schlüssel wird sofort ungültig. Hinterlege den neuen Schlüssel dort, wo das Plugin ihn braucht.",
@@ -148,6 +149,9 @@
         "installed": "Plugin installiert",
         "installFailed": "Das Plugin konnte nicht installiert werden."
       }
+    },
+    "view": {
+      "loading": "Ansicht wird geladen"
     }
   },
   "notProvided": "Nicht hinterlegt",

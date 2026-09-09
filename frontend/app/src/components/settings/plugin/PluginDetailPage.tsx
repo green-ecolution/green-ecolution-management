@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { ExternalLink } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -111,9 +112,19 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
               })}
           </p>
         </div>
-        <Badge variant={plugin.enabled ? 'success' : 'muted'}>
-          {plugin.enabled ? t('plugin.status.enabled') : t('plugin.status.disabled')}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge variant={plugin.enabled ? 'success' : 'muted'}>
+            {plugin.enabled ? t('plugin.status.enabled') : t('plugin.status.disabled')}
+          </Badge>
+          {plugin.frontendMode === 'external' && plugin.frontendTarget && (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/plugin/$slug" params={{ slug: plugin.slug }}>
+                <ExternalLink className="size-4" />
+                {t('plugin.detail.openViewButton')}
+              </Link>
+            </Button>
+          )}
+        </div>
       </header>
 
       <Can permission={['plugin:update']}>
