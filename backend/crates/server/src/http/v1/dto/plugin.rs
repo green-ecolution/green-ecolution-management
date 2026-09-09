@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use domain::plugin::Plugin;
-
 use super::user::ClientTokenResponse;
 
 /// Represents a registered plugin in the system.
@@ -29,18 +27,6 @@ pub struct PluginResponse {
     /// Short description of the plugin's purpose.
     #[schema(example = "Provides weather forecast data")]
     pub description: String,
-}
-
-impl From<&Plugin> for PluginResponse {
-    fn from(value: &Plugin) -> Self {
-        Self {
-            slug: value.slug.clone(),
-            name: value.name.clone(),
-            host_path: value.path.to_string(),
-            version: value.version.clone(),
-            description: value.description.clone(),
-        }
-    }
 }
 
 /// Authentication credentials for a plugin's OIDC client.
