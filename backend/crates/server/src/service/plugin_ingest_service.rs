@@ -23,7 +23,7 @@ use domain::{
 
 use super::{
     AuthError, ServiceError, authorization::AuthorizationService, event_bus::EventBus,
-    tree_service::TreeService,
+    tree_service::TreeDeletion,
 };
 
 /// Batch size cap for [`PluginIngestService::upsert_trees`]. Enforced by the
@@ -72,7 +72,7 @@ pub struct PluginIngestService {
     /// Owns the delete flow so it runs through the exact same path as the
     /// regular tree API (`TreeDeleted` published, cluster centroid and
     /// status recalculated) instead of a second, drifting copy of it.
-    tree_service: Arc<TreeService>,
+    tree_deletion: Arc<dyn TreeDeletion>,
     event_bus: Arc<dyn EventBus>,
     authorization: Arc<AuthorizationService>,
 }
@@ -84,7 +84,7 @@ impl PluginIngestService {
         tree_writer: Arc<dyn TreeWriter>,
         plugin_reader: Arc<dyn PluginReader>,
         plugin_writer: Arc<dyn PluginWriter>,
-        tree_service: Arc<TreeService>,
+        tree_deletion: Arc<dyn TreeDeletion>,
         event_bus: Arc<dyn EventBus>,
         authorization: Arc<AuthorizationService>,
     ) -> Self {
@@ -93,7 +93,7 @@ impl PluginIngestService {
             tree_writer,
             plugin_reader,
             plugin_writer,
-            tree_service,
+            tree_deletion,
             event_bus,
             authorization,
         }
@@ -303,7 +303,7 @@ impl PluginIngestService {
         ) {
             return Err(AuthError::Forbidden.into());
         }
-        self.tree_service.delete(tree_ref.tree_id).await
+        self.tree_deletion.delete(tree_ref.tree_id).await
     }
 
     /// Keyset page over `plugin`'s own external_id-to-tree mappings.
@@ -387,10 +387,9 @@ mod tests {
     use domain::organization::{Organization, OrganizationReader};
     use domain::plugin::{PluginDraft, PluginKeyHash, PluginSlug, PluginSnapshot, TreeRef};
     use domain::role::{Role, RoleReader};
-    use domain::sensor::{SensorReader, SensorWriter};
+    use domain::sensor::SensorId;
     use domain::shared::watering_status::WateringStatus;
     use domain::tree::TreeSnapshot;
-    use domain::{cluster::TreeClusterReader, sensor::SensorId};
     use serde_json::json;
     use uuid::Uuid;
 
@@ -521,6 +520,20 @@ mod tests {
                 .remove(&id.value())
                 .map(|_| ())
                 .ok_or(RepositoryError::NotFound)
+        }
+    }
+
+    /// In production the port is implemented by `TreeService`, so the ingest
+    /// delete really runs the regular tree flow; `plugin_ingest.rs`
+    /// (`delete_removes_tree_and_ref`) covers that end to end. Here the repo
+    /// stands in for it, so these tests can pin the ingest service's own
+    /// behaviour — ref lookup, per-tree authorization, delegation — without
+    /// building a `TreeService` out of fakes it never calls.
+    #[async_trait::async_trait]
+    impl TreeDeletion for FakeTreeRepo {
+        async fn delete(&self, id: Id<Tree>) -> Result<(), ServiceError> {
+            TreeWriter::delete(self, id).await?;
+            Ok(())
         }
     }
 
@@ -761,149 +774,6 @@ mod tests {
         }
     }
 
-    /// Every method panics: `TreeService::delete` (the only `TreeService`
-    /// method these tests exercise) never touches the cluster reader, so a
-    /// call here would mean a new call site slipped in unnoticed.
-    struct NoClusters;
-
-    #[async_trait::async_trait]
-    impl TreeClusterReader for NoClusters {
-        async fn by_id(
-            &self,
-            _id: Id<domain::cluster::TreeCluster>,
-        ) -> Result<domain::cluster::TreeCluster, RepositoryError> {
-            unimplemented!()
-        }
-        async fn by_ids(
-            &self,
-            _ids: &[Id<domain::cluster::TreeCluster>],
-        ) -> Result<Vec<domain::cluster::TreeCluster>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_by_id(
-            &self,
-            _id: Id<domain::cluster::TreeCluster>,
-        ) -> Result<domain::cluster::TreeClusterView, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_by_ids(
-            &self,
-            _ids: &[Id<domain::cluster::TreeCluster>],
-        ) -> Result<Vec<domain::cluster::TreeClusterView>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_search(
-            &self,
-            _query: domain::cluster::TreeClusterSearchQuery,
-            _pagination: domain::shared::pagination::Pagination,
-        ) -> Result<
-            domain::shared::pagination::Page<domain::cluster::TreeClusterView>,
-            RepositoryError,
-        > {
-            unimplemented!()
-        }
-        async fn view_markers(
-            &self,
-            _visible: domain::authorization::Visibility,
-        ) -> Result<Vec<domain::cluster::ClusterMarker>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn boundaries(
-            &self,
-            _visible: domain::authorization::Visibility,
-        ) -> Result<Vec<domain::cluster::ClusterBoundaryView>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn center_point(
-            &self,
-            _id: Id<domain::cluster::TreeCluster>,
-        ) -> Result<Option<Coordinate>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn statistics(
-            &self,
-            _visible: domain::authorization::Visibility,
-        ) -> Result<domain::cluster::ClusterStatistics, RepositoryError> {
-            unimplemented!()
-        }
-        async fn soil_moisture_series(
-            &self,
-            _id: Id<domain::cluster::TreeCluster>,
-            _from: chrono::DateTime<chrono::Utc>,
-            _to: chrono::DateTime<chrono::Utc>,
-            _bucket: domain::cluster::SoilMoistureBucket,
-        ) -> Result<Vec<domain::cluster::SoilMoistureDepthSeries>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn just_watered_before(
-            &self,
-            _cutoff: chrono::DateTime<chrono::Utc>,
-        ) -> Result<Vec<domain::cluster::TreeCluster>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn watering_events(
-            &self,
-            _id: Id<domain::cluster::TreeCluster>,
-        ) -> Result<Vec<domain::cluster::ClusterWateringEvent>, RepositoryError> {
-            unimplemented!()
-        }
-    }
-
-    /// Same rationale as [`NoClusters`]: `TreeService::delete` never touches
-    /// sensors either.
-    struct NoSensors;
-
-    #[async_trait::async_trait]
-    impl SensorReader for NoSensors {
-        async fn by_id(&self, _id: &SensorId) -> Result<domain::sensor::Sensor, RepositoryError> {
-            unimplemented!()
-        }
-        async fn by_ids(
-            &self,
-            _ids: &[SensorId],
-        ) -> Result<Vec<domain::sensor::Sensor>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_by_id(
-            &self,
-            _id: &SensorId,
-        ) -> Result<domain::sensor::SensorView, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_by_ids(
-            &self,
-            _ids: &[SensorId],
-        ) -> Result<Vec<domain::sensor::SensorView>, RepositoryError> {
-            unimplemented!()
-        }
-        async fn view_search(
-            &self,
-            _query: domain::sensor::SensorSearchQuery,
-            _pagination: domain::shared::pagination::Pagination,
-        ) -> Result<domain::shared::pagination::Page<domain::sensor::SensorView>, RepositoryError>
-        {
-            unimplemented!()
-        }
-    }
-
-    struct NoSensorWriter;
-
-    #[async_trait::async_trait]
-    impl SensorWriter for NoSensorWriter {
-        async fn save_new(
-            &self,
-            _draft: domain::sensor::SensorDraft,
-        ) -> Result<domain::sensor::Sensor, RepositoryError> {
-            unimplemented!()
-        }
-        async fn save(&self, _sensor: &domain::sensor::Sensor) -> Result<(), RepositoryError> {
-            unimplemented!()
-        }
-        async fn delete(&self, _id: &SensorId) -> Result<(), RepositoryError> {
-            unimplemented!()
-        }
-    }
-
     fn plugin_fixture(permissions: BTreeSet<Permission>) -> Plugin {
         Plugin::reconstitute(PluginSnapshot {
             id: Uuid::now_v7(),
@@ -940,20 +810,12 @@ mod tests {
             Arc::new(NoRoles),
             true,
         ));
-        let tree_service = Arc::new(TreeService::new(
-            tree_repo.clone(),
-            tree_repo.clone(),
-            Arc::new(NoClusters),
-            Arc::new(NoSensors),
-            Arc::new(NoSensorWriter),
-            event_bus.clone(),
-        ));
         let svc = PluginIngestService::new(
             tree_repo.clone(),
             tree_repo.clone(),
             plugin_repo.clone(),
             plugin_repo,
-            tree_service,
+            tree_repo.clone(),
             event_bus,
             authorization,
         );
