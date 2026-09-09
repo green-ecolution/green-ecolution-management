@@ -166,6 +166,44 @@ async fn external_frontend_must_not_be_the_apps_own_origin() {
     assert_eq!(resp.status().as_u16(), 400);
 }
 
+/// The same rule has to hold on the update path: installing with a legitimate
+/// external target and afterwards patching it to the app's own origin would
+/// otherwise reach the renderer with `allow-same-origin` intact.
+#[tokio::test]
+async fn external_frontend_must_not_become_the_apps_own_origin_on_update() {
+    let app = spawn_app_with_plugins_and_base_url("https://app.example.com").await;
+    let created = app
+        .post_json(
+            "/api/v1/plugins",
+            &serde_json::json!({
+                "slug": "acme", "name": "Acme",
+                "organization_id": "01980000-0000-7000-8000-000000000001",
+                "permissions": [], "required_permissions": [],
+                "frontend": { "mode": "external", "target": "https://plugin.example.com" }
+            }),
+        )
+        .await;
+    assert_eq!(created.status().as_u16(), 201);
+
+    let resp = app
+        .patch_json(
+            "/api/v1/plugins/acme",
+            &serde_json::json!({
+                "frontend": { "mode": "external", "target": "https://app.example.com" }
+            }),
+        )
+        .await;
+    assert_eq!(resp.status().as_u16(), 400);
+
+    let stored: serde_json::Value = app
+        .get("/api/v1/plugins/acme")
+        .await
+        .json()
+        .await
+        .expect("plugin body");
+    assert_eq!(stored["frontend_target"], "https://plugin.example.com/");
+}
+
 /// Same host as the app's own origin, but a different port: this must be
 /// accepted, proving the check compares scheme, host *and* port rather than
 /// rejecting on a host substring match.

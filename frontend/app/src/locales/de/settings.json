@@ -154,7 +154,8 @@
     "view": {
       "loading": "Ansicht wird geladen",
       "proxiedNotice": "Dieses Plugin läuft im Cluster (proxied). Seine Ansicht lässt sich hier noch nicht anzeigen.",
-      "noFrontendNotice": "Dieses Plugin hat keine eigene Ansicht."
+      "noFrontendNotice": "Dieses Plugin hat keine eigene Ansicht.",
+      "unsafeOriginNotice": "Die Ansicht dieses Plugins liegt auf derselben Adresse wie Green Ecolution und kann deshalb nicht angezeigt werden. Ein Plugin muss unter einer eigenen Domain erreichbar sein."
     }
   },
   "notProvided": "Nicht hinterlegt",

@@ -86,6 +86,9 @@ function PluginViewPage() {
   if (view.kind === 'proxied') {
     return <PluginViewNotice>{t('plugin.view.proxiedNotice')}</PluginViewNotice>
   }
+  if (view.kind === 'unsafeOrigin') {
+    return <PluginViewNotice>{t('plugin.view.unsafeOriginNotice')}</PluginViewNotice>
+  }
   if (view.kind === 'unavailable') {
     return <PluginViewNotice>{t('plugin.view.noFrontendNotice')}</PluginViewNotice>
   }
@@ -96,8 +99,10 @@ function PluginViewPage() {
       src={view.target}
       title={plugin.name}
       // allow-same-origin is safe here only because frontend_target is always a
-      // foreign origin (enforced on install/update); serving a plugin from the
-      // app's own origin would give it an unrestricted same-origin document.
+      // foreign origin (enforced on install/update, and re-checked against
+      // window.location.origin by pluginViewKind before this branch is reached);
+      // serving a plugin from the app's own origin would give it an
+      // unrestricted same-origin document.
       // eslint-disable-next-line react-dom/no-unsafe-iframe-sandbox -- see comment above
       sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
       referrerPolicy="no-referrer"
