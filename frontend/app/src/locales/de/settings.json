@@ -106,7 +106,6 @@
     },
     "permissionMatrix": {
       "areaColumnLabel": "Bereich",
-      "accessPrefix": "Zugang",
       "actionShort": {
         "read": "Lesen",
         "create": "Anlegen",

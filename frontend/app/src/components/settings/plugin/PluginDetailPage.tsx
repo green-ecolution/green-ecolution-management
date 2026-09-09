@@ -27,7 +27,7 @@ import { useDateLocale } from '@/lib/i18n/useFormatters'
 import { intlLocale } from '@/lib/i18n/format'
 import PluginPermissionMatrix from './PluginPermissionMatrix'
 import PluginKeyDialog from './PluginKeyDialog'
-import { accessVisiblePermissions, usePluginPermissionDraft } from './usePluginPermissionDraft'
+import { usePluginPermissionDraft } from './usePluginPermissionDraft'
 import { formatLastSeenAt, organizationNameOf } from './pluginList'
 import { buildFrontendDto, type FrontendMode } from './pluginFrontend'
 
@@ -49,13 +49,8 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
     plugin.frontendMode as FrontendMode,
   )
   const [target, setTarget] = useState(plugin.frontendTarget ?? '')
-  const {
-    permissions,
-    accessPermissions,
-    togglePermission,
-    toggleAccessPermission,
-    submittedAccessPermissions,
-  } = usePluginPermissionDraft(plugin.permissions, plugin.requiredPermissions)
+  const { permissions, accessPermissions, togglePermission, toggleAccessPermission } =
+    usePluginPermissionDraft(plugin.permissions, plugin.requiredPermissions)
 
   const [issuedKey, setIssuedKey] = useState<string | null>(null)
   const [rotateConfirmOpen, setRotateConfirmOpen] = useState(false)
@@ -72,7 +67,7 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
         description: description.trim() === '' ? null : description.trim(),
         frontend: buildFrontendDto(frontendMode, target),
         permissions: [...permissions],
-        requiredPermissions: submittedAccessPermissions(),
+        requiredPermissions: [...accessPermissions],
       },
     })
   }
@@ -218,8 +213,6 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
         heading={t('plugin.install.accessPermissionsHeading')}
         hint={t('plugin.install.accessPermissionsHint')}
         permissions={accessPermissions}
-        accessPrefix={t('plugin.permissionMatrix.accessPrefix')}
-        visiblePermissions={accessVisiblePermissions(permissions)}
         disabled={!canUpdate}
         onToggle={toggleAccessPermission}
       />

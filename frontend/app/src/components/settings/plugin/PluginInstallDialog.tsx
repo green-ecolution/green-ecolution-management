@@ -16,7 +16,7 @@ import {
 } from '@green-ecolution/ui'
 import type { OrganizationResponse, PluginFrontendDto } from '@/api/backendApi'
 import PluginPermissionMatrix from './PluginPermissionMatrix'
-import { accessVisiblePermissions, usePluginPermissionDraft } from './usePluginPermissionDraft'
+import { usePluginPermissionDraft } from './usePluginPermissionDraft'
 import { buildFrontendDto, validateTarget, type FrontendMode } from './pluginFrontend'
 
 export type { FrontendMode } from './pluginFrontend'
@@ -76,7 +76,6 @@ export const PluginInstallDialog = ({
     togglePermission,
     toggleAccessPermission,
     reset: resetPermissionDraft,
-    submittedAccessPermissions,
   } = usePluginPermissionDraft()
 
   const reset = () => {
@@ -119,7 +118,7 @@ export const PluginInstallDialog = ({
       description: descriptionTrimmed === '' ? null : descriptionTrimmed,
       organizationId,
       permissions: [...permissions],
-      requiredPermissions: submittedAccessPermissions(),
+      requiredPermissions: [...accessPermissions],
       frontend: buildFrontendDto(frontendMode, target),
     })
   }
@@ -231,8 +230,6 @@ export const PluginInstallDialog = ({
             heading={t('plugin.install.accessPermissionsHeading')}
             hint={t('plugin.install.accessPermissionsHint')}
             permissions={accessPermissions}
-            accessPrefix={t('plugin.permissionMatrix.accessPrefix')}
-            visiblePermissions={accessVisiblePermissions(permissions)}
             onToggle={toggleAccessPermission}
           />
 

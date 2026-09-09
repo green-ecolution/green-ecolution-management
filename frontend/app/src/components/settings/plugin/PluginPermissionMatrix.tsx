@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Checkbox,
@@ -15,35 +16,25 @@ interface PluginPermissionMatrixProps {
   heading: string
   hint?: string
   permissions: ReadonlySet<string>
-  /**
-   * Set for the access-permissions matrix so every checkbox label reads
-   * "{accessPrefix}: {area} {action}" — distinguishing it from the plugin's
-   * own permission matrix, which shares the same resource/action grid.
-   */
-  accessPrefix?: string
-  /**
-   * Restricts which cells render a checkbox at all (the rest show a dash).
-   * The access matrix uses this to only offer a write-action toggle for a
-   * permission the plugin itself holds — an action button in its view can
-   * only exist for a right the plugin actually has — while "read" stays
-   * offered everywhere, since viewing data doesn't depend on that. Omitted
-   * for the plugin's own matrix, which always offers every cell.
-   */
-  visiblePermissions?: ReadonlySet<string>
   disabled?: boolean
   onToggle: (permission: Permission) => void
 }
 
+/**
+ * A `<fieldset>` with a `<legend>` gives the browser a role="group" whose
+ * accessible name is the legend text — so the plugin matrix and the access
+ * matrix are two distinctly-named groups a screen reader (and a test) can
+ * address independently, without repeating a prefix on every cell.
+ */
 const PluginPermissionMatrix = ({
   heading,
   hint,
   permissions,
-  accessPrefix,
-  visiblePermissions,
   disabled = false,
   onToggle,
 }: PluginPermissionMatrixProps) => {
   const { t } = useTranslation('settings')
+  const hintId = useId()
   const areas = permissionAreasFor(t)
   const actionShort: Record<(typeof ACTIONS)[number], string> = {
     read: t('plugin.permissionMatrix.actionShort.read'),
@@ -53,11 +44,13 @@ const PluginPermissionMatrix = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div>
-        <p className="font-lato text-sm font-semibold text-dark">{heading}</p>
-        {hint && <p className="mt-0.5 text-sm text-dark-600">{hint}</p>}
-      </div>
+    <fieldset aria-describedby={hint ? hintId : undefined} className="flex flex-col gap-2">
+      <legend className="font-lato text-sm font-semibold text-dark">{heading}</legend>
+      {hint && (
+        <p id={hintId} className="-mt-1 text-sm text-dark-600">
+          {hint}
+        </p>
+      )}
       <div className="overflow-x-auto rounded-xl border border-dark-100">
         <Table>
           <TableHeader>
@@ -76,34 +69,22 @@ const PluginPermissionMatrix = ({
             {areas.map((area) => (
               <TableRow key={area.resource}>
                 <TableCell className="font-medium text-dark">{area.label}</TableCell>
-                {area.actions.map((action) => {
-                  if (visiblePermissions && !visiblePermissions.has(action.permission)) {
-                    return (
-                      <TableCell key={action.permission} className="text-center text-dark-300">
-                        &ndash;
-                      </TableCell>
-                    )
-                  }
-                  const label = accessPrefix
-                    ? `${accessPrefix}: ${area.label} ${actionShort[action.action]}`
-                    : `${area.label} ${actionShort[action.action]}`
-                  return (
-                    <TableCell key={action.permission} className="text-center">
-                      <Checkbox
-                        aria-label={label}
-                        checked={permissions.has(action.permission)}
-                        disabled={disabled}
-                        onCheckedChange={() => onToggle(action.permission)}
-                      />
-                    </TableCell>
-                  )
-                })}
+                {area.actions.map((action) => (
+                  <TableCell key={action.permission} className="text-center">
+                    <Checkbox
+                      aria-label={`${area.label} ${actionShort[action.action]}`}
+                      checked={permissions.has(action.permission)}
+                      disabled={disabled}
+                      onCheckedChange={() => onToggle(action.permission)}
+                    />
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-    </div>
+    </fieldset>
   )
 }
 
