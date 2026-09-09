@@ -39,23 +39,3 @@ UPDATE roles
     '01980000-0000-7000-8000-0000000000a1',
     '01980000-0000-7000-8000-0000000000b1'
  );
-
-INSERT INTO plugins (id, slug, name, description, organization_id, permissions, required_permissions)
-VALUES (
-    '01980000-0000-7000-8000-0000000000c1',
-    'tbz-baumkataster',
-    'Baumkataster Flensburg',
-    'Importiert Baumdaten aus dem Kataster der Technischen Betriebe.',
-    '01980000-0000-7000-8000-000000000001',
-    ARRAY['tree:read','tree:create','tree:update','tree:delete'],
-    ARRAY['tree:read']
-);
-
-INSERT INTO plugin_tree_refs (plugin_id, external_id, tree_id)
-SELECT '01980000-0000-7000-8000-0000000000c1',
-       t.additional_informations->>'object_id',
-       t.id
-  FROM trees t
- WHERE t.provider = 'tbz-baumkataster'
-   AND t.additional_informations->>'object_id' IS NOT NULL
-ON CONFLICT DO NOTHING;
