@@ -396,6 +396,15 @@ Both, including full request and response examples, are documented in
 The full OpenAPI schema for every endpoint, including the plugin ones, is also part of
 the live API documentation linked under [Getting Help](#getting-help).
 
+### Testing the plugin integration
+
+The repository ships a demo plugin that exercises both halves of the contract.
+`just plugin-demo-up` builds and starts it on <http://localhost:5175>, and
+[`frontend/demo-plugin/README.md`](frontend/demo-plugin/README.md) walks through
+installing it under **Settings → Plugins**, pasting its one-time API key and importing
+demo trees. It runs behind the compose profile `plugins`, so a plain `just infra-up`
+neither builds nor starts it.
+
 ## Getting Help
 
 - Open an issue for bugs or feature requests

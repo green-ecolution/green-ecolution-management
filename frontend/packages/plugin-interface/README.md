@@ -14,6 +14,10 @@ There is no Module Federation here, no remote bundle loading, and no shared Reac
 runtime between host and plugin. A plugin is an ordinary web application that happens
 to run inside an iframe and speaks one small `postMessage` protocol to its host.
 
+A complete working plugin using this SDK lives in `frontend/demo-plugin`: it renders the
+context from the handshake and imports demo trees through the ingest contract described
+below.
+
 ## Installation
 
 ```bash
