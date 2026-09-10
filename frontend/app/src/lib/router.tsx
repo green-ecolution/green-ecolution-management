@@ -43,9 +43,17 @@ export const pendingLoading = (label: LocalizedText) => {
   return PendingLoading
 }
 
-export const entityNotFound = (props: ComponentProps<typeof EntityNotFound>) => () => (
-  <EntityNotFound {...props} />
-)
+/**
+ * The card reads "not found" for every failure that reaches it, so the error
+ * itself is logged: without it a broken import or a 500 is indistinguishable
+ * from a genuinely missing entity, in the browser as well as in a bug report.
+ */
+export const entityNotFound =
+  (props: ComponentProps<typeof EntityNotFound>) =>
+  ({ error }: ErrorComponentProps) => {
+    console.error('Route error rendered as "not found":', error)
+    return <EntityNotFound {...props} />
+  }
 
 /** Fire-and-forget prefetch for route loaders; failures surface via the query itself. */
 export const prefetch = <TQueryFnData, TError, TData, TQueryKey extends QueryKey>(
@@ -117,7 +125,10 @@ export const entityRoute = <TEntity, TKey extends string>({
       crumb,
     } as Record<TKey, TEntity> & { crumb: EntityCrumb }
   },
-  errorComponent: () => <EntityNotFound {...notFound} />,
+  errorComponent: ({ error }: ErrorComponentProps) => {
+    console.error('Route error rendered as "not found":', error)
+    return <EntityNotFound {...notFound} />
+  },
 })
 
 export class ForbiddenError extends Error {

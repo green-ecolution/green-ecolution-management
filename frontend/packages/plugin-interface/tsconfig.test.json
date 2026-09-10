@@ -1,26 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    /* Linting */
+    "types": ["node"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["lib"],
-  /* Tests are not part of the published library: keeping them out here stops
-     their declarations from landing in dist and keeps node types away from
-     the library sources. They are type-checked by tsconfig.test.json. */
-  "exclude": ["lib/**/*.test.ts", "lib/**/*.test.tsx"]
+  "include": ["lib/**/*.test.ts", "lib/**/*.test.tsx"]
 }
