@@ -107,7 +107,10 @@ function PluginViewPage() {
       sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
       referrerPolicy="no-referrer"
       allow=""
-      className="w-full h-[calc(100vh-12rem)] border-0"
+      // Grows into the space left between header and footer. A percentage height
+      // would resolve to auto here, so App turns main into a flex column for
+      // plugin routes and the frame claims the remaining main-axis space.
+      className="block w-full flex-1 min-h-0 border-0"
     />
   )
 }
