@@ -25,12 +25,6 @@ export interface PluginFrontendDtoOneOf2 {
      * @memberof PluginFrontendDtoOneOf2
      */
     mode: PluginFrontendDtoOneOf2ModeEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof PluginFrontendDtoOneOf2
-     */
-    target: string;
 }
 
 
@@ -38,7 +32,7 @@ export interface PluginFrontendDtoOneOf2 {
  * @export
  */
 export const PluginFrontendDtoOneOf2ModeEnum = {
-    Proxied: 'proxied'
+    None: 'none'
 } as const;
 export type PluginFrontendDtoOneOf2ModeEnum = typeof PluginFrontendDtoOneOf2ModeEnum[keyof typeof PluginFrontendDtoOneOf2ModeEnum];
 
@@ -48,7 +42,6 @@ export type PluginFrontendDtoOneOf2ModeEnum = typeof PluginFrontendDtoOneOf2Mode
  */
 export function instanceOfPluginFrontendDtoOneOf2(value: object): value is PluginFrontendDtoOneOf2 {
     if (!('mode' in value) || value['mode'] === undefined) return false;
-    if (!('target' in value) || value['target'] === undefined) return false;
     return true;
 }
 
@@ -63,7 +56,6 @@ export function PluginFrontendDtoOneOf2FromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'mode': json['mode'],
-        'target': json['target'],
     };
 }
 
@@ -79,7 +71,6 @@ export function PluginFrontendDtoOneOf2ToJSONTyped(value?: PluginFrontendDtoOneO
     return {
         
         'mode': value['mode'],
-        'target': value['target'],
     };
 }
 

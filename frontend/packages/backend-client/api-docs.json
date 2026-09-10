@@ -9387,20 +9387,6 @@
           {
             "type": "object",
             "required": [
-              "mode"
-            ],
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "none"
-                ]
-              }
-            }
-          },
-          {
-            "type": "object",
-            "required": [
               "target",
               "mode"
             ],
@@ -9433,9 +9419,23 @@
                 "type": "string"
               }
             }
+          },
+          {
+            "type": "object",
+            "required": [
+              "mode"
+            ],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "none"
+                ]
+              }
+            }
           }
         ],
-        "description": "Frontend wiring for a plugin, tagged so mode and target cannot be set\ninconsistently."
+        "description": "Frontend wiring for a plugin, tagged so mode and target cannot be set\ninconsistently.\n\nVariant order is load-bearing for the generated TypeScript client, not a\nmatter of taste. utoipa emits the variants as a `oneOf` in declaration\norder and openapi-generator turns that into a first-match dispatch whose\nguards only test which properties are present. `None` carries nothing, so\nits guard is `\"mode\" in value` — true for every variant. Listed first it\nswallows the other two and serializes them without their `target`, which\nsilently drops the plugin's address. Payload-carrying variants therefore\ncome first. `External` and `Proxied` share a shape and stay\nindistinguishable to those guards, but both emit `{ mode, target }`\nverbatim, so the wire format is right either way."
       },
       "PluginKeyResponse": {
         "type": "object",

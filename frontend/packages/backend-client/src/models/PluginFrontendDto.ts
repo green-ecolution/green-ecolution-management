@@ -38,6 +38,17 @@ import {
  * @type PluginFrontendDto
  * Frontend wiring for a plugin, tagged so mode and target cannot be set
  * inconsistently.
+ * 
+ * Variant order is load-bearing for the generated TypeScript client, not a
+ * matter of taste. utoipa emits the variants as a `oneOf` in declaration
+ * order and openapi-generator turns that into a first-match dispatch whose
+ * guards only test which properties are present. `None` carries nothing, so
+ * its guard is `"mode" in value` — true for every variant. Listed first it
+ * swallows the other two and serializes them without their `target`, which
+ * silently drops the plugin's address. Payload-carrying variants therefore
+ * come first. `External` and `Proxied` share a shape and stay
+ * indistinguishable to those guards, but both emit `{ mode, target }`
+ * verbatim, so the wire format is right either way.
  * @export
  */
 export type PluginFrontendDto = PluginFrontendDtoOneOf | PluginFrontendDtoOneOf1 | PluginFrontendDtoOneOf2;

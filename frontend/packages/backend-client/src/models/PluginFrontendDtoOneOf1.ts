@@ -38,7 +38,7 @@ export interface PluginFrontendDtoOneOf1 {
  * @export
  */
 export const PluginFrontendDtoOneOf1ModeEnum = {
-    External: 'external'
+    Proxied: 'proxied'
 } as const;
 export type PluginFrontendDtoOneOf1ModeEnum = typeof PluginFrontendDtoOneOf1ModeEnum[keyof typeof PluginFrontendDtoOneOf1ModeEnum];
 

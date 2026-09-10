@@ -25,6 +25,12 @@ export interface PluginFrontendDtoOneOf {
      * @memberof PluginFrontendDtoOneOf
      */
     mode: PluginFrontendDtoOneOfModeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof PluginFrontendDtoOneOf
+     */
+    target: string;
 }
 
 
@@ -32,7 +38,7 @@ export interface PluginFrontendDtoOneOf {
  * @export
  */
 export const PluginFrontendDtoOneOfModeEnum = {
-    None: 'none'
+    External: 'external'
 } as const;
 export type PluginFrontendDtoOneOfModeEnum = typeof PluginFrontendDtoOneOfModeEnum[keyof typeof PluginFrontendDtoOneOfModeEnum];
 
@@ -42,6 +48,7 @@ export type PluginFrontendDtoOneOfModeEnum = typeof PluginFrontendDtoOneOfModeEn
  */
 export function instanceOfPluginFrontendDtoOneOf(value: object): value is PluginFrontendDtoOneOf {
     if (!('mode' in value) || value['mode'] === undefined) return false;
+    if (!('target' in value) || value['target'] === undefined) return false;
     return true;
 }
 
@@ -56,6 +63,7 @@ export function PluginFrontendDtoOneOfFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'mode': json['mode'],
+        'target': json['target'],
     };
 }
 
@@ -71,6 +79,7 @@ export function PluginFrontendDtoOneOfToJSONTyped(value?: PluginFrontendDtoOneOf
     return {
         
         'mode': value['mode'],
+        'target': value['target'],
     };
 }
 

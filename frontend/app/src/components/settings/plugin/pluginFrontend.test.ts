@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 import type { TFunction } from 'i18next'
+import { PluginFrontendDtoToJSON } from '@green-ecolution/backend-client'
 import { getI18n } from '@/lib/i18n'
-import { validateTarget } from './pluginFrontend'
+import { buildFrontendDto, validateTarget } from './pluginFrontend'
 
 let t: TFunction<'settings'>
 beforeAll(() => {
@@ -68,5 +69,31 @@ describe('validateTarget', () => {
     it('rejects a bare IPv6 host with a port (diverges from the backend, see comment)', () => {
       expect(validateTarget('proxied', '::1:8080', t)).not.toBeNull()
     })
+  })
+})
+
+/**
+ * The generated client dispatches a `oneOf` by first matching guard, and those
+ * guards only test which properties are present — so the variant order in the
+ * OpenAPI document decides whether `target` survives serialization. It has been
+ * dropped once already, silently. Regenerating the client cannot reintroduce
+ * that without failing here.
+ */
+describe('buildFrontendDto through the generated serializer', () => {
+  it('keeps the target of an external frontend', () => {
+    expect(
+      PluginFrontendDtoToJSON(buildFrontendDto('external', 'https://plugin.example.com')),
+    ).toEqual({ mode: 'external', target: 'https://plugin.example.com' })
+  })
+
+  it('keeps the target of a proxied frontend', () => {
+    expect(PluginFrontendDtoToJSON(buildFrontendDto('proxied', 'plugin-backend:8080'))).toEqual({
+      mode: 'proxied',
+      target: 'plugin-backend:8080',
+    })
+  })
+
+  it('emits no target for a plugin without a frontend', () => {
+    expect(PluginFrontendDtoToJSON(buildFrontendDto('none', ''))).toEqual({ mode: 'none' })
   })
 })
