@@ -114,6 +114,7 @@ export const queryRoots = {
   role: [['roles']],
   organization: [['organizations']],
   comment: [['comments']],
+  plugin: [['plugins']],
 } as const satisfies Record<string, readonly QueryKey[]>
 
 export type Aggregate = keyof typeof queryRoots
