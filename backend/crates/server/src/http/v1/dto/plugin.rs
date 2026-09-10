@@ -74,6 +74,38 @@ impl From<&PluginView> for PluginResponse {
     }
 }
 
+/// What the plugin viewer needs to render a frame, and nothing else. Its
+/// reader holds the plugin's `required_permissions`, not `plugin:read`, so it
+/// deliberately omits the administrative facts of [`PluginResponse`] — the
+/// plugin's own permissions, its credential state and its last sign of life.
+#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[schema(example = json!({
+    "slug": "tbz-baumkataster",
+    "name": "TBZ Baumkataster",
+    "description": null,
+    "frontend_mode": "external",
+    "frontend_target": "https://kataster.example.org/view"
+}))]
+pub struct PluginViewResponse {
+    pub slug: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub frontend_mode: String,
+    pub frontend_target: Option<String>,
+}
+
+impl From<&PluginView> for PluginViewResponse {
+    fn from(view: &PluginView) -> Self {
+        Self {
+            slug: view.slug.clone(),
+            name: view.name.clone(),
+            description: view.description.clone(),
+            frontend_mode: view.frontend_mode.to_string(),
+            frontend_target: view.frontend_target.clone(),
+        }
+    }
+}
+
 /// One-time response carrying the plaintext API key, issued on install and
 /// on rotation only — it never appears again afterwards.
 #[derive(Debug, Serialize, utoipa::ToSchema)]

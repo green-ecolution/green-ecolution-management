@@ -2615,6 +2615,89 @@
         }
       }
     },
+    "/v1/plugins/{plugin_slug}/view": {
+      "get": {
+        "tags": [
+          "Plugins"
+        ],
+        "summary": "Get a plugin's view",
+        "description": "Returns what is needed to embed a plugin's view. Requires the plugin's own required_permissions in its organization -- plugin:read administers a plugin and is not what opening its view is about, though it grants access here as well.",
+        "operationId": "getPluginView",
+        "parameters": [
+          {
+            "name": "plugin_slug",
+            "in": "path",
+            "description": "Plugin slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plugin view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginViewResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden, or the plugin is disabled (code `plugin.disabled`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Plugin not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Plugins feature is disabled (code `feature.plugins_disabled`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/regions": {
       "get": {
         "tags": [
@@ -9603,6 +9686,45 @@
         },
         "example": {
           "enabled": true
+        }
+      },
+      "PluginViewResponse": {
+        "type": "object",
+        "description": "What the plugin viewer needs to render a frame, and nothing else. Its\nreader holds the plugin's `required_permissions`, not `plugin:read`, so it\ndeliberately omits the administrative facts of [`PluginResponse`] — the\nplugin's own permissions, its credential state and its last sign of life.",
+        "required": [
+          "slug",
+          "name",
+          "frontend_mode"
+        ],
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "frontend_mode": {
+            "type": "string"
+          },
+          "frontend_target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "description": null,
+          "frontend_mode": "external",
+          "frontend_target": "https://kataster.example.org/view",
+          "name": "TBZ Baumkataster",
+          "slug": "tbz-baumkataster"
         }
       },
       "ReadinessResponse": {

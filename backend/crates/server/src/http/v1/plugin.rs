@@ -14,7 +14,8 @@ use domain::{
 
 use super::dto::plugin::{
     IngestBatchResponse, PluginCreateRequest, PluginKeyResponse, PluginResponse,
-    PluginUpdateRequest, TreeIngestBatchRequest, TreeRefListParams, TreeRefPageResponse,
+    PluginUpdateRequest, PluginViewResponse, TreeIngestBatchRequest, TreeRefListParams,
+    TreeRefPageResponse,
 };
 
 pub fn routes() -> OpenApiRouter<Arc<AppState>> {
@@ -22,6 +23,7 @@ pub fn routes() -> OpenApiRouter<Arc<AppState>> {
         .routes(routes!(list_plugins, install_plugin))
         .routes(routes!(get_plugin, update_plugin, uninstall_plugin))
         .routes(routes!(rotate_plugin_key))
+        .routes(routes!(get_plugin_view))
 }
 
 /// The ingest surface: authenticated with `PluginPrincipal` (an API key, not a
@@ -127,6 +129,32 @@ pub async fn get_plugin(
             view.organization_id,
         )
         .await?;
+    Ok(Json((&view).into()))
+}
+
+#[utoipa::path(get, path = "/plugins/{plugin_slug}/view", tag = "Plugins",
+    operation_id = "getPluginView",
+    summary = "Get a plugin's view",
+    description = "Returns what is needed to embed a plugin's view. Requires the plugin's own required_permissions in its organization -- plugin:read administers a plugin and is not what opening its view is about, though it grants access here as well.",
+    params(("plugin_slug" = String, Path, description = "Plugin slug")),
+    responses(
+        (status = 200, description = "Plugin view", body = PluginViewResponse),
+        (status = 401, description = "Unauthorized", body = ErrorBody),
+        (status = 403, description = "Forbidden, or the plugin is disabled (code `plugin.disabled`)", body = ErrorBody),
+        (status = 404, description = "Plugin not found", body = ErrorBody),
+        (status = 503, description = "Plugins feature is disabled (code `feature.plugins_disabled`)", body = ErrorBody),
+        (status = 500, description = "Internal server error", body = ErrorBody),
+    )
+)]
+#[tracing::instrument(level = "info", skip_all, fields(plugin.slug = %slug))]
+pub async fn get_plugin_view(
+    State(state): State<Arc<AppState>>,
+    user: AuthUserExtractor,
+    Path(slug): Path<String>,
+) -> Result<Json<PluginViewResponse>, ServiceError> {
+    guard(&state)?;
+    let slug = PluginSlug::new(slug)?;
+    let view = state.plugin_service.view_for(user.id, &slug).await?;
     Ok(Json((&view).into()))
 }
 

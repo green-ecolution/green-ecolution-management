@@ -35,6 +35,7 @@ import {
   OrganizationResponse,
   pluginApi,
   PluginResponse,
+  PluginViewResponse,
   regionApi,
   ResponseError,
   RoleResponse,
@@ -507,6 +508,16 @@ export const pluginQuery = (slug: string) =>
   queryOptions<PluginResponse>({
     queryKey: ['plugins', slug],
     queryFn: () => pluginApi.getPlugin({ pluginSlug: slug }),
+  })
+
+/**
+ * The view surface: readable with the plugin's own required permissions,
+ * unlike `pluginQuery`, which needs `plugin:read`.
+ */
+export const pluginViewQuery = (slug: string) =>
+  queryOptions<PluginViewResponse>({
+    queryKey: ['plugins', slug, 'view'],
+    queryFn: () => pluginApi.getPluginView({ pluginSlug: slug }),
   })
 
 export const routingStartPointsQuery = () =>

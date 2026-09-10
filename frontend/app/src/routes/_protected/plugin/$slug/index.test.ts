@@ -1,106 +1,47 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { isRedirect } from '@tanstack/react-router'
+import { describe, it, expect, vi } from 'vitest'
+import { isValidElement } from 'react'
 import { QueryClient } from '@tanstack/react-query'
-import type { PluginResponse, UserResponse } from '@green-ecolution/backend-client'
-
-const readAuthBypass = vi.fn(() => false)
-
-vi.mock('@/lib/auth/runtimeConfig', () => ({
-  readAuthBypass: () => readAuthBypass(),
-}))
+import { ResponseError } from '@green-ecolution/backend-client'
 
 const { Route } = await import('./index')
+const { default: Forbidden } = await import('@/components/layout/Forbidden')
+const { default: EntityNotFound } = await import('@/components/layout/EntityNotFound')
 
-const me = (permissions: string[]): UserResponse =>
-  ({
-    roles: [
-      {
-        id: 'role-1',
-        name: 'Rolle',
-        description: '',
-        organizationId: null,
-        permissions,
-        createdAt: '2026-07-27T00:00:00Z',
-      },
-    ],
-  }) as unknown as UserResponse
-
-const plugin = (overrides: Partial<PluginResponse> = {}): PluginResponse => ({
-  id: 'p1',
-  slug: 'acme',
-  name: 'Acme',
-  organizationId: 'org-1',
-  permissions: [],
-  requiredPermissions: ['tree:read'],
-  frontendMode: 'external',
-  frontendTarget: 'https://plugin.example.com',
-  enabled: true,
-  hasCredential: true,
-  ...overrides,
-})
-
-interface BeforeLoadOpts {
+interface LoaderOpts {
   context: { queryClient: QueryClient }
   params: { slug: string }
 }
-const beforeLoad = (opts: BeforeLoadOpts) =>
-  (Route.options.beforeLoad as (o: BeforeLoadOpts) => Promise<void>)(opts)
+const loader = (opts: LoaderOpts) => (Route.options.loader as (o: LoaderOpts) => void)(opts)
 
-const contextFor = (pluginResponse: PluginResponse, permissions: string[]): BeforeLoadOpts => {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  queryClient.setQueryData(['plugins', pluginResponse.slug], pluginResponse)
-  queryClient.setQueryData(['users', 'me'], me(permissions))
-  return { context: { queryClient }, params: { slug: pluginResponse.slug } }
-}
+const errorComponent = (error: unknown) =>
+  (
+    Route.options.errorComponent as (props: {
+      error: unknown
+      reset: () => void
+    }) => unknown
+  )({ error, reset: () => undefined })
 
-describe('/plugin/$slug beforeLoad', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    readAuthBypass.mockReturnValue(false)
+describe('/plugin/$slug', () => {
+  // The management endpoint needs plugin:read, which a user of the view
+  // typically does not hold -- loading it here would deny everyone else.
+  it('prefetches the view endpoint, not the managed plugin', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const spy = vi.spyOn(queryClient, 'prefetchQuery').mockResolvedValue(undefined)
+
+    loader({ context: { queryClient }, params: { slug: 'acme' } })
+
+    expect(spy).toHaveBeenCalledOnce()
+    expect(spy.mock.calls[0][0]).toMatchObject({ queryKey: ['plugins', 'acme', 'view'] })
   })
 
-  it('resolves when the user holds the required permissions', async () => {
-    await expect(beforeLoad(contextFor(plugin(), ['tree:read']))).resolves.toBeUndefined()
+  it('shows the forbidden page when the backend denies access', () => {
+    const element = errorComponent(new ResponseError(new Response(null, { status: 403 })))
+    expect(isValidElement(element) && element.type).toBe(Forbidden)
   })
 
-  it('redirects to the plugin list when the user lacks the required permissions', async () => {
-    const thrown = await beforeLoad(contextFor(plugin(), ['vehicle:read'])).catch(
-      (error: unknown) => error,
-    )
-    expect(isRedirect(thrown)).toBe(true)
-    expect((thrown as { options: { to?: string } }).options.to).toBe('/settings/plugin')
-  })
-
-  it('redirects a proxied plugin the same way when permissions are missing', async () => {
-    const thrown = await beforeLoad(
-      contextFor(plugin({ frontendMode: 'proxied', frontendTarget: 'plugin-backend:8080' }), [
-        'vehicle:read',
-      ]),
-    ).catch((error: unknown) => error)
-    expect(isRedirect(thrown)).toBe(true)
-  })
-
-  it('resolves for a proxied plugin when permissions are held, leaving the view kind to the component', async () => {
-    await expect(
-      beforeLoad(
-        contextFor(plugin({ frontendMode: 'proxied', frontendTarget: 'plugin-backend:8080' }), [
-          'tree:read',
-        ]),
-      ),
-    ).resolves.toBeUndefined()
-  })
-
-  it('resolves without consulting the user cache when auth is bypassed', async () => {
-    readAuthBypass.mockReturnValue(true)
-    const queryClient = new QueryClient()
-    queryClient.setQueryData(['plugins', 'acme'], plugin())
-    const spy = vi.spyOn(queryClient, 'ensureQueryData')
-
-    await expect(
-      beforeLoad({ context: { queryClient }, params: { slug: 'acme' } }),
-    ).resolves.toBeUndefined()
-
-    expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy.mock.calls[0][0]).toMatchObject({ queryKey: ['plugins', 'acme'] })
+  it('shows the not-found card for an unknown slug', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const element = errorComponent(new ResponseError(new Response(null, { status: 404 })))
+    expect(isValidElement(element) && element.type).toBe(EntityNotFound)
   })
 })

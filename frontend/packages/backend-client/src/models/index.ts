@@ -63,6 +63,7 @@ export * from './PluginFrontendDtoOneOf2';
 export * from './PluginKeyResponse';
 export * from './PluginResponse';
 export * from './PluginUpdateRequest';
+export * from './PluginViewResponse';
 export * from './ReadinessResponse';
 export * from './RefillPointResponse';
 export * from './RegionEvaluationResponse';

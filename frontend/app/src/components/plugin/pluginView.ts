@@ -1,4 +1,4 @@
-import type { PluginResponse } from '@/api/backendApi'
+import type { PluginViewResponse } from '@/api/backendApi'
 
 /**
  * What the plugin viewer route renders for a given plugin. Only `external`
@@ -15,7 +15,7 @@ export type PluginViewKind =
   | { kind: 'unsafeOrigin' }
 
 export const pluginViewKind = (
-  plugin: Pick<PluginResponse, 'frontendMode' | 'frontendTarget'>,
+  plugin: Pick<PluginViewResponse, 'frontendMode' | 'frontendTarget'>,
   appOrigin: string = window.location.origin,
 ): PluginViewKind => {
   if (plugin.frontendMode === 'proxied') return { kind: 'proxied' }

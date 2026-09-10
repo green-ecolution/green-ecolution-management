@@ -21,6 +21,7 @@ import type {
   PluginKeyResponse,
   PluginResponse,
   PluginUpdateRequest,
+  PluginViewResponse,
   TreeIngestBatchRequest,
   TreeRefPageResponse,
 } from '../models/index';
@@ -37,6 +38,8 @@ import {
     PluginResponseToJSON,
     PluginUpdateRequestFromJSON,
     PluginUpdateRequestToJSON,
+    PluginViewResponseFromJSON,
+    PluginViewResponseToJSON,
     TreeIngestBatchRequestFromJSON,
     TreeIngestBatchRequestToJSON,
     TreeRefPageResponseFromJSON,
@@ -48,6 +51,10 @@ export interface DeletePluginTreeRequest {
 }
 
 export interface GetPluginRequest {
+    pluginSlug: string;
+}
+
+export interface GetPluginViewRequest {
     pluginSlug: string;
 }
 
@@ -187,6 +194,45 @@ export class PluginsApi extends runtime.BaseAPI {
      */
     async getPlugin(requestParameters: GetPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PluginResponse> {
         const response = await this.getPluginRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns what is needed to embed a plugin\'s view. Requires the plugin\'s own required_permissions in its organization -- plugin:read administers a plugin and is not what opening its view is about, though it grants access here as well.
+     * Get a plugin\'s view
+     */
+    async getPluginViewRaw(requestParameters: GetPluginViewRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PluginViewResponse>> {
+        if (requestParameters['pluginSlug'] == null) {
+            throw new runtime.RequiredError(
+                'pluginSlug',
+                'Required parameter "pluginSlug" was null or undefined when calling getPluginView().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/v1/plugins/{plugin_slug}/view`;
+        urlPath = urlPath.replace(`{${"plugin_slug"}}`, encodeURIComponent(String(requestParameters['pluginSlug'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PluginViewResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns what is needed to embed a plugin\'s view. Requires the plugin\'s own required_permissions in its organization -- plugin:read administers a plugin and is not what opening its view is about, though it grants access here as well.
+     * Get a plugin\'s view
+     */
+    async getPluginView(requestParameters: GetPluginViewRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PluginViewResponse> {
+        const response = await this.getPluginViewRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

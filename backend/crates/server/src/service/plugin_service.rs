@@ -24,7 +24,7 @@ use domain::{
 
 use crate::infra::plugin_key;
 
-use super::{ServiceError, authorization::AuthorizationService};
+use super::{AuthError, ServiceError, authorization::AuthorizationService};
 
 /// A pending change to an installed plugin, expressed field by field so an
 /// omitted field leaves the aggregate untouched.
@@ -77,6 +77,32 @@ impl PluginService {
     #[tracing::instrument(level = "debug", skip_all)]
     pub async fn by_slug(&self, slug: &PluginSlug) -> Result<PluginView, ServiceError> {
         Ok(self.reader.view_by_slug(slug).await?)
+    }
+
+    /// Resolves a plugin for someone who wants to open its view. The gate is
+    /// the plugin's `required_permissions` (see
+    /// [`AuthorizationService::require_plugin_view`]), so a user who never
+    /// administers plugins still reaches the view they are meant to work with.
+    /// A disabled plugin is refused, but only after the access check, so the
+    /// refusal cannot be used to probe which slugs exist.
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub async fn view_for(
+        &self,
+        actor: Uuid,
+        slug: &PluginSlug,
+    ) -> Result<PluginView, ServiceError> {
+        let plugin = self.reader.by_slug(slug).await?;
+        self.authorization
+            .require_plugin_view(
+                actor,
+                plugin.required_permissions(),
+                plugin.organization_id(),
+            )
+            .await?;
+        if !plugin.enabled() {
+            return Err(AuthError::PluginDisabled.into());
+        }
+        Ok(PluginView::from_aggregate(&plugin, None))
     }
 
     #[tracing::instrument(level = "debug", skip_all)]

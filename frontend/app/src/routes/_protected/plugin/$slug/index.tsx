@@ -1,47 +1,32 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertContent, AlertDescription, AlertIcon } from '@green-ecolution/ui'
 import { createPluginHost, type PluginContext } from '@green-ecolution/plugin-interface'
-import { pluginQuery, userQueries } from '@/api/queries'
-import {
-  permissionsOf,
-  satisfies,
-  UNRESTRICTED,
-  type PermissionRequirement,
-} from '@/lib/auth/permissions'
-import { readAuthBypass } from '@/lib/auth/runtimeConfig'
+import { pluginViewQuery } from '@/api/queries'
 import { useCurrentUser } from '@/lib/auth/useCurrentUser'
 import { languageOf } from '@/lib/i18n/languages'
-import { entityNotFound, pendingLoading, prefetch } from '@/lib/router'
+import { entityNotFound, forbiddenErrorComponent, pendingLoading, prefetch } from '@/lib/router'
 import { pluginViewKind } from '@/components/plugin/pluginView'
 
 export const Route = createFileRoute('/_protected/plugin/$slug/')({
   component: PluginViewPage,
   pendingComponent: pendingLoading({ key: 'settings:plugin.view.loading' }),
-  beforeLoad: async ({ context: { queryClient }, params: { slug } }) => {
-    const plugin = await queryClient.ensureQueryData(pluginQuery(slug))
-
-    // A missing or insufficient permission redirects rather than explaining,
-    // same as every other route guard — but whether the view exists at all
-    // (frontendMode) is not an access question, so it is rendered as a
-    // message by the component instead of redirecting here, which would be
-    // indistinguishable from "you may not".
-    const perms = readAuthBypass()
-      ? UNRESTRICTED
-      : permissionsOf(await queryClient.ensureQueryData(userQueries.me()))
-    if (!satisfies(perms, plugin.requiredPermissions as PermissionRequirement)) {
-      throw redirect({ to: '/settings/plugin' })
-    }
-  },
   loader: ({ context: { queryClient }, params: { slug } }) =>
-    prefetch(queryClient, pluginQuery(slug), 'pluginQuery'),
-  errorComponent: entityNotFound({
-    entityName: { key: 'settings:plugin.entityName' },
-    backTo: '/settings/plugin',
-    backLabel: { key: 'settings:plugin.notFoundBackLabel' },
-  }),
+    prefetch(queryClient, pluginViewQuery(slug), 'pluginViewQuery'),
+  // Who may open a view is the plugin's own `required_permissions`, which the
+  // backend checks on this endpoint — a user of the view holds those and
+  // usually not `plugin:read`, so there is nothing left to guard here. A
+  // denial therefore arrives as a 403 from the request, not from a route
+  // guard, and a disabled plugin arrives the same way.
+  errorComponent: forbiddenErrorComponent(
+    entityNotFound({
+      entityName: { key: 'settings:plugin.entityName' },
+      backTo: '/settings/plugin',
+      backLabel: { key: 'settings:plugin.notFoundBackLabel' },
+    }),
+  ),
 })
 
 function PluginViewNotice({ children }: { children: React.ReactNode }) {
@@ -59,7 +44,7 @@ function PluginViewNotice({ children }: { children: React.ReactNode }) {
 
 function PluginViewPage() {
   const { slug } = Route.useParams()
-  const { data: plugin } = useSuspenseQuery(pluginQuery(slug))
+  const { data: plugin } = useSuspenseQuery(pluginViewQuery(slug))
   const { t, i18n } = useTranslation('settings')
   const { firstName, lastName, username } = useCurrentUser()
   const frameRef = useRef<HTMLIFrameElement>(null)

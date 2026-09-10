@@ -78,6 +78,7 @@ models/PluginFrontendDtoOneOf2.ts
 models/PluginKeyResponse.ts
 models/PluginResponse.ts
 models/PluginUpdateRequest.ts
+models/PluginViewResponse.ts
 models/ReadinessResponse.ts
 models/RefillPointResponse.ts
 models/RegionEvaluationResponse.ts

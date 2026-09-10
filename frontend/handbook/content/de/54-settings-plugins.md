@@ -96,6 +96,12 @@ Aktionsknöpfen die Rechte des Plugins an die Person weiterreicht, die sie bedie
 also die Zugriffsrechte lockert, sollte bewusst tun, wessen Handlungen er damit
 zulässt.
 
+Wer die Ansicht öffnen will, muss alle hier gewählten Rechte besitzen, und zwar in der
+Organisation des Plugins oder darüber. Ein einzelnes davon genügt nicht. Umgekehrt ist
+`plugin:read` dafür nicht nötig: Diese Berechtigung verwaltet Plugins, sie bedient sie
+nicht. Genau darum können Kolleginnen und Kollegen ohne jede Plugin-Berechtigung die
+Ansicht nutzen, sobald ihre Rolle die hier gewählten Rechte enthält.
+
 ## Den API-Schlüssel rotieren
 
 Vermutest du, dass der Schlüssel eines Plugins bekannt geworden ist, oder wechselt
@@ -114,3 +120,11 @@ Plugins, aber keinen Zugriff auf deine Anmeldedaten. Ein im Cluster laufendes,
 proxiedes Plugin zeigt an dieser Stelle stattdessen einen Hinweis, dass seine Ansicht
 hier noch nicht dargestellt werden kann, und ein Plugin ohne eigene Ansicht entsprechend,
 dass es keine besitzt.
+
+Die Detailseite ist allerdings nur der Weg der Administration. Alle anderen erreichen
+die Ansicht über ihre eigene Adresse `/plugin/<slug>`, also etwa
+`https://deine-instanz.example/plugin/demo-plugin`. Einen Eintrag in der Navigation gibt
+es dafür bislang nicht; gib den Link deshalb nach dem Installieren an die Personen
+weiter, die mit dem Plugin arbeiten sollen. Fehlt jemandem eines der Zugriffsrechte,
+erscheint die übliche Meldung über den fehlenden Zugriff, und dasselbe passiert, solange
+das Plugin deaktiviert ist.

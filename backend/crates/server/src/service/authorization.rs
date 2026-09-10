@@ -108,6 +108,28 @@ impl AuthorizationService {
         }
     }
 
+    /// Opening a plugin's view is gated by that plugin's own
+    /// `required_permissions`, held in full, and deliberately not by
+    /// `plugin:read`: administering a plugin and working with its view are
+    /// different jobs, and the people the view is built for rarely administer
+    /// anything. Whoever may read the plugin passes as well, so an
+    /// administrator can check a view they just installed.
+    pub async fn require_plugin_view(
+        &self,
+        user_id: Uuid,
+        required: &BTreeSet<Permission>,
+        org: Id<Organization>,
+    ) -> Result<(), ServiceError> {
+        let ctx = self.context_for(user_id).await?;
+        if ctx.superset_of(required, org)
+            || ctx.allows_in(Permission::new(Resource::Plugin, Action::Read), org)
+        {
+            Ok(())
+        } else {
+            Err(AuthError::Forbidden.into())
+        }
+    }
+
     pub fn enforced(&self) -> bool {
         self.enforced
     }

@@ -290,3 +290,134 @@ async fn get_plugin_is_forbidden_across_organizations() {
         .await;
     assert_eq!(resp.status().as_u16(), 403);
 }
+
+/// Installs an enabled plugin with a frontend in `org`, bypassing the HTTP
+/// surface so the test does not need an actor holding `plugin:create`.
+async fn seed_plugin_with_view(
+    app: &crate::helpers::TestApp,
+    slug: &str,
+    org: Uuid,
+    required_permissions: &[&str],
+) {
+    let repo = PgPluginRepository::new(app.db_pool.clone());
+    repo.save_new(
+        domain::Id::new_v7(),
+        PluginDraft {
+            slug: PluginSlug::new(slug).unwrap(),
+            name: PluginName::new("Demo Plugin").unwrap(),
+            description: None,
+            organization_id: domain::Id::new(org),
+            permissions: BTreeSet::new(),
+            required_permissions: required_permissions
+                .iter()
+                .map(|p| p.parse().unwrap())
+                .collect(),
+            frontend: PluginFrontend::External("https://plugin.example.org/view".parse().unwrap()),
+        },
+        None,
+    )
+    .await
+    .unwrap();
+    sqlx::query("UPDATE plugins SET enabled = TRUE WHERE slug = $1")
+        .bind(slug)
+        .execute(&app.db_pool)
+        .await
+        .unwrap();
+}
+
+/// The point of the split: the people a plugin view is built for hold the
+/// plugin's `required_permissions`, not `plugin:read`.
+#[tokio::test]
+async fn plugin_view_opens_without_plugin_read() {
+    let harness = AuthHarness::start().await;
+    let app = spawn_app_with_plugins_and_auth(harness.auth_settings(true)).await;
+    let (org_id, token) = seed_user_with_permissions(
+        &harness,
+        &app,
+        "Baumpflege Org",
+        &["tree:create", "tree:update"],
+    )
+    .await;
+    seed_plugin_with_view(&app, "demo-plugin", org_id, &["tree:create", "tree:update"]).await;
+
+    let resp = app
+        .get_with_bearer("/api/v1/plugins/demo-plugin/view", &token)
+        .await;
+    assert_eq!(resp.status().as_u16(), 200);
+    let body: serde_json::Value = resp.json().await.unwrap();
+    assert_eq!(body["frontend_mode"], "external");
+    assert_eq!(body["frontend_target"], "https://plugin.example.org/view");
+    assert!(
+        body.get("permissions").is_none() && body.get("has_credential").is_none(),
+        "the view response must not carry administrative facts: {body}"
+    );
+
+    // The management endpoint stays behind plugin:read, which this user lacks.
+    let managed = app
+        .get_with_bearer("/api/v1/plugins/demo-plugin", &token)
+        .await;
+    assert_eq!(managed.status().as_u16(), 403);
+}
+
+/// Every required permission has to be held; one of them is not enough.
+#[tokio::test]
+async fn plugin_view_requires_all_required_permissions() {
+    let harness = AuthHarness::start().await;
+    let app = spawn_app_with_plugins_and_auth(harness.auth_settings(true)).await;
+    let (org_id, token) =
+        seed_user_with_permissions(&harness, &app, "Halbe Rechte Org", &["tree:create"]).await;
+    seed_plugin_with_view(&app, "demo-plugin", org_id, &["tree:create", "tree:update"]).await;
+
+    let resp = app
+        .get_with_bearer("/api/v1/plugins/demo-plugin/view", &token)
+        .await;
+    assert_eq!(resp.status().as_u16(), 403);
+}
+
+#[tokio::test]
+async fn plugin_view_is_refused_while_the_plugin_is_disabled() {
+    let harness = AuthHarness::start().await;
+    let app = spawn_app_with_plugins_and_auth(harness.auth_settings(true)).await;
+    let (org_id, token) =
+        seed_user_with_permissions(&harness, &app, "Abgeschaltet Org", &["tree:create"]).await;
+    seed_plugin_with_view(&app, "demo-plugin", org_id, &["tree:create"]).await;
+    sqlx::query("UPDATE plugins SET enabled = FALSE WHERE slug = 'demo-plugin'")
+        .execute(&app.db_pool)
+        .await
+        .unwrap();
+
+    let resp = app
+        .get_with_bearer("/api/v1/plugins/demo-plugin/view", &token)
+        .await;
+    assert_eq!(resp.status().as_u16(), 403);
+    let body: serde_json::Value = resp.json().await.unwrap();
+    assert_eq!(body["code"], "plugin.disabled");
+}
+
+/// A plugin in another organization stays invisible even to someone holding
+/// its required permissions in their own organization.
+#[tokio::test]
+async fn plugin_view_is_forbidden_across_organizations() {
+    let harness = AuthHarness::start().await;
+    let app = spawn_app_with_plugins_and_auth(harness.auth_settings(true)).await;
+    sqlx::query("INSERT INTO organizations (id, parent_id, name) VALUES ($1, $2, 'Other Org')")
+        .bind(Uuid::parse_str(OTHER_ORG).unwrap())
+        .bind(Uuid::parse_str(ROOT_ORG).unwrap())
+        .execute(&app.db_pool)
+        .await
+        .unwrap();
+    seed_plugin_with_view(
+        &app,
+        "other-org-view",
+        Uuid::parse_str(OTHER_ORG).unwrap(),
+        &["tree:create"],
+    )
+    .await;
+    let (_org_id, token) =
+        seed_user_with_permissions(&harness, &app, "Caller Org", &["tree:create"]).await;
+
+    let resp = app
+        .get_with_bearer("/api/v1/plugins/other-org-view/view", &token)
+        .await;
+    assert_eq!(resp.status().as_u16(), 403);
+}
