@@ -25,8 +25,8 @@ Green Ecolution eingebettet erscheint, muss das aber nicht. Ein Plugin registrie
 dabei nicht selbst; es wird von einer Person mit den passenden Rechten in den
 Einstellungen angelegt, ganz wie ein Fahrzeug oder eine Rolle.
 
-Die Übersichtsseite **Plugins** listet jedes installierte Plugin mit Status, Slug,
-Organisation und dem Zeitpunkt seines letzten Kontakts. Dieser Zeitpunkt ist keine
+Die Übersichtsseite **Plugins** listet jedes installierte Plugin mit Status, Name samt
+Slug, Organisation und dem Zeitpunkt seines letzten Kontakts. Dieser Zeitpunkt ist keine
 manuelle Angabe, sondern aktualisiert sich mit jeder Anfrage, die das Plugin an seine
 Schnittstelle stellt, und zeigt dir damit auf einen Blick, ob ein Plugin überhaupt noch
 aktiv angebunden ist.

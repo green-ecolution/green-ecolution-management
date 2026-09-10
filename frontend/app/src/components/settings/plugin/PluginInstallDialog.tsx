@@ -11,6 +11,7 @@ import {
   DialogTitle,
   FormField,
   Label,
+  SelectField,
   TextareaField,
 } from '@green-ecolution/ui'
 import type { OrganizationResponse, PluginFrontendDto } from '@/api/backendApi'
@@ -117,115 +118,117 @@ export const PluginInstallDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
+      {/* Two rows — header, then a body that takes whatever height is left —
+          so the panel never grows past the viewport and the form scrolls
+          inside it instead of the page. */}
+      <DialogContent className="max-h-[calc(100dvh-3rem)] max-w-2xl grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
         <DialogHeader>
           <DialogTitle>{t('plugin.install.title')}</DialogTitle>
           <DialogDescription>{t('plugin.install.description')}</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pr-1"
-        >
-          <FormField
-            id="plugin-install-slug"
-            label={t('plugin.install.slugLabel')}
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-            error={errors.slug ?? undefined}
-            description={errors.slug ? undefined : t('plugin.install.slugHint')}
-            required
-          />
-
-          <FormField
-            id="plugin-install-name"
-            label={t('plugin.install.nameLabel')}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            error={errors.name ?? undefined}
-            required
-          />
-
-          <TextareaField
-            id="plugin-install-description"
-            label={t('plugin.install.descriptionLabel')}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-
-          <div className="flex flex-col gap-y-2">
-            <Label htmlFor="plugin-install-organization">
-              {t('plugin.install.organizationLabel')}
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            <Combobox
-              id="plugin-install-organization"
-              options={organizations.map((org) => ({ value: org.id, label: org.name }))}
-              value={organizationId}
-              onChange={setOrganizationId}
-              placeholder={t('plugin.install.organizationPlaceholder')}
-              searchPlaceholder={t('plugin.install.organizationSearchPlaceholder')}
-              aria-invalid={!!errors.organization}
-            />
-            {errors.organization && (
-              <p role="alert" aria-live="assertive" className="text-sm text-destructive">
-                {errors.organization}
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-y-2">
-            <Label htmlFor="plugin-install-frontend-mode">
-              {t('plugin.install.frontendModeLabel')}
-            </Label>
-            <select
-              id="plugin-install-frontend-mode"
-              value={frontendMode}
-              onChange={(event) => setFrontendMode(event.target.value as FrontendMode)}
-              className="flex h-10 w-full rounded-lg border border-dark-200 bg-white px-3 py-2 text-base text-dark-800 shadow-xs outline-none focus-visible:border-green-dark focus-visible:ring-green-dark/50 focus-visible:ring-[3px] md:text-sm"
-            >
-              <option value="none">{t('plugin.install.frontendModeOption.none')}</option>
-              <option value="external">{t('plugin.install.frontendModeOption.external')}</option>
-              <option value="proxied">{t('plugin.install.frontendModeOption.proxied')}</option>
-            </select>
-          </div>
-
-          {frontendMode !== 'none' && (
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-col">
+          {/* The scroll region spans the panel's full width and re-applies the
+              padding inside, so focus rings are not clipped at its edges. */}
+          <div className="-mx-6 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-1">
             <FormField
-              id="plugin-install-target"
-              label={t('plugin.install.targetLabel')}
-              value={target}
-              onChange={(event) => setTarget(event.target.value)}
-              error={errors.target ?? undefined}
-              description={
-                errors.target
-                  ? undefined
-                  : frontendMode === 'external'
-                    ? t('plugin.install.targetExternalHint')
-                    : t('plugin.install.targetProxiedHint')
-              }
-              placeholder={
-                frontendMode === 'external' ? 'https://plugin.example.com' : 'plugin-backend:8080'
-              }
+              id="plugin-install-slug"
+              label={t('plugin.install.slugLabel')}
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+              error={errors.slug ?? undefined}
+              description={errors.slug ? undefined : t('plugin.install.slugHint')}
               required
             />
-          )}
 
-          <PluginPermissionMatrix
-            heading={t('plugin.install.permissionsHeading')}
-            hint={t('plugin.install.permissionsHint')}
-            permissions={permissions}
-            onToggle={togglePermission}
-          />
+            <FormField
+              id="plugin-install-name"
+              label={t('plugin.install.nameLabel')}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              error={errors.name ?? undefined}
+              required
+            />
 
-          <PluginPermissionMatrix
-            heading={t('plugin.install.accessPermissionsHeading')}
-            hint={t('plugin.install.accessPermissionsHint')}
-            permissions={accessPermissions}
-            onToggle={toggleAccessPermission}
-          />
+            <TextareaField
+              id="plugin-install-description"
+              label={t('plugin.install.descriptionLabel')}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
 
-          <DialogFooter>
+            <div className="flex flex-col gap-y-2">
+              <Label htmlFor="plugin-install-organization">
+                {t('plugin.install.organizationLabel')}
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              <Combobox
+                id="plugin-install-organization"
+                options={organizations.map((org) => ({ value: org.id, label: org.name }))}
+                value={organizationId}
+                onChange={setOrganizationId}
+                placeholder={t('plugin.install.organizationPlaceholder')}
+                searchPlaceholder={t('plugin.install.organizationSearchPlaceholder')}
+                aria-invalid={!!errors.organization}
+              />
+              {errors.organization && (
+                <p role="alert" aria-live="assertive" className="text-sm text-destructive">
+                  {errors.organization}
+                </p>
+              )}
+            </div>
+
+            <SelectField
+              id="plugin-install-frontend-mode"
+              label={t('plugin.install.frontendModeLabel')}
+              value={frontendMode}
+              onValueChange={(value) => setFrontendMode(value as FrontendMode)}
+              options={[
+                { value: 'none', label: t('plugin.install.frontendModeOption.none') },
+                { value: 'external', label: t('plugin.install.frontendModeOption.external') },
+                { value: 'proxied', label: t('plugin.install.frontendModeOption.proxied') },
+              ]}
+            />
+
+            {frontendMode !== 'none' && (
+              <FormField
+                id="plugin-install-target"
+                label={t('plugin.install.targetLabel')}
+                value={target}
+                onChange={(event) => setTarget(event.target.value)}
+                error={errors.target ?? undefined}
+                description={
+                  errors.target
+                    ? undefined
+                    : frontendMode === 'external'
+                      ? t('plugin.install.targetExternalHint')
+                      : t('plugin.install.targetProxiedHint')
+                }
+                placeholder={
+                  frontendMode === 'external' ? 'https://plugin.example.com' : 'plugin-backend:8080'
+                }
+                required
+              />
+            )}
+
+            <PluginPermissionMatrix
+              heading={t('plugin.install.permissionsHeading')}
+              hint={t('plugin.install.permissionsHint')}
+              permissions={permissions}
+              onToggle={togglePermission}
+            />
+
+            <PluginPermissionMatrix
+              heading={t('plugin.install.accessPermissionsHeading')}
+              hint={t('plugin.install.accessPermissionsHint')}
+              permissions={accessPermissions}
+              onToggle={toggleAccessPermission}
+            />
+          </div>
+
+          {/* Outside the scroll region: the submit button must stay reachable
+              however long the permission matrices make the form. */}
+          <DialogFooter className="-mx-6 -mb-6 mt-4 rounded-b-xl border-t border-dark-100 px-6 py-4">
             <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {t('common:actions.cancel')}
             </Button>

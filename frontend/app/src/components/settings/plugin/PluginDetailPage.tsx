@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, KeyRound } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,14 +14,19 @@ import {
   AlertDialogTitle,
   Badge,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   FormField,
-  Label,
+  SelectField,
   Switch,
   TextareaField,
 } from '@green-ecolution/ui'
 import type { PluginResponse } from '@/api/backendApi'
 import { organizationQueries } from '@/api/queries'
 import { usePluginMutations } from '@/hooks/usePluginMutations'
+import BackLink from '@/components/general/links/BackLink'
 import { Can } from '@/lib/auth/Can'
 import { useHasPermission } from '@/lib/auth/useHasPermission'
 import { useDateLocale } from '@/lib/i18n/useFormatters'
@@ -65,6 +70,13 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
   const organizationName =
     organizationNameOf(plugin.organizationId, organizations ?? []) ?? plugin.organizationId
 
+  // Show the requested state while the round trip runs, so the switch answers
+  // the click instead of waiting for the reloaded route data.
+  const requestedEnabled = updatePlugin.isPending
+    ? updatePlugin.variables?.change.enabled
+    : undefined
+  const enabled = requestedEnabled ?? plugin.enabled
+
   const handleSave = () => {
     const trimmedDescription = description.trim()
     // PluginService::update only runs require_superset when the request
@@ -87,8 +99,8 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
     })
   }
 
-  const handleToggleEnabled = (enabled: boolean) => {
-    updatePlugin.mutate({ slug: plugin.slug, change: { enabled } })
+  const handleToggleEnabled = (next: boolean) => {
+    updatePlugin.mutate({ slug: plugin.slug, change: { enabled: next } })
   }
 
   const handleRotate = () => {
@@ -109,148 +121,198 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
     })
   }
 
+  const facts: { label: string; value: string }[] = [
+    { label: t('plugin.install.organizationLabel'), value: organizationName },
+    {
+      label: t('plugin.detail.lastSeenFactLabel'),
+      value: formatLastSeenAt(plugin.lastSeenAt, dateLocale, t),
+    },
+    ...(plugin.createdAt
+      ? [
+          {
+            label: t('plugin.detail.installedFactLabel'),
+            value: new Intl.DateTimeFormat(intlLocale(i18n.language), {
+              dateStyle: 'medium',
+            }).format(plugin.createdAt),
+          },
+        ]
+      : []),
+  ]
+
   return (
-    <div className="container mt-6 flex flex-col gap-6 2xl:w-4/5">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-lato font-bold text-3xl mb-2 lg:text-4xl">{plugin.name}</h1>
-          <p className="font-mono text-sm text-dark-500">
-            {t('plugin.detail.slugLabel')}: {plugin.slug}
-          </p>
-          <p className="mt-1 text-sm text-dark-600">
-            {plugin.createdAt &&
-              t('plugin.detail.createdLabel', {
-                date: new Intl.DateTimeFormat(intlLocale(i18n.language), {
-                  dateStyle: 'medium',
-                }).format(plugin.createdAt),
-              })}
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <Badge variant={plugin.enabled ? 'success' : 'muted'}>
-            {plugin.enabled ? t('plugin.status.enabled') : t('plugin.status.disabled')}
-          </Badge>
+    <div className="flex flex-col gap-6">
+      <div>
+        <BackLink link={{ to: '/settings/plugin' }} label={t('plugin.backLabel')} />
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-lato text-2xl font-bold text-dark break-words">{plugin.name}</h2>
+              <Badge variant={enabled ? 'success' : 'muted'}>
+                {enabled ? t('plugin.status.enabled') : t('plugin.status.disabled')}
+              </Badge>
+            </div>
+            <p className="mt-1 font-mono text-sm text-dark-600">{plugin.slug}</p>
+          </div>
+
           {plugin.frontendMode === 'external' && plugin.frontendTarget && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="sm:shrink-0">
               <Link to="/plugin/$slug" params={{ slug: plugin.slug }}>
-                <ExternalLink className="size-4" />
+                <ExternalLink className="size-4" aria-hidden />
                 {t('plugin.detail.openViewButton')}
               </Link>
             </Button>
           )}
         </div>
-      </header>
+      </div>
 
-      <Can permission={['plugin:update']}>
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={plugin.enabled}
-            disabled={updatePlugin.isPending}
-            onCheckedChange={handleToggleEnabled}
-            aria-label={t('plugin.detail.enableLabel')}
-          />
-          <div>
-            <p className="font-medium text-dark">{t('plugin.detail.enableLabel')}</p>
-            <p className="text-sm text-dark-600">{t('plugin.detail.enableHint')}</p>
+      <Card variant="outlined">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">{t('plugin.detail.operationHeading')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <Can permission={['plugin:update']}>
+            <div className="flex items-start gap-3">
+              <Switch
+                checked={enabled}
+                disabled={updatePlugin.isPending}
+                onCheckedChange={handleToggleEnabled}
+                aria-label={t('plugin.detail.enableLabel')}
+                className="mt-0.5"
+              />
+              <div>
+                <p className="font-medium text-dark">{t('plugin.detail.enableLabel')}</p>
+                <p className="text-sm text-dark-600">{t('plugin.detail.enableHint')}</p>
+              </div>
+            </div>
+          </Can>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-dark-50 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <KeyRound className="size-4 shrink-0 text-dark-500" aria-hidden />
+              <div>
+                <p className="text-sm font-medium text-dark">
+                  {t('plugin.detail.credentialLabel')}
+                </p>
+                <p className="text-sm text-dark-600">
+                  {plugin.hasCredential
+                    ? t('plugin.detail.credentialSet')
+                    : t('plugin.detail.credentialMissing')}
+                </p>
+              </div>
+            </div>
+            <Can permission={['plugin:update']}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setRotateConfirmOpen(true)}
+              >
+                {t('plugin.detail.rotateButton')}
+              </Button>
+            </Can>
           </div>
-        </div>
-      </Can>
 
-      <div className="flex items-center gap-3">
-        <p className="text-sm text-dark-600">
-          {plugin.hasCredential
-            ? t('plugin.detail.credentialSet')
-            : t('plugin.detail.credentialMissing')}
-        </p>
-        <Can permission={['plugin:update']}>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setRotateConfirmOpen(true)}
-          >
-            {t('plugin.detail.rotateButton')}
-          </Button>
-        </Can>
-      </div>
+          <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-3">
+            {facts.map((fact) => (
+              <div key={fact.label}>
+                <dt className="text-sm text-dark-600">{fact.label}</dt>
+                <dd className="text-sm font-medium text-dark">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
 
-      <p className="text-sm text-dark-600">
-        {t('plugin.detail.lastSeenLabel', {
-          date: formatLastSeenAt(plugin.lastSeenAt, dateLocale, t),
-        })}
-      </p>
+      <Card variant="outlined">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">{t('plugin.detail.detailsHeading')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <FormField
+            id="plugin-detail-name"
+            label={t('plugin.install.nameLabel')}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            disabled={!canUpdate}
+          />
 
-      <p className="text-sm text-dark-600">
-        {t('plugin.install.organizationLabel')}: {organizationName}
-      </p>
+          <TextareaField
+            id="plugin-detail-description"
+            label={t('plugin.install.descriptionLabel')}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            disabled={!canUpdate}
+          />
 
-      <FormField
-        id="plugin-detail-name"
-        label={t('plugin.install.nameLabel')}
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        disabled={!canUpdate}
-      />
+          <SelectField
+            id="plugin-detail-frontend-mode"
+            label={t('plugin.install.frontendModeLabel')}
+            value={frontendMode}
+            disabled={!canUpdate}
+            onValueChange={(value) => setFrontendMode(value as FrontendMode)}
+            className="max-w-sm"
+            options={[
+              { value: 'none', label: t('plugin.install.frontendModeOption.none') },
+              { value: 'external', label: t('plugin.install.frontendModeOption.external') },
+              { value: 'proxied', label: t('plugin.install.frontendModeOption.proxied') },
+            ]}
+          />
 
-      <TextareaField
-        id="plugin-detail-description"
-        label={t('plugin.install.descriptionLabel')}
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-        disabled={!canUpdate}
-      />
+          {frontendMode !== 'none' && (
+            <FormField
+              id="plugin-detail-target"
+              label={t('plugin.install.targetLabel')}
+              value={target}
+              onChange={(event) => setTarget(event.target.value)}
+              disabled={!canUpdate}
+              className="max-w-sm"
+            />
+          )}
+        </CardContent>
+      </Card>
 
-      <div className="flex flex-col gap-y-2">
-        <Label htmlFor="plugin-detail-frontend-mode">{t('plugin.install.frontendModeLabel')}</Label>
-        <select
-          id="plugin-detail-frontend-mode"
-          value={frontendMode}
-          disabled={!canUpdate}
-          onChange={(event) => setFrontendMode(event.target.value as FrontendMode)}
-          className="flex h-10 w-full max-w-sm rounded-lg border border-dark-200 bg-white px-3 py-2 text-base text-dark-800 shadow-xs outline-none focus-visible:border-green-dark focus-visible:ring-green-dark/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-        >
-          <option value="none">{t('plugin.install.frontendModeOption.none')}</option>
-          <option value="external">{t('plugin.install.frontendModeOption.external')}</option>
-          <option value="proxied">{t('plugin.install.frontendModeOption.proxied')}</option>
-        </select>
-      </div>
+      <Card variant="outlined">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">{t('plugin.detail.permissionsHeading')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <PluginPermissionMatrix
+            heading={t('plugin.install.permissionsHeading')}
+            hint={t('plugin.install.permissionsHint')}
+            permissions={permissions}
+            disabled={!canUpdate}
+            onToggle={togglePermission}
+          />
 
-      {frontendMode !== 'none' && (
-        <FormField
-          id="plugin-detail-target"
-          label={t('plugin.install.targetLabel')}
-          value={target}
-          onChange={(event) => setTarget(event.target.value)}
-          disabled={!canUpdate}
-          className="max-w-sm"
-        />
-      )}
-
-      <PluginPermissionMatrix
-        heading={t('plugin.install.permissionsHeading')}
-        hint={t('plugin.install.permissionsHint')}
-        permissions={permissions}
-        disabled={!canUpdate}
-        onToggle={togglePermission}
-      />
-
-      <PluginPermissionMatrix
-        heading={t('plugin.install.accessPermissionsHeading')}
-        hint={t('plugin.install.accessPermissionsHint')}
-        permissions={accessPermissions}
-        disabled={!canUpdate}
-        onToggle={toggleAccessPermission}
-      />
+          <PluginPermissionMatrix
+            heading={t('plugin.install.accessPermissionsHeading')}
+            hint={t('plugin.install.accessPermissionsHint')}
+            permissions={accessPermissions}
+            disabled={!canUpdate}
+            onToggle={toggleAccessPermission}
+          />
+        </CardContent>
+      </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dark-200 pt-4">
         <Can permission={['plugin:delete']}>
-          <Button type="button" variant="outline" onClick={() => setUninstallConfirmOpen(true)}>
+          <Button
+            type="button"
+            variant="ghost-destructive"
+            onClick={() => setUninstallConfirmOpen(true)}
+          >
             {t('plugin.detail.uninstallButton')}
           </Button>
         </Can>
 
         <Can permission={['plugin:update']}>
-          <Button type="button" onClick={handleSave} disabled={updatePlugin.isPending}>
+          <Button
+            type="button"
+            className="ml-auto"
+            onClick={handleSave}
+            disabled={updatePlugin.isPending}
+          >
             {t('plugin.detail.saveButton')}
           </Button>
         </Can>

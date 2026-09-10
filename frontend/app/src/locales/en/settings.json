@@ -51,7 +51,7 @@
   },
   "plugin": {
     "overviewTitle": "Plugin overview",
-    "overviewIntro": "Here you can find an overview of all installed plugins. These plugins extend the application's functionality and can offer a variety of useful features. Click a plugin to learn more about it.",
+    "overviewIntro": "A plugin connects an external system to Green Ecolution. It can write data and bring its own view. Select a plugin to manage its permissions and access.",
     "loading": "Loading plugins...",
     "empty": "No plugins are currently registered.",
     "installButton": "Install plugin",
@@ -59,7 +59,7 @@
     "neverSeen": "No contact yet",
     "columns": {
       "status": "Status",
-      "slug": "Slug",
+      "name": "Plugin",
       "organization": "Organization",
       "lastSeen": "Last seen"
     },
@@ -125,9 +125,6 @@
     },
     "detail": {
       "loading": "Loading plugin",
-      "slugLabel": "Slug",
-      "createdLabel": "Installed on {date}",
-      "lastSeenLabel": "Last seen: {date}",
       "credentialLabel": "API key",
       "credentialSet": "Set",
       "credentialMissing": "No key set",
@@ -151,7 +148,12 @@
         "uninstallFailed": "The plugin could not be uninstalled.",
         "installed": "Plugin installed",
         "installFailed": "The plugin could not be installed."
-      }
+      },
+      "operationHeading": "Operation",
+      "detailsHeading": "Details",
+      "permissionsHeading": "Permissions",
+      "lastSeenFactLabel": "Last contact",
+      "installedFactLabel": "Installed on"
     },
     "view": {
       "loading": "Loading view",

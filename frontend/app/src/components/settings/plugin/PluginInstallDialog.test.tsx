@@ -10,7 +10,14 @@ const pluginMatrixOf = () => within(screen.getByRole('group', { name: /rechte de
 const accessMatrixOf = () =>
   within(screen.getByRole('group', { name: /zugriffsrechte für die ansicht/i }))
 
-describe('PluginInstallDialog', () => {
+/**
+ * Every case here renders the whole dialog — a Radix Dialog around two 10×4
+ * permission matrices, 80 checkboxes — and drives it through user-event. That
+ * costs about a second per test on an idle machine, which leaves too little
+ * room under the 5s default once the full suite saturates the CPU: tests here
+ * timed out in a parallel run while passing on their own.
+ */
+describe('PluginInstallDialog', { timeout: 20_000 }, () => {
   it('mirrors the plugin permissions into the access permissions until they are edited', async () => {
     const user = userEvent.setup()
     render(<PluginInstallDialog open onSubmit={vi.fn()} onOpenChange={vi.fn()} />)
@@ -37,7 +44,11 @@ describe('PluginInstallDialog', () => {
 
     await user.type(screen.getByLabelText(/slug/i), 'acme')
     await user.type(screen.getByLabelText(/name/i), 'Acme')
-    await user.selectOptions(screen.getByLabelText(/ansicht/i), 'external')
+    // Keyboard rather than two clicks: opening the Radix listbox by pointer
+    // and clicking an option inside its portal is slow enough in jsdom to
+    // push this test past the default timeout when the suite runs in parallel.
+    screen.getByRole('combobox', { name: /ansicht/i }).focus()
+    await user.keyboard('{Enter}{ArrowDown}{Enter}')
     await user.type(screen.getByLabelText(/adresse/i), 'http://plugin.example.com')
     await user.click(screen.getByRole('button', { name: /installieren/i }))
 

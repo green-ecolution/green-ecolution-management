@@ -51,7 +51,7 @@
   },
   "plugin": {
     "overviewTitle": "Übersicht der Plugins",
-    "overviewIntro": "Hier findest du eine Übersicht aller installierten Plugins. Diese Plugins erweitern die Funktionalität der Anwendung und können eine Vielzahl nützlicher Features bieten. Klicke auf eines der Plugins, um mehr darüber zu erfahren.",
+    "overviewIntro": "Ein Plugin verbindet ein externes System mit Green Ecolution. Es kann Daten schreiben und eine eigene Ansicht mitbringen. Klicke ein Plugin an, um seine Rechte und seinen Zugang zu verwalten.",
     "loading": "Laden von Plugins...",
     "empty": "Zur Zeit sind keine Plugins registriert.",
     "installButton": "Plugin installieren",
@@ -59,7 +59,7 @@
     "neverSeen": "Noch kein Kontakt",
     "columns": {
       "status": "Status",
-      "slug": "Slug",
+      "name": "Plugin",
       "organization": "Organisation",
       "lastSeen": "Letztes Lebenszeichen"
     },
@@ -125,9 +125,6 @@
     },
     "detail": {
       "loading": "Plugin wird geladen",
-      "slugLabel": "Slug",
-      "createdLabel": "Installiert am {date}",
-      "lastSeenLabel": "Letztes Lebenszeichen: {date}",
       "credentialLabel": "API-Schlüssel",
       "credentialSet": "Hinterlegt",
       "credentialMissing": "Kein Schlüssel hinterlegt",
@@ -151,7 +148,12 @@
         "uninstallFailed": "Das Plugin konnte nicht deinstalliert werden.",
         "installed": "Plugin installiert",
         "installFailed": "Das Plugin konnte nicht installiert werden."
-      }
+      },
+      "operationHeading": "Betrieb",
+      "detailsHeading": "Angaben",
+      "permissionsHeading": "Berechtigungen",
+      "lastSeenFactLabel": "Letztes Lebenszeichen",
+      "installedFactLabel": "Installiert am"
     },
     "view": {
       "loading": "Ansicht wird geladen",
