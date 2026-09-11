@@ -74,16 +74,54 @@ export function createPluginHost(
  * plugin's counterpart is always window.parent, so that is checked here too
  * — nothing secret travels this way, but both sides verify each other.
  */
-export function connectToHost(): Promise<PluginContext> {
-  return new Promise((resolve) => {
+export interface ConnectOptions {
+  /** How often the hello is repeated while no answer has arrived. 0 sends it once. */
+  retryIntervalMs?: number
+  /** When to give up and reject. 0 waits forever. */
+  timeoutMs?: number
+}
+
+export function connectToHost({
+  retryIntervalMs = 250,
+  timeoutMs = 10_000,
+}: ConnectOptions = {}): Promise<PluginContext> {
+  return new Promise((resolve, reject) => {
+    const sendHello = () => window.parent.postMessage(envelope('ge:hello', {}), '*')
+    let retry: ReturnType<typeof setInterval> | undefined
+    let expiry: ReturnType<typeof setTimeout> | undefined
+
     const handleMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return
       if (!isEnvelope(event.data) || event.data.type !== 'ge:init') return
-      window.removeEventListener('message', handleMessage)
+      stop()
       resolve(event.data.payload as PluginContext)
     }
+
+    const stop = () => {
+      window.removeEventListener('message', handleMessage)
+      if (retry !== undefined) clearInterval(retry)
+      if (expiry !== undefined) clearTimeout(expiry)
+    }
+
     window.addEventListener('message', handleMessage)
-    window.parent.postMessage(envelope('ge:hello', {}), '*')
+    sendHello()
+
+    // The host attaches its listener from an effect and re-attaches it whenever
+    // the context it passes changes, so a single hello can fall into that gap
+    // and leave the plugin waiting on a blank page with nothing in the console.
+    // Repeating costs one postMessage and turns the race into a short delay.
+    if (retryIntervalMs > 0) retry = setInterval(sendHello, retryIntervalMs)
+    if (timeoutMs > 0) {
+      expiry = setTimeout(() => {
+        stop()
+        reject(
+          new Error(
+            `The Green Ecolution host did not answer the handshake within ${timeoutMs}ms. ` +
+              'Is this document embedded as a plugin view?',
+          ),
+        )
+      }, timeoutMs)
+    }
   })
 }
 

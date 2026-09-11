@@ -80,6 +80,16 @@ import { connectToHost } from '@green-ecolution/plugin-interface'
 const context = await connectToHost()
 ```
 
+The hello is repeated every 250 ms until the host answers, because the host attaches its
+listener from an effect and a single hello can arrive before it is listening. After
+10 seconds without an answer the promise rejects rather than hanging, which is what you
+see when the document is opened directly instead of embedded as a plugin view. Both
+values are adjustable, and `0` disables either behaviour:
+
+```typescript
+const context = await connectToHost({ retryIntervalMs: 100, timeoutMs: 0 })
+```
+
 ### `notifyResize(height)`
 
 Call this whenever your content's height changes, so a host that acts on it can size
@@ -116,6 +126,18 @@ function TreeImportStatus() {
     </p>
   )
 }
+```
+
+Two optional props cover the states before and instead of a completed handshake.
+`pending` is rendered while it runs (nothing by default), and `fallback` receives the
+error when the host never answered. Without a `fallback` the provider renders the error
+message itself, so a plugin opened outside the host says so rather than showing a blank
+page:
+
+```tsx
+<PluginProvider pending={<Spinner />} fallback={(error) => <ErrorPage error={error} />}>
+  <TreeImportStatus />
+</PluginProvider>
 ```
 
 ### `PluginContext`

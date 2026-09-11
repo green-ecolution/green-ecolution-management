@@ -179,6 +179,44 @@ describe('connectToHost', () => {
 
     await expect(pending).resolves.toEqual(context)
   })
+
+  it('repeats the hello until the host answers', async () => {
+    vi.useFakeTimers()
+    const postMessage = vi.spyOn(window.parent, 'postMessage')
+
+    const pending = connectToHost({ retryIntervalMs: 100 })
+    expect(postMessage).toHaveBeenCalledTimes(1)
+
+    // The host attaches its listener late, so the first hello is lost.
+    await vi.advanceTimersByTimeAsync(250)
+    expect(postMessage.mock.calls.length).toBeGreaterThan(1)
+
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { ns: 'green-ecolution', v: 1, type: 'ge:init', payload: { plugin: { slug: 'x' } } },
+        source: window.parent,
+      }),
+    )
+    await expect(pending).resolves.toEqual({ plugin: { slug: 'x' } })
+
+    const afterResolve = postMessage.mock.calls.length
+    await vi.advanceTimersByTimeAsync(500)
+    expect(postMessage.mock.calls.length).toBe(afterResolve)
+
+    postMessage.mockRestore()
+    vi.useRealTimers()
+  })
+
+  it('rejects when the host never answers', async () => {
+    vi.useFakeTimers()
+
+    const pending = connectToHost({ timeoutMs: 1000 })
+    const assertion = expect(pending).rejects.toThrow(/did not answer the handshake/)
+    await vi.advanceTimersByTimeAsync(1000)
+    await assertion
+
+    vi.useRealTimers()
+  })
 })
 
 describe('notifyResize', () => {
