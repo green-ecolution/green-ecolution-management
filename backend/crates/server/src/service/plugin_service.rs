@@ -2,11 +2,11 @@
 //!
 //! Authorization is enforced here rather than left to the HTTP layer: every
 //! mutation is scoped to the plugin's own organization, which only this
-//! service can resolve after loading the aggregate. `install` and an
-//! `update` that touches `permissions` additionally require the actor to
-//! hold a superset of what they are about to grant the plugin —
-//! `required_permissions` is exempt, since it restricts who may open the
-//! plugin's view rather than granting the plugin anything.
+//! service can resolve after loading the aggregate. Every operation that
+//! grants the plugin reach, or hands out a credential that exercises it,
+//! additionally requires the actor to hold a superset of the plugin's own
+//! permissions. `required_permissions` is exempt, since it restricts who may
+//! open the plugin's view rather than granting the plugin anything.
 
 use std::collections::BTreeSet;
 use std::sync::Arc;
@@ -17,14 +17,20 @@ use domain::{
     Id,
     authorization::{Action, Permission, Resource},
     plugin::{
-        Plugin, PluginDraft, PluginFrontend, PluginName, PluginReader, PluginSlug, PluginView,
-        PluginWriter,
+        Plugin, PluginDraft, PluginFrontend, PluginKeyHash, PluginName, PluginReader, PluginSlug,
+        PluginView, PluginWriter,
     },
 };
 
-use crate::infra::plugin_key;
-
 use super::{AuthError, ServiceError, authorization::AuthorizationService};
+
+/// Mints the plaintext key shown once to the operator plus the hash to
+/// persist. A CSPRNG and a digest are adapter concerns, so the service takes
+/// them as a port instead of reaching into `infra` and dragging server-side
+/// machinery into a layer that must stay portable.
+pub trait PluginKeyFactory: Send + Sync {
+    fn generate(&self, plugin: Id<Plugin>) -> (String, PluginKeyHash);
+}
 
 /// A pending change to an installed plugin, expressed field by field so an
 /// omitted field leaves the aggregate untouched.
@@ -41,6 +47,7 @@ pub struct PluginService {
     reader: Arc<dyn PluginReader>,
     writer: Arc<dyn PluginWriter>,
     authorization: Arc<AuthorizationService>,
+    keys: Arc<dyn PluginKeyFactory>,
 }
 
 impl PluginService {
@@ -48,11 +55,13 @@ impl PluginService {
         reader: Arc<dyn PluginReader>,
         writer: Arc<dyn PluginWriter>,
         authorization: Arc<AuthorizationService>,
+        keys: Arc<dyn PluginKeyFactory>,
     ) -> Self {
         Self {
             reader,
             writer,
             authorization,
+            keys,
         }
     }
 
@@ -123,7 +132,7 @@ impl PluginService {
             .await?;
 
         let id = Id::<Plugin>::new_v7();
-        let (plaintext, hash) = plugin_key::generate_key(id);
+        let (plaintext, hash) = self.keys.generate(id);
         let plugin = self.writer.save_new(id, draft, Some(hash)).await?;
         Ok((PluginView::from_aggregate(&plugin, None), plaintext))
     }
@@ -144,9 +153,17 @@ impl PluginService {
                 org,
             )
             .await?;
-        if let Some(permissions) = &change.permissions {
+        // Two changes put the plugin's rights into use: widening the set, and
+        // arming a plugin that was installed disabled. Both demand that the
+        // actor holds those rights themselves; a rename must not, or an admin
+        // without `tree:delete` could no longer correct a typo.
+        if change.permissions.is_some() || change.enabled == Some(true) {
+            let effective = change
+                .permissions
+                .as_ref()
+                .unwrap_or_else(|| plugin.permissions());
             self.authorization
-                .require_superset(actor, permissions, org)
+                .require_superset(actor, effective, org)
                 .await?;
         }
 
@@ -181,15 +198,24 @@ impl PluginService {
     #[tracing::instrument(level = "debug", skip_all)]
     pub async fn rotate_key(&self, actor: Uuid, slug: &PluginSlug) -> Result<String, ServiceError> {
         let mut plugin = self.reader.by_slug(slug).await?;
+        let org = plugin.organization_id();
         self.authorization
             .require(
                 actor,
                 Permission::new(Resource::Plugin, Action::Update),
-                plugin.organization_id(),
+                org,
             )
             .await?;
+        // A rotation hands the caller a working credential for this plugin,
+        // so it grants everything the plugin may do just as install does.
+        // Without this the superset check on install and update is defeated
+        // by rotating the key of an already privileged plugin and calling the
+        // ingest API with it directly.
+        self.authorization
+            .require_superset(actor, plugin.permissions(), org)
+            .await?;
 
-        let (plaintext, hash) = plugin_key::generate_key(plugin.id);
+        let (plaintext, hash) = self.keys.generate(plugin.id);
         plugin.rotate_credential(hash);
         self.writer.save(&plugin).await?;
         Ok(plaintext)
@@ -213,6 +239,7 @@ impl PluginService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::infra::plugin_key::{self, RandomPluginKeyFactory};
     use domain::authorization::{Action, Resource};
 
     #[tokio::test]
@@ -277,6 +304,93 @@ mod tests {
             .await
             .unwrap();
         assert_ne!(first, second);
+    }
+
+    #[tokio::test]
+    async fn rotate_key_rejects_an_actor_lacking_the_plugins_own_permissions() {
+        // Rotating returns a working credential, so it grants everything the
+        // plugin may do. Without this check `plugin:update` alone would be a
+        // path to deleting trees.
+        let repo = repo_with_tree_deleting_plugin().await;
+        let svc = service_over(
+            repo,
+            Some(&[Permission::new(Resource::Plugin, Action::Update)]),
+        );
+
+        let err = svc
+            .rotate_key(Uuid::new_v4(), &PluginSlug::new("acme").unwrap())
+            .await
+            .unwrap_err();
+        assert!(matches!(err, ServiceError::Auth(_)));
+    }
+
+    #[tokio::test]
+    async fn enabling_rejects_an_actor_lacking_the_plugins_own_permissions() {
+        let repo = repo_with_tree_deleting_plugin().await;
+        let svc = service_over(
+            repo,
+            Some(&[Permission::new(Resource::Plugin, Action::Update)]),
+        );
+
+        let err = svc
+            .update(
+                Uuid::new_v4(),
+                &PluginSlug::new("acme").unwrap(),
+                PluginChange {
+                    enabled: Some(true),
+                    ..no_change()
+                },
+            )
+            .await
+            .unwrap_err();
+        assert!(matches!(err, ServiceError::Auth(_)));
+    }
+
+    #[tokio::test]
+    async fn renaming_does_not_require_the_plugins_own_permissions() {
+        // The counterpart to the two tests above: tightening the gate must not
+        // lock an administrator out of edits that grant the plugin nothing.
+        let repo = repo_with_tree_deleting_plugin().await;
+        let svc = service_over(
+            repo,
+            Some(&[Permission::new(Resource::Plugin, Action::Update)]),
+        );
+
+        let view = svc
+            .update(
+                Uuid::new_v4(),
+                &PluginSlug::new("acme").unwrap(),
+                PluginChange {
+                    name: Some(PluginName::new("Neuer Name").unwrap()),
+                    ..no_change()
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(view.name.as_str(), "Neuer Name");
+    }
+
+    #[tokio::test]
+    async fn disabling_does_not_require_the_plugins_own_permissions() {
+        // Pulling the plug must never be harder than leaving it in.
+        let repo = repo_with_tree_deleting_plugin().await;
+        let svc = service_over(
+            repo,
+            Some(&[Permission::new(Resource::Plugin, Action::Update)]),
+        );
+
+        let view = svc
+            .update(
+                Uuid::new_v4(),
+                &PluginSlug::new("acme").unwrap(),
+                PluginChange {
+                    enabled: Some(false),
+                    ..no_change()
+                },
+            )
+            .await
+            .unwrap();
+        assert!(!view.enabled);
     }
 
     use std::collections::HashMap;
@@ -506,33 +620,61 @@ mod tests {
         }
     }
 
-    fn service_with_unrestricted_auth() -> PluginService {
-        let repo = Arc::new(FakePluginRepo::default());
-        let authorization = Arc::new(AuthorizationService::new(
-            Arc::new(StubOrgs { pairs: Vec::new() }),
-            Arc::new(StubRoles {
-                permissions: BTreeSet::new(),
-                org: test_org(),
-            }),
-            false,
-        ));
-        PluginService::new(repo.clone(), repo, authorization)
-    }
-
-    fn service_with_auth_allowing(permissions: &[Permission]) -> PluginService {
-        let repo = Arc::new(FakePluginRepo::default());
+    /// Builds a service over an existing repository, so a test can install a
+    /// plugin as one actor and then act on it as a less privileged one.
+    /// `allowing: None` disables authorization entirely (the demo bypass).
+    fn service_over(repo: Arc<FakePluginRepo>, allowing: Option<&[Permission]>) -> PluginService {
         let org = test_org();
         let authorization = Arc::new(AuthorizationService::new(
             Arc::new(StubOrgs {
-                pairs: vec![(org, None)],
+                pairs: match allowing {
+                    Some(_) => vec![(org, None)],
+                    None => Vec::new(),
+                },
             }),
             Arc::new(StubRoles {
-                permissions: permissions.iter().copied().collect(),
+                permissions: allowing.unwrap_or_default().iter().copied().collect(),
                 org,
             }),
-            true,
+            allowing.is_some(),
         ));
-        PluginService::new(repo.clone(), repo, authorization)
+        PluginService::new(
+            repo.clone(),
+            repo,
+            authorization,
+            Arc::new(RandomPluginKeyFactory),
+        )
+    }
+
+    fn service_with_unrestricted_auth() -> PluginService {
+        service_over(Arc::new(FakePluginRepo::default()), None)
+    }
+
+    fn service_with_auth_allowing(permissions: &[Permission]) -> PluginService {
+        service_over(Arc::new(FakePluginRepo::default()), Some(permissions))
+    }
+
+    /// A plugin that may delete trees, installed by an unrestricted actor.
+    async fn repo_with_tree_deleting_plugin() -> Arc<FakePluginRepo> {
+        let repo = Arc::new(FakePluginRepo::default());
+        let mut d = draft("acme");
+        d.permissions = BTreeSet::from([Permission::new(Resource::Tree, Action::Delete)]);
+        service_over(repo.clone(), None)
+            .install(Uuid::nil(), d)
+            .await
+            .unwrap();
+        repo
+    }
+
+    fn no_change() -> PluginChange {
+        PluginChange {
+            name: None,
+            description: None,
+            frontend: None,
+            permissions: None,
+            required_permissions: None,
+            enabled: None,
+        }
     }
 
     fn draft(slug: &str) -> PluginDraft {

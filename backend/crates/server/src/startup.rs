@@ -417,6 +417,7 @@ impl Services {
             repos.plugin_reader.clone(),
             repos.plugin_writer.clone(),
             authorization.clone(),
+            Arc::new(crate::infra::plugin_key::RandomPluginKeyFactory),
         ));
         let tree = Arc::new(TreeService::new(
             repos.tree_reader.clone(),

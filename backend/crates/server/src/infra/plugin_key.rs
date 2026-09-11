@@ -5,7 +5,19 @@ use uuid::Uuid;
 use domain::Id;
 use domain::plugin::{Plugin, PluginKeyHash};
 
+use crate::service::plugin_service::PluginKeyFactory;
+
 const PREFIX: &str = "gep_";
+
+/// The production `PluginKeyFactory`: 32 bytes from the OS CSPRNG, stored as
+/// a SHA-256 digest.
+pub struct RandomPluginKeyFactory;
+
+impl PluginKeyFactory for RandomPluginKeyFactory {
+    fn generate(&self, plugin: Id<Plugin>) -> (String, PluginKeyHash) {
+        generate_key(plugin)
+    }
+}
 
 /// Returns the plaintext key (shown to the operator exactly once) and the hash
 /// to persist.
