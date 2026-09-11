@@ -42,12 +42,12 @@ Zuordnung verwaisen lassen. Einzelne Wörter sind für die Plugin-Schnittstelle 
 reserviert, derzeit `me`; der Dialog weist sie mit einem Hinweis zurück.
 
 Darunter legst du fest, ob und wie das Plugin eine eigene Ansicht mitbringt: **Keine
-Ansicht** für ein reines Datenplugin, **Extern gehostet** für eine öffentlich
-erreichbare Adresse, oder **Intern (per Proxy)** für einen Dienst, der nur intern
-läuft und von Green Ecolution durchgereicht wird. Eine
-extern gehostete Ansicht muss eine absolute https-Adresse sein, mit Ausnahme von
-localhost für die lokale Entwicklung, und darf nicht auf die Adresse von Green
-Ecolution selbst zeigen.
+Ansicht** für ein reines Datenplugin oder **Extern gehostet** für eine öffentlich
+erreichbare Adresse. Eine extern gehostete Ansicht muss eine absolute https-Adresse
+sein, mit Ausnahme von localhost für die lokale Entwicklung, und darf nicht auf die
+Adresse von Green Ecolution selbst zeigen. Ein dritter Modus für Dienste, die nur
+intern laufen und von Green Ecolution durchgereicht werden, ist vorbereitet, aber
+noch nicht auswählbar, solange die Durchreichung fehlt.
 
 Zum Schluss legst du die beiden Rechtemengen fest, siehe
 [Die beiden Rechtemengen](./settings-plugins.md#die-beiden-rechtemengen) weiter unten.
@@ -112,15 +112,19 @@ neuer erscheint, wie beim Installieren, genau einmal im Klartext im selben Dialo
 Bis das Plugin mit dem neuen Schlüssel hinterlegt ist, kann es sich in dieser Zeit
 nicht anmelden und keine Daten mehr schreiben.
 
+Erneuern und Aktivieren verlangen dieselbe Bedingung wie das Installieren: Du musst
+alle Rechte, die das Plugin selbst besitzt, auch selbst haben. Ein neuer Schlüssel
+ist ein funktionierender Zugang zu allem, was das Plugin darf, und das Aktivieren
+setzt genau diese Rechte in Betrieb. Umbenennen, Beschreiben und Deaktivieren
+verlangen das nicht, damit niemand daran gehindert wird, ein Plugin abzuschalten.
+
 ## Die Ansicht eines Plugins öffnen
 
 Bringt ein Plugin eine externe Ansicht mit, öffnest du sie über **Ansicht öffnen** auf
 seiner Detailseite. Green Ecolution bettet sie in einem eigenen, abgeschotteten Rahmen
 ein und übergibt ihr deinen Anzeigenamen, die Oberflächensprache und den Slug des
-Plugins, aber keinen Zugriff auf deine Anmeldedaten. Ein intern per Proxy
-eingebundenes Plugin zeigt an dieser Stelle stattdessen einen Hinweis, dass seine Ansicht
-hier noch nicht dargestellt werden kann, und ein Plugin ohne eigene Ansicht entsprechend,
-dass es keine besitzt.
+Plugins, aber keinen Zugriff auf deine Anmeldedaten. Ein Plugin ohne eigene Ansicht
+zeigt an dieser Stelle stattdessen einen Hinweis, dass es keine besitzt.
 
 Die Detailseite ist allerdings nur der Weg der Administration. Alle anderen erreichen
 die Ansicht über ihre eigene Adresse `/plugin/<slug>`, also etwa
