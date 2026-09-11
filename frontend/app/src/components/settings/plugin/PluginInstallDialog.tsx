@@ -17,7 +17,12 @@ import {
 import type { OrganizationResponse, PluginFrontendDto } from '@/api/backendApi'
 import PluginPermissionMatrix from './PluginPermissionMatrix'
 import { usePluginPermissionDraft } from './usePluginPermissionDraft'
-import { buildFrontendDto, validateTarget, type FrontendMode } from './pluginFrontend'
+import {
+  buildFrontendDto,
+  frontendModeOptions,
+  validateTarget,
+  type FrontendMode,
+} from './pluginFrontend'
 import { validateSlug } from './pluginSlug'
 
 export type { FrontendMode } from './pluginFrontend'
@@ -183,11 +188,7 @@ export const PluginInstallDialog = ({
               label={t('plugin.install.frontendModeLabel')}
               value={frontendMode}
               onValueChange={(value) => setFrontendMode(value as FrontendMode)}
-              options={[
-                { value: 'none', label: t('plugin.install.frontendModeOption.none') },
-                { value: 'external', label: t('plugin.install.frontendModeOption.external') },
-                { value: 'proxied', label: t('plugin.install.frontendModeOption.proxied') },
-              ]}
+              options={frontendModeOptions(t)}
             />
 
             {frontendMode !== 'none' && (

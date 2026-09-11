@@ -35,7 +35,12 @@ import PluginPermissionMatrix from './PluginPermissionMatrix'
 import PluginKeyDialog from './PluginKeyDialog'
 import { usePluginPermissionDraft } from './usePluginPermissionDraft'
 import { formatLastSeenAt, organizationNameOf } from './pluginList'
-import { buildFrontendDto, type FrontendMode } from './pluginFrontend'
+import {
+  buildFrontendDto,
+  frontendModeOptions,
+  validateTarget,
+  type FrontendMode,
+} from './pluginFrontend'
 
 interface PluginDetailPageProps {
   plugin: PluginResponse
@@ -60,6 +65,7 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
     plugin.frontendMode as FrontendMode,
   )
   const [target, setTarget] = useState(plugin.frontendTarget ?? '')
+  const [targetError, setTargetError] = useState<string | null>(null)
   const { permissions, accessPermissions, togglePermission, toggleAccessPermission } =
     usePluginPermissionDraft(plugin.permissions, plugin.requiredPermissions)
 
@@ -78,6 +84,13 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
   const enabled = requestedEnabled ?? plugin.enabled
 
   const handleSave = () => {
+    // Same check the install dialog runs. Without it an empty or http:// target
+    // only comes back as the generic save-failed toast, with nothing pointing
+    // at the field that caused it.
+    const invalidTarget = validateTarget(frontendMode, target, t)
+    setTargetError(invalidTarget)
+    if (invalidTarget) return
+
     const trimmedDescription = description.trim()
     // PluginService::update only runs require_superset when the request
     // actually carries a permission set, so that a rename does not demand
@@ -252,11 +265,7 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
             disabled={!canUpdate}
             onValueChange={(value) => setFrontendMode(value as FrontendMode)}
             className="max-w-sm"
-            options={[
-              { value: 'none', label: t('plugin.install.frontendModeOption.none') },
-              { value: 'external', label: t('plugin.install.frontendModeOption.external') },
-              { value: 'proxied', label: t('plugin.install.frontendModeOption.proxied') },
-            ]}
+            options={frontendModeOptions(t, plugin.frontendMode)}
           />
 
           {frontendMode !== 'none' && (
@@ -264,7 +273,11 @@ const PluginDetailPage = ({ plugin }: PluginDetailPageProps) => {
               id="plugin-detail-target"
               label={t('plugin.install.targetLabel')}
               value={target}
-              onChange={(event) => setTarget(event.target.value)}
+              onChange={(event) => {
+                setTarget(event.target.value)
+                setTargetError(null)
+              }}
+              error={targetError ?? undefined}
               disabled={!canUpdate}
               className="max-w-sm"
             />
