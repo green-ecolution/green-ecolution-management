@@ -1,0 +1,64 @@
+name: "Publish plugin-interface to npm"
+
+# The SDK plugin authors install. Its version is deliberately not tied to the
+# application release train (release-please does not bump it): it describes the
+# handshake protocol and the exported API, which change on their own schedule.
+# A release whose version is already on npm is skipped, so running this on every
+# release is harmless and a publish happens exactly when someone bumps the
+# version in frontend/packages/plugin-interface/package.json.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-plugin-interface
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-frontend
+
+      - name: Resolve version
+        id: version
+        working-directory: ./frontend/packages/plugin-interface
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if npm view "@green-ecolution/plugin-interface@$version" version >/dev/null 2>&1; then
+            echo "Version $version is already on npm, nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        if: steps.version.outputs.publish == 'true'
+        working-directory: ./frontend
+        run: pnpm build:plugin-interface
+
+      - name: Publish
+        if: steps.version.outputs.publish == 'true'
+        working-directory: ./frontend/packages/plugin-interface
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          pnpm publish --access public --no-git-checks
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.version.outputs.publish }}" = "true" ]; then
+            echo "Published @green-ecolution/plugin-interface@${{ steps.version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Skipped: @green-ecolution/plugin-interface@${{ steps.version.outputs.version }} is already published" >> "$GITHUB_STEP_SUMMARY"
+          fi
