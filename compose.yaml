@@ -333,16 +333,18 @@ services:
       - "127.0.0.1:5175:80"
     healthcheck:
       test:
-        ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/api/session"]
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/api/session",
+        ]
       interval: 30s
       timeout: 5s
       start_period: 5s
       retries: 3
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.demo-plugin.rule=Host(`plugin.${APP_HOST:-localhost}`)"
-      - "traefik.http.routers.demo-plugin.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}"
-      - "traefik.http.services.demo-plugin.loadbalancer.server.port=80"
 
 volumes:
   minio_store:
