@@ -15,12 +15,10 @@ const loader = (opts: LoaderOpts) =>
   (Route.options.loader as (o: LoaderOpts) => Promise<{ crumb: { title: string } }>)(opts)
 
 const errorComponent = (error: unknown) =>
-  (
-    Route.options.errorComponent as (props: {
-      error: unknown
-      reset: () => void
-    }) => unknown
-  )({ error, reset: () => undefined })
+  (Route.options.errorComponent as (props: { error: unknown; reset: () => void }) => unknown)({
+    error,
+    reset: () => undefined,
+  })
 
 describe('/plugin/$slug', () => {
   // The management endpoint needs plugin:read, which a user of the view
