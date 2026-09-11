@@ -12,8 +12,6 @@ CREATE TABLE plugins (
     enabled              BOOLEAN NOT NULL DEFAULT FALSE,
     key_hash             TEXT,
     last_seen_at         TIMESTAMPTZ,
-    -- No created_at column on purpose: the view derives it from the UUID v7
-    -- timestamp, the same as every other aggregate (`roles` has updated_at only).
     updated_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT plugins_frontend_target_present
         CHECK ((frontend_mode = 'none') = (frontend_target IS NULL))
@@ -35,7 +33,5 @@ CREATE TABLE plugin_tree_refs (
 
 UPDATE roles
    SET permissions = permissions || ARRAY['plugin:read','plugin:create','plugin:update','plugin:delete']
- WHERE id IN (
-    '01980000-0000-7000-8000-0000000000a1',
-    '01980000-0000-7000-8000-0000000000b1'
- );
+ WHERE template_key = 'administrator'
+   AND NOT permissions @> ARRAY['plugin:read'];
