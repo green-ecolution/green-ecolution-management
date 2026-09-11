@@ -7,14 +7,18 @@ import { createPluginHost, type PluginContext } from '@green-ecolution/plugin-in
 import { pluginViewQuery } from '@/api/queries'
 import { useCurrentUser } from '@/lib/auth/useCurrentUser'
 import { languageOf } from '@/lib/i18n/languages'
-import { entityNotFound, forbiddenErrorComponent, pendingLoading, prefetch } from '@/lib/router'
+import { entityNotFound, forbiddenErrorComponent, pendingLoading } from '@/lib/router'
 import { pluginViewKind } from '@/components/plugin/pluginView'
 
 export const Route = createFileRoute('/_protected/plugin/$slug/')({
   component: PluginViewPage,
   pendingComponent: pendingLoading({ key: 'settings:plugin.view.loading' }),
-  loader: ({ context: { queryClient }, params: { slug } }) =>
-    prefetch(queryClient, pluginViewQuery(slug), 'pluginViewQuery'),
+  // Awaited rather than prefetched: the breadcrumb needs the plugin's name,
+  // which only the response carries.
+  loader: async ({ context: { queryClient }, params: { slug } }) => {
+    const plugin = await queryClient.fetchQuery(pluginViewQuery(slug))
+    return { crumb: { title: plugin.name } }
+  },
   // Who may open a view is the plugin's own `required_permissions`, which the
   // backend checks on this endpoint — a user of the view holds those and
   // usually not `plugin:read`, so there is nothing left to guard here. A

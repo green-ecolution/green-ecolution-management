@@ -11,7 +11,8 @@ interface LoaderOpts {
   context: { queryClient: QueryClient }
   params: { slug: string }
 }
-const loader = (opts: LoaderOpts) => (Route.options.loader as (o: LoaderOpts) => void)(opts)
+const loader = (opts: LoaderOpts) =>
+  (Route.options.loader as (o: LoaderOpts) => Promise<{ crumb: { title: string } }>)(opts)
 
 const errorComponent = (error: unknown) =>
   (
@@ -24,14 +25,15 @@ const errorComponent = (error: unknown) =>
 describe('/plugin/$slug', () => {
   // The management endpoint needs plugin:read, which a user of the view
   // typically does not hold -- loading it here would deny everyone else.
-  it('prefetches the view endpoint, not the managed plugin', () => {
+  it('loads the view endpoint, not the managed plugin, and names the crumb', async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    const spy = vi.spyOn(queryClient, 'prefetchQuery').mockResolvedValue(undefined)
+    const spy = vi.spyOn(queryClient, 'fetchQuery').mockResolvedValue({ name: 'Acme' })
 
-    loader({ context: { queryClient }, params: { slug: 'acme' } })
+    const data = await loader({ context: { queryClient }, params: { slug: 'acme' } })
 
     expect(spy).toHaveBeenCalledOnce()
     expect(spy.mock.calls[0][0]).toMatchObject({ queryKey: ['plugins', 'acme', 'view'] })
+    expect(data).toEqual({ crumb: { title: 'Acme' } })
   })
 
   it('shows the forbidden page when the backend denies access', () => {
