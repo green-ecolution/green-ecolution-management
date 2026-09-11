@@ -42,8 +42,9 @@ Zuordnung verwaisen lassen. Einzelne Wörter sind für die Plugin-Schnittstelle 
 reserviert, derzeit `me`; der Dialog weist sie mit einem Hinweis zurück.
 
 Darunter legst du fest, ob und wie das Plugin eine eigene Ansicht mitbringt: **Keine
-Ansicht** für ein reines Datenplugin, **Extern gehostet** für eine Adresse außerhalb
-des Clusters, oder **Im Cluster (proxied)** für einen intern laufenden Dienst. Eine
+Ansicht** für ein reines Datenplugin, **Extern gehostet** für eine öffentlich
+erreichbare Adresse, oder **Intern (per Proxy)** für einen Dienst, der nur intern
+läuft und von Green Ecolution durchgereicht wird. Eine
 extern gehostete Ansicht muss eine absolute https-Adresse sein, mit Ausnahme von
 localhost für die lokale Entwicklung, und darf nicht auf die Adresse von Green
 Ecolution selbst zeigen.
@@ -116,8 +117,8 @@ nicht anmelden und keine Daten mehr schreiben.
 Bringt ein Plugin eine externe Ansicht mit, öffnest du sie über **Ansicht öffnen** auf
 seiner Detailseite. Green Ecolution bettet sie in einem eigenen, abgeschotteten Rahmen
 ein und übergibt ihr deinen Anzeigenamen, die Oberflächensprache und den Slug des
-Plugins, aber keinen Zugriff auf deine Anmeldedaten. Ein im Cluster laufendes,
-proxiedes Plugin zeigt an dieser Stelle stattdessen einen Hinweis, dass seine Ansicht
+Plugins, aber keinen Zugriff auf deine Anmeldedaten. Ein intern per Proxy
+eingebundenes Plugin zeigt an dieser Stelle stattdessen einen Hinweis, dass seine Ansicht
 hier noch nicht dargestellt werden kann, und ein Plugin ohne eigene Ansicht entsprechend,
 dass es keine besitzt.
 

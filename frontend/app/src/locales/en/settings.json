@@ -84,7 +84,7 @@
       "frontendModeOption": {
         "none": "No view",
         "external": "Externally hosted",
-        "proxied": "In-cluster (proxied)"
+        "proxied": "Internal (proxied)"
       },
       "targetLabel": "Address",
       "targetExternalHint": "Absolute https address, localhost excepted.",
@@ -157,7 +157,7 @@
     },
     "view": {
       "loading": "Loading view",
-      "proxiedNotice": "This plugin is operated inside the cluster (proxied). Its view cannot be shown here yet.",
+      "proxiedNotice": "This plugin is embedded internally through a proxy. Its view cannot be shown here yet.",
       "noFrontendNotice": "This plugin has no view.",
       "unsafeOriginNotice": "This plugin's view is served from the same address as Green Ecolution and therefore cannot be displayed. A plugin has to be reachable under its own domain."
     }
